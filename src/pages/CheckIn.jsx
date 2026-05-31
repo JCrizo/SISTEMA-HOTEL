@@ -120,26 +120,45 @@ function CheckIn() {
       es_titular: true
     })
 
-    // 5. Registrar adelanto si hay
-    if (modalPago === 'completo') {
-        await supabase.from('pagos').insert({
+    // 5. Registrar pago si hay
+        let montoPagado = 0
+        if (modalPago === 'completo') {
+          montoPagado = parseFloat(tarifa)
+          await supabase.from('pagos').insert({
             hospedaje_id: hospedaje.id,
-            monto: parseFloat(tarifa),
+            monto: montoPagado,
             metodo: metodoPago,
             concepto: 'hospedaje',
             observaciones: nroTicket
-        })
-    } 
-    else if (modalPago === 'adelanto' && parseFloat(adelanto) > 0) 
-    {
-        await supabase.from('pagos').insert({
+          })
+        } else if (modalPago === 'adelanto' && parseFloat(adelanto) > 0) {
+          montoPagado = parseFloat(adelanto)
+          await supabase.from('pagos').insert({
             hospedaje_id: hospedaje.id,
-            monto: parseFloat(tarifa),
+            monto: montoPagado,
             metodo: metodoPago,
             concepto: 'hospedaje',
             observaciones: nroTicket
-        })
-    }
+          })
+        }
+
+        // Actualizar caja del turno activo
+            const { data: turnos } = await supabase
+              .from('turnos')
+              .select('*')
+              .is('cierre', null)
+              .order('apertura', { ascending: false })
+              .limit(1)
+
+            const turnoActivo = turnos?.[0]
+            if (turnoActivo) {
+              await supabase
+                .from('turnos')
+                .update({
+                  caja_principal_actual: turnoActivo.caja_principal_actual + montoPagado
+                })
+                .eq('id', turnoActivo.id)
+            }
 
     // 6. Cambiar estado habitación
     await supabase
