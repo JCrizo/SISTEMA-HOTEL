@@ -6,7 +6,7 @@ import Consumos from './pages/Consumos'
 import Limpieza from './pages/Limpieza'
 import Turnos from './pages/Turnos'
 import Cochera from './pages/Cochera'
-
+import Reportes from './pages/Reportes'
 
 function App() {
   return (
@@ -19,6 +19,7 @@ function App() {
         <Route path="/limpieza" element={<Limpieza />} />
         <Route path="/turnos" element={<Turnos />} />
         <Route path="/cochera" element={<Cochera />} />
+        <Route path="/reportes" element={<Reportes />} />
       </Routes>
     </div>
   )
