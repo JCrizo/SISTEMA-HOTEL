@@ -67,6 +67,12 @@ function Habitaciones() {
         >
           Turnos   
       </button>
+      <button
+        onClick={() => navigate('/cochera')}
+        className="text-sm px-4 py-2 bg-gray-700 text-white rounded-xl"
+      >
+        Cochera
+      </button>
       <div className="grid grid-cols-2 gap-3">
         {habitaciones.map(hab => (
           <div

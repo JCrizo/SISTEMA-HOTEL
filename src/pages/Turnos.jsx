@@ -85,26 +85,48 @@ function Turnos() {
   }
 
   async function registrarMovimiento() {
-    if (!montoMov || !conceptoMov) return
-    setGuardando(true)
+  if (!montoMov || !conceptoMov) return
+  setGuardando(true)
 
-    await supabase.from('movimientos_caja').insert({
-      turno_id: turnoActivo.id,
-      tipo: tipoMov,
-      caja_origen: cajaOrigen,
-      caja_destino: tipoMov === 'prestamo_entre_cajas' ? cajaDestino : null,
-      monto: parseFloat(montoMov),
-      concepto: conceptoMov,
-      autorizado_por: autorizadoPor
-    })
+  await supabase.from('movimientos_caja').insert({
+    turno_id: turnoActivo.id,
+    tipo: tipoMov,
+    caja_origen: cajaOrigen,
+    caja_destino: tipoMov === 'prestamo_entre_cajas' ? cajaDestino : null,
+    monto: parseFloat(montoMov),
+    concepto: conceptoMov,
+    autorizado_por: autorizadoPor
+  })
 
-    setMontoMov('')
-    setConceptoMov('')
-    setAutorizadoPor('')
-    setMostrarMovimiento(false)
-    setGuardando(false)
-    cargarDatos()
+  // Actualizar cajas según tipo de movimiento
+  let updates = {}
+  if (tipoMov === 'salida') {
+    if (cajaOrigen === 'principal') {
+      updates.caja_principal_actual = turnoActivo.caja_principal_actual - parseFloat(montoMov)
+    } else {
+      updates.caja_consumos_actual = turnoActivo.caja_consumos_actual - parseFloat(montoMov)
+    }
+  } else if (tipoMov === 'prestamo_entre_cajas') {
+    if (cajaOrigen === 'principal') {
+      updates.caja_principal_actual = turnoActivo.caja_principal_actual - parseFloat(montoMov)
+      updates.caja_consumos_actual = turnoActivo.caja_consumos_actual + parseFloat(montoMov)
+    } else {
+      updates.caja_consumos_actual = turnoActivo.caja_consumos_actual - parseFloat(montoMov)
+      updates.caja_principal_actual = turnoActivo.caja_principal_actual + parseFloat(montoMov)
+    }
   }
+
+  if (Object.keys(updates).length > 0) {
+    await supabase.from('turnos').update(updates).eq('id', turnoActivo.id)
+  }
+
+  setMontoMov('')
+  setConceptoMov('')
+  setAutorizadoPor('')
+  setMostrarMovimiento(false)
+  setGuardando(false)
+  cargarDatos()
+}
 
   async function cerrarTurno() {
     if (!cajaPrincipalFinal) return

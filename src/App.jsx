@@ -5,6 +5,7 @@ import CheckIn from './pages/CheckIn'
 import Consumos from './pages/Consumos'
 import Limpieza from './pages/Limpieza'
 import Turnos from './pages/Turnos'
+import Cochera from './pages/Cochera'
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/consumos/:id" element={<Consumos />} />
         <Route path="/limpieza" element={<Limpieza />} />
         <Route path="/turnos" element={<Turnos />} />
+        <Route path="/cochera" element={<Cochera />} />
       </Routes>
     </div>
   )
