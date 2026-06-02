@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 const colores = {
   disponible:         'bg-green-100 border-green-400 text-green-900',
@@ -26,6 +27,7 @@ function Habitaciones() {
   const [habitaciones, setHabitaciones] = useState([])
   const [cargando, setCargando] = useState(true)
   const navigate = useNavigate()
+  const { usuario, logout } = useAuth()
 
   useEffect(() => {
   async function cargar() {
@@ -58,42 +60,63 @@ function Habitaciones() {
   )
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Habitaciones</h2>
+  <div className="p-4">
+    <div className="flex justify-between items-center mb-2">
+      <h2 className="text-xl font-semibold">Habitaciones</h2>
+      <button
+        onClick={() => { logout(); navigate('/login') }}
+        className="text-xs px-3 py-1 bg-red-100 text-red-600 rounded-lg"
+      >
+        Salir
+      </button>
+    </div>
+    <div className="flex gap-2 mb-4 flex-wrap">
+      {(usuario?.rol === 'recepcionista' || usuario?.rol === 'administrador') && (
         <button
           onClick={() => navigate('/turnos')}
           className="text-sm px-4 py-2 bg-blue-600 text-white rounded-xl"
-          
         >
-          Turnos   
-      </button>
-      <button
-        onClick={() => navigate('/cochera')}
-        className="text-sm px-4 py-2 bg-gray-700 text-white rounded-xl"
-      >
-        Cochera
-      </button>
-      <button
+          Turnos
+        </button>
+      )}
+      {(usuario?.rol === 'recepcionista' || usuario?.rol === 'administrador') && (
+        <button
+          onClick={() => navigate('/cochera')}
+          className="text-sm px-4 py-2 bg-gray-700 text-white rounded-xl"
+        >
+          Cochera
+        </button>
+      )}
+      {usuario?.rol === 'administrador' && (
+        <button
           onClick={() => navigate('/reportes')}
           className="text-sm px-4 py-2 bg-purple-600 text-white rounded-xl"
         >
           Reportes
         </button>
-      <div className="grid grid-cols-2 gap-3">
-        {habitaciones.map(hab => (
-          <div
-            key={hab.id}
-            onClick={() => navigate(`/habitacion/${hab.id}`)}
-            className={`border rounded-xl p-3 cursor-pointer ${colores[hab.estado]}`}
-          >
-            <div className="text-2xl font-semibold">{hab.numero}</div>
-            <div className="text-sm mt-1">{hab.tipo_actual} · S/{hab.precio_actual}</div>
-            <div className="text-xs mt-2 font-medium">{etiquetas[hab.estado]}</div>
-          </div>
-        ))}
-      </div>
+      )}
+      <button
+        onClick={() => navigate('/limpieza')}
+        className="text-sm px-4 py-2 bg-yellow-500 text-white rounded-xl"
+      >
+        Limpieza
+      </button>
     </div>
-  )
+    <div className="grid grid-cols-2 gap-3">
+      {habitaciones.map(hab => (
+        <div
+          key={hab.id}
+          onClick={() => navigate(`/habitacion/${hab.id}`)}
+          className={`border rounded-xl p-3 cursor-pointer ${colores[hab.estado]}`}
+        >
+          <div className="text-2xl font-semibold">{hab.numero}</div>
+          <div className="text-sm mt-1">{hab.tipo_actual} · S/{hab.precio_actual}</div>
+          <div className="text-xs mt-2 font-medium">{etiquetas[hab.estado]}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+)
 }
 
 export default Habitaciones
