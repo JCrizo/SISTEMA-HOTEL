@@ -10,6 +10,7 @@ import Turnos from './pages/Turnos'
 import Cochera from './pages/Cochera'
 import Reportes from './pages/Reportes'
 import Usuarios from './pages/Usuarios'
+import Reservas from './pages/Reservas'
 
 
 function RutaProtegida({ children, roles }) {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/cochera" element={<RutaProtegida roles={['recepcionista','administrador']}><Cochera /></RutaProtegida>} />
         <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><Reportes /></RutaProtegida>} />
         <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><Usuarios /></RutaProtegida>} />
+        <Route path="/reservas" element={<RutaProtegida roles={['recepcionista','administrador']}><Reservas /></RutaProtegida>} />
       </Routes>
     </div>
   )

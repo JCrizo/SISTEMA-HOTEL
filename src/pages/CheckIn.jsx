@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useSearchParams } from 'react-router-dom'
 
 function CheckIn() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [hab, setHab] = useState(null)
+  const [searchParams] = useSearchParams()
+  const reservaId = searchParams.get('reserva')
+  const [montoEarly, setMontoEarly] = useState('')
 
   // Datos del huésped
   const [dni, setDni] = useState('')
@@ -28,20 +32,45 @@ function CheckIn() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    async function cargarHab() {
-      const { data } = await supabase
-        .from('habitaciones')
-        .select('*')
-        .eq('id', id)
+  async function cargarDatos() {
+    const { data: habData } = await supabase
+      .from('habitaciones')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (habData) {
+      setHab(habData)
+      setTarifa(habData.precio_actual)
+    }
+
+    if (reservaId) {
+      const { data: reserva } = await supabase
+        .from('reservas')
+        .select('*, clientes(*)')
+        .eq('id', reservaId)
         .single()
-      if (data) {
-        setHab(data)
-        setTarifa(data.precio_actual)
+
+      if (reserva) {
+        setDni(reserva.clientes?.dni_pasaporte || '')
+        setNombres(reserva.clientes?.nombres || '')
+        setTelefono(reserva.clientes?.telefono || '')
+        setNacionalidad(reserva.clientes?.nacionalidad || '')
+        setCliente(reserva.clientes)
+        if (reserva.clientes?.tarifa_habitual) {
+          setTarifa(reserva.clientes.tarifa_habitual)
+        }
+        if (parseFloat(reserva.adelanto) > 0) {
+          setAdelanto(reserva.adelanto.toString())
+          setModalPago('adelanto')
+        }
+        if (parseFloat(reserva.monto_early) > 0) {
+          setMontoEarly(reserva.monto_early.toString())
+        }
       }
     }
-    cargarHab()
-  }, [id])
-
+  }
+  cargarDatos()
+}, [id, reservaId])
   async function buscarCliente() {
     if (!dni.trim()) return
     const { data } = await supabase
@@ -67,7 +96,12 @@ function CheckIn() {
     setError('')
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (!tarifa) { setError('La tarifa es obligatoria'); return }
-
+    if (reservaId) {
+      await supabase
+        .from('reservas')
+        .update({ estado: 'convertida' })
+        .eq('id', reservaId)
+    }
     setGuardando(true)
 
     // 1. Crear o actualizar cliente
@@ -106,7 +140,9 @@ function CheckIn() {
         comprobante,
         ruc: comprobante === 'factura' ? ruc : null,
         observaciones,
-        estado: 'activo'
+        estado: 'activo',
+        early_checkin: parseFloat(montoEarly || 0) > 0,
+        monto_early: parseFloat(montoEarly || 0),
       })
       .select()
       .single()

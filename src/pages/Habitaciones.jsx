@@ -98,6 +98,14 @@ function Habitaciones() {
           Cochera
         </button>
       )}
+      {(usuario?.rol === 'recepcionista' || usuario?.rol === 'administrador') && (
+          <button
+            onClick={() => navigate('/reservas')}
+            className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-xl"
+          >
+            Reservas
+          </button>
+      )}
       {usuario?.rol === 'administrador' && (
           <button
             onClick={() => navigate('/usuarios')}
