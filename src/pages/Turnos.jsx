@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 function Turnos() {
   const navigate = useNavigate()
   const [turnoActivo, setTurnoActivo] = useState(null)
   const [turnoAnterior, setTurnoAnterior] = useState(null)
   const [cargando, setCargando] = useState(true)
+  const { logout, usuario } = useAuth()
+  
 
   // Apertura de turno
   const [tipoTurno, setTipoTurno] = useState('mañana')
@@ -48,7 +51,7 @@ function Turnos() {
     // Turno anterior (ya cerrado)
     const { data: anterior } = await supabase
       .from('turnos')
-      .select('*')
+      .select('*, usuarios(nombre)')
       .not('cierre', 'is', null)
       .order('cierre', { ascending: false })
       .limit(1)
@@ -68,12 +71,14 @@ function Turnos() {
     setCargando(false)
   }
 
-  async function abrirTurno() {
+  async function abrirTurno()
+  {
     if (!cajaPrincipalInicial) return
     setGuardando(true)
 
     await supabase.from('turnos').insert({
       tipo: tipoTurno,
+      usuario_id: usuario.id,
       caja_principal_anterior: parseFloat(cajaPrincipalInicial),
       caja_consumos_anterior: parseFloat(cajaConsumosInicial || 0),
       caja_principal_actual: parseFloat(cajaPrincipalInicial),
@@ -128,9 +133,10 @@ function Turnos() {
   cargarDatos()
 }
 
-  async function cerrarTurno() {
+  async function cerrarTurno() 
+  {
     if (!cajaPrincipalFinal) return
-    if (!confirm('¿Confirmar cierre de turno?')) return
+    if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente.')) return
     setGuardando(true)
 
     await supabase
@@ -144,7 +150,8 @@ function Turnos() {
       .eq('id', turnoActivo.id)
 
     setGuardando(false)
-    cargarDatos()
+    logout()
+    navigate('/login')
   }
 
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
@@ -163,6 +170,9 @@ function Turnos() {
           <p className="text-sm text-blue-700 font-medium capitalize">{turnoAnterior.tipo}</p>
           <p className="text-xs text-blue-600 mt-1">
             Cerrado: {new Date(turnoAnterior.cierre).toLocaleString('es-PE')}
+          </p>
+          <p className="text-xs text-blue-600 mt-1" >
+              Recepcionista: {turnoAnterior.usuarios?.nombre || 'No registrado'}
           </p>
           <div className="grid grid-cols-2 gap-2 mt-3">
             <div className="bg-white rounded-lg p-2">
@@ -232,6 +242,9 @@ function Turnos() {
             </div>
             <p className="text-xs text-gray-400">
               Abierto: {new Date(turnoActivo.apertura).toLocaleString('es-PE')}
+            </p>
+            <p className="text-xs text-gray-400">
+              Por: {usuario?.nombre}
             </p>
             <div className="grid grid-cols-2 gap-2 mt-3">
               <div className="bg-gray-50 rounded-lg p-2">

@@ -64,7 +64,18 @@ function Habitaciones() {
     <div className="flex justify-between items-center mb-2">
       <h2 className="text-xl font-semibold">Habitaciones</h2>
       <button
-        onClick={() => { logout(); navigate('/login') }}
+        onClick={async () => {
+          if (usuario?.rol !== 'administrador') {
+            const { data: turnos } = await supabase
+              .from('turnos').select('id').is('cierre', null).limit(1)
+            if (turnos?.length > 0) {
+              alert('Tienes un turno activo. Debes entregar el turno antes de salir.')
+              return
+            }
+          }
+          logout()
+          navigate('/login')
+        }}
         className="text-xs px-3 py-1 bg-red-100 text-red-600 rounded-lg"
       >
         Salir
@@ -87,6 +98,14 @@ function Habitaciones() {
           Cochera
         </button>
       )}
+      {usuario?.rol === 'administrador' && (
+          <button
+            onClick={() => navigate('/usuarios')}
+            className="text-sm px-4 py-2 bg-gray-600 text-white rounded-xl"
+          >
+            Usuarios
+          </button>
+        )}
       {usuario?.rol === 'administrador' && (
         <button
           onClick={() => navigate('/reportes')}

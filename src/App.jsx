@@ -9,6 +9,8 @@ import Limpieza from './pages/Limpieza'
 import Turnos from './pages/Turnos'
 import Cochera from './pages/Cochera'
 import Reportes from './pages/Reportes'
+import Usuarios from './pages/Usuarios'
+
 
 function RutaProtegida({ children, roles }) {
   const { usuario } = useAuth()
@@ -34,6 +36,7 @@ function App() {
         <Route path="/turnos" element={<RutaProtegida roles={['recepcionista','administrador']}><Turnos /></RutaProtegida>} />
         <Route path="/cochera" element={<RutaProtegida roles={['recepcionista','administrador']}><Cochera /></RutaProtegida>} />
         <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><Reportes /></RutaProtegida>} />
+        <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><Usuarios /></RutaProtegida>} />
       </Routes>
     </div>
   )
