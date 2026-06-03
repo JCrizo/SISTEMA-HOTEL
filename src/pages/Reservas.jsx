@@ -12,6 +12,7 @@ function Reservas() {
   const [error, setError] = useState('')
 
   const [dni, setDni] = useState('')
+  const [tipoDoc, setTipoDoc] = useState('dni')
   const [cliente, setCliente] = useState(null)
   const [nombres, setNombres] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -68,6 +69,7 @@ function Reservas() {
 
   async function crearReserva() {
     setError('')
+    if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (!habitacionId) { setError('Selecciona una habitación'); return }
     if (!fechaLlegada) { setError('La fecha de llegada es obligatoria'); return }
@@ -145,14 +147,42 @@ function Reservas() {
           <p className="text-xs text-gray-500 font-medium uppercase mb-3">Nueva reserva</p>
 
           <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={dni}
-              onChange={e => setDni(e.target.value)}
-              onBlur={buscarCliente}
-              placeholder="DNI o pasaporte"
-              className="flex-1 border rounded-lg px-3 py-2 text-sm"
-            />
+            <select
+                value={tipoDoc}
+                onChange={e => { setTipoDoc(e.target.value); setDni('') }}
+                className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+              >
+                <option value="dni">DNI (8 dígitos)</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="otro">Otro documento</option>
+              </select>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={dni}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '')
+                    if (tipoDoc === 'dni') {
+                      if (val.length <= 8) setDni(val)
+                    } else {
+                      setDni(e.target.value)
+                    }
+                  }}
+                  onBlur={buscarCliente}
+                  placeholder={tipoDoc === 'dni' ? '8 dígitos' : tipoDoc === 'pasaporte' ? 'Nro de pasaporte' : 'Nro de documento'}
+                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
+                  maxLength={tipoDoc === 'dni' ? 8 : 20}
+                />
+                <button
+                  onClick={buscarCliente}
+                  className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
+                >
+                  Buscar
+                </button>
+              </div>
+              {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
+                <p className="text-xs text-red-500 mb-2">El DNI debe tener 8 dígitos</p>
+              )}
             <button
               onClick={buscarCliente}
               className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"

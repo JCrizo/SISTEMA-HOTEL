@@ -31,10 +31,10 @@ function DetalleHabitacion() {
   const [pagos, setPagos] = useState([])
   const [consumos, setConsumos] = useState([])
   const [cargando, setCargando] = useState(true)
-  const [conceptoPago, setConceptoPago] = useState('hospedaje')
 
   const [montoPago, setMontoPago] = useState('')
   const [metodoPago, setMetodoPago] = useState('efectivo')
+  const [conceptoPago, setConceptoPago] = useState('hospedaje')
   const [guardandoPago, setGuardandoPago] = useState(false)
   const [mostrarPago, setMostrarPago] = useState(false)
   const [nroTicket, setNroTicket] = useState('')
@@ -76,18 +76,18 @@ function DetalleHabitacion() {
   }
 
   async function actualizarCaja(monto, tipoCaja = 'principal') {
-  const { data: turnos } = await supabase
-    .from('turnos').select('*').is('cierre', null)
-    .order('apertura', { ascending: false }).limit(1)
-  const turnoActivo = turnos?.[0]
-  if (turnoActivo) {
-    const campo = tipoCaja === 'consumos' ? 'caja_consumos_actual' : 'caja_principal_actual'
-    const valorActual = tipoCaja === 'consumos' ? turnoActivo.caja_consumos_actual : turnoActivo.caja_principal_actual
-    await supabase.from('turnos')
-      .update({ [campo]: valorActual + monto })
-      .eq('id', turnoActivo.id)
+    const { data: turnos } = await supabase
+      .from('turnos').select('*').is('cierre', null)
+      .order('apertura', { ascending: false }).limit(1)
+    const turnoActivo = turnos?.[0]
+    if (turnoActivo) {
+      const campo = tipoCaja === 'consumos' ? 'caja_consumos_actual' : 'caja_principal_actual'
+      const valorActual = tipoCaja === 'consumos' ? turnoActivo.caja_consumos_actual : turnoActivo.caja_principal_actual
+      await supabase.from('turnos')
+        .update({ [campo]: valorActual + monto })
+        .eq('id', turnoActivo.id)
+    }
   }
-}
 
   async function registrarPago() {
     if (!montoPago || parseFloat(montoPago) <= 0) return
@@ -101,21 +101,26 @@ function DetalleHabitacion() {
       concepto: conceptoPago
     })
 
-    const totalPagadoReal = pagos.filter(p => p.concepto !== 'penalidad')
-      .reduce((s, p) => s + parseFloat(p.monto), 0) + parseFloat(montoPago)
-    const nuevoPago = totalPagadoReal >= parseFloat(hospedaje.tarifa_pactada) ? 'pagado' : 'parcial'
+    const pagosActualizados = [...pagos, { concepto: conceptoPago, monto: montoPago }]
+    const totalPagadoNuevo = pagosActualizados
+      .filter(p => p.concepto !== 'penalidad')
+      .reduce((s, p) => s + parseFloat(p.monto), 0)
+    const nuevoPago = totalPagadoNuevo >= parseFloat(hospedaje.tarifa_pactada) ? 'pagado' : 'parcial'
 
     await supabase.from('hospedajes')
       .update({ estado_pago: nuevoPago }).eq('id', hospedaje.id)
 
-    await actualizarCaja(parseFloat(montoPago), conceptoPago === 'consumo' ? 'consumos' : 'principal')
+    await actualizarCaja(
+      parseFloat(montoPago),
+      conceptoPago === 'consumo' ? 'consumos' : 'principal'
+    )
 
     setMontoPago('')
     setNroTicket('')
+    setConceptoPago('hospedaje')
     setMostrarPago(false)
     setGuardandoPago(false)
     cargarDatos()
-    setConceptoPago('hospedaje')
   }
 
   async function registrarPenalidad() {
@@ -150,6 +155,12 @@ function DetalleHabitacion() {
     await supabase.from('habitaciones')
       .update({ estado: 'pendiente_limpieza' }).eq('id', id)
 
+    // Cerrar cochera vinculada si existe
+    await supabase.from('cochera')
+      .update({ hora_salida: new Date().toISOString() })
+      .eq('hospedaje_id', hospedaje.id)
+      .is('hora_salida', null)
+
     navigate('/')
   }
 
@@ -158,7 +169,10 @@ function DetalleHabitacion() {
 
   const totalConsumos = consumos.reduce((s, c) => s + parseFloat(c.precio_unitario) * c.cantidad, 0)
   const totalPenalidades = pagos.filter(p => p.concepto === 'penalidad').reduce((s, p) => s + parseFloat(p.monto), 0)
-  const totalPagadoReal = pagos.filter(p => p.concepto !== 'penalidad').reduce((s, p) => s + parseFloat(p.monto), 0)
+  const pagosHospedaje = pagos.filter(p => p.concepto === 'hospedaje').reduce((s, p) => s + parseFloat(p.monto), 0)
+  const pagosConsumo = pagos.filter(p => p.concepto === 'consumo').reduce((s, p) => s + parseFloat(p.monto), 0)
+  const pagosPenalidad = pagos.filter(p => p.concepto === 'pago_penalidad').reduce((s, p) => s + parseFloat(p.monto), 0)
+  const totalPagadoReal = pagosHospedaje + pagosConsumo + pagosPenalidad
   const saldo = hospedaje ? parseFloat(hospedaje.tarifa_pactada) + totalConsumos + totalPenalidades - totalPagadoReal : 0
 
   return (
@@ -186,6 +200,20 @@ function DetalleHabitacion() {
             <p className="text-sm text-gray-500">{huesped?.dni_pasaporte}</p>
             <p className="text-xs text-gray-400 mt-1">Ingreso: {new Date(hospedaje.ingreso).toLocaleString('es-PE')}</p>
             <p className="text-xs text-gray-400">Checkout: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE')}</p>
+            {hospedaje.observaciones && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-xs text-yellow-800 font-medium">Observaciones</p>
+                <p className="text-xs text-yellow-700 mt-1">{hospedaje.observaciones}</p>
+              </div>
+            )}
+            {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800 font-medium capitalize">
+                  Requiere {hospedaje.comprobante}
+                  {hospedaje.comprobante === 'factura' && hospedaje.ruc ? ` — RUC: ${hospedaje.ruc}` : ''}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-xl border p-4 mb-3">
@@ -200,11 +228,29 @@ function DetalleHabitacion() {
             )}
             {totalPenalidades > 0 && (
               <div className="flex justify-between text-sm py-1 text-purple-700">
-                <span>Penalidades</span><span>S/{totalPenalidades.toFixed(2)}</span>
+                <span>Cargos adicionales</span><span>S/{totalPenalidades.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm py-1 text-green-700">
-              <span>Pagado</span><span>− S/{totalPagadoReal.toFixed(2)}</span>
+            <div className="flex justify-between text-sm py-1 font-medium border-t mt-1 pt-1">
+              <span>Total</span>
+              <span>S/{(parseFloat(hospedaje.tarifa_pactada) + totalConsumos + totalPenalidades).toFixed(2)}</span>
+            </div>
+            <div className="border-t mt-2 pt-1">
+              {pagosHospedaje > 0 && (
+                <div className="flex justify-between text-sm py-1 text-green-700">
+                  <span>Pagado hospedaje</span><span>− S/{pagosHospedaje.toFixed(2)}</span>
+                </div>
+              )}
+              {pagosConsumo > 0 && (
+                <div className="flex justify-between text-sm py-1 text-green-700">
+                  <span>Pagado consumos</span><span>− S/{pagosConsumo.toFixed(2)}</span>
+                </div>
+              )}
+              {pagosPenalidad > 0 && (
+                <div className="flex justify-between text-sm py-1 text-green-700">
+                  <span>Pagado cargos adicionales</span><span>− S/{pagosPenalidad.toFixed(2)}</span>
+                </div>
+              )}
             </div>
             <div className="flex justify-between font-semibold py-1 border-t mt-1">
               <span>Saldo pendiente</span>
@@ -217,21 +263,18 @@ function DetalleHabitacion() {
               <p className="text-xs text-gray-500 font-medium uppercase mb-2">Registrar pago</p>
               <input type="number" value={montoPago} onChange={e => setMontoPago(e.target.value)}
                 placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
+              <select value={conceptoPago} onChange={e => setConceptoPago(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
+                <option value="hospedaje">Hospedaje</option>
+                <option value="consumo">Consumos</option>
+                <option value="pago_penalidad">Cargo adicional / Penalidad</option>
+              </select>
               <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}
                 className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
                 <option value="efectivo">Efectivo</option>
                 <option value="yape">Yape</option>
                 <option value="tarjeta">Tarjeta</option>
                 <option value="transferencia">Transferencia</option>
-              </select>
-              <select
-                value={conceptoPago}
-                onChange={e => setConceptoPago(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-              >
-                <option value="hospedaje">Hospedaje</option>
-                <option value="consumo">Consumos</option>
-                
               </select>
               {metodoPago === 'tarjeta' && (
                 <input type="text" value={nroTicket} onChange={e => setNroTicket(e.target.value)}
