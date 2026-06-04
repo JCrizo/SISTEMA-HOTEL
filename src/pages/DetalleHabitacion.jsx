@@ -38,6 +38,8 @@ function DetalleHabitacion() {
   const [guardandoPago, setGuardandoPago] = useState(false)
   const [mostrarPago, setMostrarPago] = useState(false)
   const [nroTicket, setNroTicket] = useState('')
+  const [mostrarExtension, setMostrarExtension] = useState(false)
+  const [fechaExtension, setFechaExtension] = useState('')
 
   const [mostrarPenalidad, setMostrarPenalidad] = useState(false)
   const [montoPenalidad, setMontoPenalidad] = useState('')
@@ -140,6 +142,52 @@ function DetalleHabitacion() {
     setMostrarPenalidad(false)
     cargarDatos()
   }
+  async function extenderEstadia()
+   {
+      if (!fechaExtension) return
+
+      const nuevaFecha = new Date(fechaExtension)
+      nuevaFecha.setHours(12, 0, 0, 0)
+
+      const checkoutActual = new Date(hospedaje.salida_estimada)
+      const diffMs = nuevaFecha - checkoutActual
+      const noches = Math.round(diffMs / (1000 * 60 * 60 * 24))
+
+      if (noches === 0) 
+      {
+        alert('La nueva fecha debe ser diferente al checkout actual')
+        return
+      }
+
+      const costoExtension = noches * parseFloat(hospedaje.tarifa_pactada)
+      const mensaje = noches > 0
+        ? `Se agregarán ${noches} noche(s) por S/${Math.abs(costoExtension).toFixed(2)}. ¿Confirmar?`
+        : `Se reducirá la estadía en ${Math.abs(noches)} noche(s). ¿Confirmar?`
+
+      if (!confirm(mensaje)) return
+      //if (!confirm(`Se agregarán ${noches} noche(s) adicional(es) por S/${costoExtension.toFixed(2)}. ¿Confirmar?`)) return
+
+      // Actualizar fecha de salida
+      await supabase.from('hospedajes')
+        .update({ salida_estimada: nuevaFecha.toISOString() })
+        .eq('id', hospedaje.id)
+
+      // Agregar cargo por noches adicionales
+      if (noches > 0) 
+      {
+        await supabase.from('pagos').insert({
+          hospedaje_id: hospedaje.id,
+          monto: costoExtension,
+          metodo: 'efectivo',
+          concepto: 'penalidad',
+          observaciones: `Extensión de estadía: ${noches} noche(s) adicional(es) hasta ${nuevaFecha.toLocaleDateString('es-PE')}`
+        })
+      }
+
+      setFechaExtension('')
+      setMostrarExtension(false)
+      cargarDatos()
+    }
 
   async function hacerCheckout() {
     if (saldo > 0) {
@@ -341,7 +389,35 @@ function DetalleHabitacion() {
                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold mb-3">Registrar pago</button>
             </>
           )}
-
+          {mostrarExtension ? (
+              <div className="bg-white rounded-xl border p-4 mb-3">
+                <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cambiar fecha de checkout</p>
+                <p className="text-xs text-gray-400 mb-2">
+                  Checkout actual: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE')}
+                </p>
+                <label className="text-xs text-gray-500 mb-1 block">Nueva fecha de salida</label>
+                <input
+                  type="date"
+                  value={fechaExtension}
+                  onChange={e => setFechaExtension(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
+                  //min={new Date().toISOString().split('T')[0]}
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => setMostrarExtension(false)}
+                    className="flex-1 py-2 border rounded-xl text-sm text-gray-600">Cancelar</button>
+                  <button onClick={extenderEstadia}
+                    className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium">Confirmar</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setMostrarExtension(true)}
+                className="w-full py-3 bg-green-700 text-white rounded-xl font-semibold mb-3"
+              >
+                Cambiar fecha de Check-Out
+              </button>
+            )}
           <button onClick={hacerCheckout}
             className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold">Hacer checkout</button>
         </>
