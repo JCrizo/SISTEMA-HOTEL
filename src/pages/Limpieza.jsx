@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 function Limpieza() {
   const navigate = useNavigate()
+  const { usuario } = useAuth()
   const [habitaciones, setHabitaciones] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [horasInicio, setHorasInicio] = useState({})
+  const [horasFin, setHorasFin] = useState({})
+  const [personalLimpieza, setPersonalLimpieza] = useState({})
 
   useEffect(() => {
     cargarDatos()
@@ -22,22 +27,39 @@ function Limpieza() {
   }
 
   async function iniciarLimpieza(hab) {
+    const horaInicio = horasInicio[hab.id] || new Date().toTimeString().slice(0, 5)
+
     await supabase
       .from('habitaciones')
       .update({ estado: 'en_limpieza' })
       .eq('id', hab.id)
 
-    await supabase.from('limpieza').insert({
+    const ahora = new Date()
+    const [horas, minutos] = horaInicio.split(':')
+    ahora.setHours(parseInt(horas), parseInt(minutos), 0, 0)
+
+    await supabase.from('limpieza').insert
+    ( 
+      {
       habitacion_id: hab.id,
+      usuario_id: usuario?.id || null,
       tipo: hab.estado === 'limpieza_simple' ? 'simple' : 'total',
-      estado: 'en_proceso'
-    })
+      estado: 'en_proceso',
+      hora: ahora.toISOString(),
+      observaciones: personalLimpieza[hab.id] ? `Personal: ${personalLimpieza[hab.id]}` : null
+       }
+    )
 
     cargarDatos()
   }
 
   async function habilitarHabitacion(hab) {
     if (!confirm(`¿Marcar Hab ${hab.numero} como habilitada?`)) return
+
+    const horaFin = horasFin[hab.id] || new Date().toTimeString().slice(0, 5)
+    const ahora = new Date()
+    const [horas, minutos] = horaFin.split(':')
+    ahora.setHours(parseInt(horas), parseInt(minutos), 0, 0)
 
     await supabase
       .from('habitaciones')
@@ -46,7 +68,7 @@ function Limpieza() {
 
     await supabase
       .from('limpieza')
-      .update({ estado: 'completada' })
+      .update({ estado: 'completada', observaciones: `Fin: ${horaFin}` })
       .eq('habitacion_id', hab.id)
       .eq('estado', 'en_proceso')
 
@@ -82,36 +104,54 @@ function Limpieza() {
                   'bg-orange-100 text-orange-800'
                 }`}>
                   {hab.estado === 'pendiente_limpieza' ? 'Pend. Limpieza Total' :
-                   hab.estado === 'en_limpieza' ? 'En limpieza' :
-                   'Limp. simple'}
+                   hab.estado === 'en_limpieza' ? 'En limpieza' : 'Limp. simple'}
                 </span>
               </div>
 
-              {hab.estado === 'pendiente_limpieza' && (
-                <button
-                  onClick={() => iniciarLimpieza(hab)}
-                  className="w-full py-2 bg-yellow-500 text-white rounded-xl text-sm font-medium"
-                >
-                  Iniciar limpieza
-                </button>
-              )}
-
-              {hab.estado === 'limpieza_simple' && (
-                <button
-                  onClick={() => iniciarLimpieza(hab)}
-                  className="w-full py-2 bg-orange-500 text-white rounded-xl text-sm font-medium"
-                >
-                  Iniciar limpieza simple
-                </button>
+              {(hab.estado === 'pendiente_limpieza' || hab.estado === 'limpieza_simple') && (
+                <div className="mb-2">
+                  <label className="text-xs text-gray-500 mb-1 block">Personal de limpieza</label>
+                    <input
+                      type="text"
+                      value={personalLimpieza[hab.id] || ''}
+                      onChange={e => setPersonalLimpieza(prev => ({ ...prev, [hab.id]: e.target.value }))}
+                      placeholder="Nombre de quien limpia"
+                      className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                    />
+                  <label className="text-xs text-gray-500 mb-1 block">Hora de inicio</label>
+                  <input
+                    type="time"
+                    value={horasInicio[hab.id] || new Date().toTimeString().slice(0, 5)}
+                    onChange={e => setHorasInicio(prev => ({ ...prev, [hab.id]: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                  />
+                  <button
+                    onClick={() => iniciarLimpieza(hab)}
+                    className={`w-full py-2 text-white rounded-xl text-sm font-medium ${
+                      hab.estado === 'limpieza_simple' ? 'bg-orange-500' : 'bg-yellow-500'
+                    }`}
+                  >
+                    {hab.estado === 'limpieza_simple' ? 'Iniciar limpieza simple' : 'Iniciar limpieza'}
+                  </button>
+                </div>
               )}
 
               {hab.estado === 'en_limpieza' && (
-                <button
-                  onClick={() => habilitarHabitacion(hab)}
-                  className="w-full py-2 bg-green-600 text-white rounded-xl text-sm font-medium"
-                >
-                  Marcar como habilitada
-                </button>
+                <div className="mb-2">
+                  <label className="text-xs text-gray-500 mb-1 block">Hora de finalización</label>
+                  <input
+                    type="time"
+                    value={horasFin[hab.id] || new Date().toTimeString().slice(0, 5)}
+                    onChange={e => setHorasFin(prev => ({ ...prev, [hab.id]: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                  />
+                  <button
+                    onClick={() => habilitarHabitacion(hab)}
+                    className="w-full py-2 bg-green-600 text-white rounded-xl text-sm font-medium"
+                  >
+                    Marcar como habilitada
+                  </button>
+                </div>
               )}
             </div>
           ))}
