@@ -155,7 +155,6 @@ function DetalleHabitacion() {
     await supabase.from('habitaciones')
       .update({ estado: 'pendiente_limpieza' }).eq('id', id)
 
-    // Cerrar cochera vinculada si existe
     await supabase.from('cochera')
       .update({ hora_salida: new Date().toISOString() })
       .eq('hospedaje_id', hospedaje.id)
@@ -194,8 +193,12 @@ function DetalleHabitacion() {
 
       {hab.estado === 'ocupada' && hospedaje && (
         <>
+          {/* Huésped */}
           <div className="bg-white rounded-xl border p-4 mb-3">
-            <p className="text-xs text-gray-500 font-medium uppercase mb-2">Huésped</p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-xs text-gray-500 font-medium uppercase">Huésped</p>
+              <p className="text-xs font-medium text-blue-600">Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}</p>
+            </div>
             <p className="font-semibold">{huesped?.nombres || 'Sin nombre'}</p>
             <p className="text-sm text-gray-500">{huesped?.dni_pasaporte}</p>
             <p className="text-xs text-gray-400 mt-1">Ingreso: {new Date(hospedaje.ingreso).toLocaleString('es-PE')}</p>
@@ -216,6 +219,7 @@ function DetalleHabitacion() {
             )}
           </div>
 
+          {/* Cuenta */}
           <div className="bg-white rounded-xl border p-4 mb-3">
             <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cuenta</p>
             <div className="flex justify-between text-sm py-1">
@@ -258,6 +262,7 @@ function DetalleHabitacion() {
             </div>
           </div>
 
+          {/* Pago */}
           {mostrarPago ? (
             <div className="bg-white rounded-xl border p-4 mb-3">
               <p className="text-xs text-gray-500 font-medium uppercase mb-2">Registrar pago</p>
@@ -293,16 +298,38 @@ function DetalleHabitacion() {
             <>
               {mostrarPenalidad && (
                 <div className="bg-white rounded-xl border p-4 mb-3">
-                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cargo adicional / Penalidad</p>
-                  <input type="number" value={montoPenalidad} onChange={e => setMontoPenalidad(e.target.value)}
-                    placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
-                  <input type="text" value={descPenalidad} onChange={e => setDescPenalidad(e.target.value)}
-                    placeholder="Descripción (ej: manchó la sábana)" className="w-full border rounded-lg px-3 py-2 text-sm mb-3" />
-                  <div className="flex gap-2">
-                    <button onClick={() => setMostrarPenalidad(false)}
-                      className="flex-1 py-2 border rounded-xl text-sm text-gray-600">Cancelar</button>
-                    <button onClick={registrarPenalidad}
-                      className="flex-1 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium">Guardar</button>
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-3">Cargos adicionales / Penalidades</p>
+                  {pagos.filter(p => p.concepto === 'penalidad').length > 0 ? (
+                    <div className="mb-3">
+                      {pagos.filter(p => p.concepto === 'penalidad').map(p => (
+                        <div key={p.id} className="flex justify-between items-start py-2 border-b last:border-0">
+                          <div>
+                            <p className="text-sm font-medium">{p.observaciones || 'Sin descripción'}</p>
+                            <p className="text-xs text-gray-400">{new Date(p.created_at).toLocaleString('es-PE')}</p>
+                          </div>
+                          <span className="text-sm font-medium text-purple-700">S/{parseFloat(p.monto).toFixed(2)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-sm font-semibold pt-2 mt-1">
+                        <span>Total cargos</span>
+                        <span className="text-purple-700">S/{totalPenalidades.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 mb-3">Sin cargos registrados</p>
+                  )}
+                  <div className="border-t pt-3">
+                    <p className="text-xs text-gray-500 font-medium mb-2">Agregar cargo</p>
+                    <input type="number" value={montoPenalidad} onChange={e => setMontoPenalidad(e.target.value)}
+                      placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
+                    <input type="text" value={descPenalidad} onChange={e => setDescPenalidad(e.target.value)}
+                      placeholder="Descripción (ej: manchó la sábana)" className="w-full border rounded-lg px-3 py-2 text-sm mb-3" />
+                    <div className="flex gap-2">
+                      <button onClick={() => setMostrarPenalidad(false)}
+                        className="flex-1 py-2 border rounded-xl text-sm text-gray-600">Cerrar</button>
+                      <button onClick={registrarPenalidad}
+                        className="flex-1 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium">Agregar</button>
+                    </div>
                   </div>
                 </div>
               )}
