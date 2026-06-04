@@ -57,7 +57,12 @@ function Consumos() {
       producto_id: producto.id,
       cantidad: 1,
       precio_unitario: producto.precio
+      
     })
+
+    await supabase.from('productos')
+    .update({ stock: Math.max(0, producto.stock - 1) })
+    .eq('id', producto.id)
 
     cargarDatos()
     setGuardando(false)

@@ -173,12 +173,7 @@ function Reservas() {
                   className="flex-1 border rounded-lg px-3 py-2 text-sm"
                   maxLength={tipoDoc === 'dni' ? 8 : 20}
                 />
-                <button
-                  onClick={buscarCliente}
-                  className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
-                >
-                  Buscar
-                </button>
+                
               </div>
               {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
                 <p className="text-xs text-red-500 mb-2">El DNI debe tener 8 dígitos</p>
