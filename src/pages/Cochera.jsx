@@ -11,6 +11,14 @@ function Cochera() {
   const [tipo, setTipo] = useState('particular')
   const [habitacionId, setHabitacionId] = useState('')
   const [monto, setMonto] = useState('')
+  const [horaIngreso, setHoraIngreso] = useState(
+  new Date().toTimeString().slice(0, 5)
+  )
+
+  const [mostrarExtension, setMostrarExtension] = useState(null)
+  const [montoExtension, setMontoExtension] = useState('')
+  const [descExtension, setDescExtension] = useState('')
+
   const [habitaciones, setHabitaciones] = useState([])
   const [mostrarForm, setMostrarForm] = useState(false)
   const [guardando, setGuardando] = useState(false)
@@ -37,6 +45,25 @@ function Cochera() {
     setCargando(false)
   }
 
+  async function registrarExtension(vehiculo) {
+    if (!montoExtension) return
+
+    await supabase.from('cochera')
+      .update({
+        monto: parseFloat(vehiculo.monto) + parseFloat(montoExtension),
+        estado_pago: 'pendiente'
+      })
+      .eq('id', vehiculo.id)
+
+    setMontoExtension('')
+    setDescExtension('')
+    setMostrarExtension(null)
+    cargarDatos()
+  }
+
+
+
+
   async function registrarIngreso() {
     if (!placa.trim()) return
     setGuardando(true)
@@ -52,9 +79,14 @@ function Cochera() {
       hospedajeId = data?.id
     }
 
+    const ahora = new Date()
+    const [horas, minutos] = horaIngreso.split(':')
+    ahora.setHours(parseInt(horas), parseInt(minutos), 0, 0)
+
     await supabase.from('cochera').insert({
       placa: placa.toUpperCase().trim(),
       hospedaje_id: hospedajeId,
+      hora_ingreso: ahora.toISOString(),
       monto: parseFloat(monto || 0),
       estado_pago: parseFloat(monto || 0) === 0 ? 'pagado' : 'pendiente'
     })
@@ -66,6 +98,7 @@ function Cochera() {
     setMostrarForm(false)
     setGuardando(false)
     cargarDatos()
+    setHoraIngreso(new Date().toTimeString().slice(0, 5))
   }
 
   async function registrarSalida(vehiculo) {
@@ -147,6 +180,13 @@ function Cochera() {
               ))}
             </select>
           )}
+          <label className="text-xs text-gray-500 mb-1 block">Hora de ingreso</label>
+            <input
+              type="time"
+              value={horaIngreso}
+              onChange={e => setHoraIngreso(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+            />
           <input
             type="number"
             value={monto}
@@ -154,6 +194,7 @@ function Cochera() {
             placeholder="Monto (S/) — 0 si es incluido"
             className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
           />
+          
           <div className="flex gap-2">
             <button
               onClick={() => setMostrarForm(false)}
@@ -212,6 +253,46 @@ function Cochera() {
                     className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium"
                   >
                     Registrar pago
+                  </button>
+                )}
+                {mostrarExtension === v.id ? (
+                  <div className="mt-2 border-t pt-2">
+                    <p className="text-xs text-gray-500 mb-1">Cargo adicional cochera</p>
+                    <input
+                      type="number"
+                      value={montoExtension}
+                      onChange={e => setMontoExtension(e.target.value)}
+                      placeholder="Monto (S/)"
+                      className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                    />
+                    <input
+                      type="text"
+                      value={descExtension}
+                      onChange={e => setDescExtension(e.target.value)}
+                      placeholder="Descripción (ej: noche adicional)"
+                      className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setMostrarExtension(null)}
+                        className="flex-1 py-2 border rounded-xl text-sm text-gray-600"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => registrarExtension(v)}
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm"
+                      >
+                        Agregar cargo
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setMostrarExtension(v.id)}
+                    className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm"
+                  >
+                    + Cargo
                   </button>
                 )}
                 <button

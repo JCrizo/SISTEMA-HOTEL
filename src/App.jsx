@@ -12,6 +12,10 @@ import Reportes from './pages/Reportes'
 import Usuarios from './pages/Usuarios'
 import Reservas from './pages/Reservas'
 import Productos from './pages/Productos'
+import ReportesRecepcion from './pages/ReportesRecepcion'
+import FichaHospedaje from './pages/FichaHospedaje'
+import ReportesAdmin from './pages/ReportesAdmin'
+
 
 
 function RutaProtegida({ children, roles }) {
@@ -41,6 +45,9 @@ function App() {
         <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><Usuarios /></RutaProtegida>} />
         <Route path="/reservas" element={<RutaProtegida roles={['recepcionista','administrador']}><Reservas /></RutaProtegida>} />
         <Route path="/productos" element={<RutaProtegida roles={['administrador', 'recepcionista']}><Productos /></RutaProtegida>} />
+        <Route path="/reportes-recepcion" element={<RutaProtegida roles={['recepcionista','administrador']}><ReportesRecepcion /></RutaProtegida>} />
+        <Route path="/ficha/:id" element={<RutaProtegida><FichaHospedaje /></RutaProtegida>} />
+        <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><ReportesAdmin /></RutaProtegida>} />
       </Routes>
     </div>
   )

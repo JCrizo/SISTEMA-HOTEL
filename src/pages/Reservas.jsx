@@ -18,6 +18,7 @@ function Reservas() {
   const [telefono, setTelefono] = useState('')
   const [habitacionId, setHabitacionId] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
+  const [fechaSalida, setFechaSalida] = useState('')
   const [adelanto, setAdelanto] = useState('')
   const [montoEarly, setMontoEarly] = useState('')
   const [observaciones, setObservaciones] = useState('')
@@ -91,6 +92,7 @@ function Reservas() {
       cliente_id: clienteId,
       habitacion_id: habitacionId,
       fecha_llegada: new Date(fechaLlegada).toISOString(),
+      fecha_salida: fechaSalida ? new Date(fechaSalida).toISOString() : null,
       adelanto: parseFloat(adelanto || 0),
       monto_early: parseFloat(montoEarly || 0),
       estado: 'confirmada',
@@ -223,6 +225,13 @@ function Reservas() {
             type="datetime-local"
             value={fechaLlegada}
             onChange={e => setFechaLlegada(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+          />
+          <input
+            type="datetime-local"
+            value={fechaSalida}
+            onChange={e => setFechaSalida(e.target.value)}
+            placeholder="Fecha de salida (opcional)"
             className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
           />
           <input

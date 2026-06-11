@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 
 const colores = {
   disponible:         'bg-green-100 border-green-400 text-green-900',
+  disponible_reserva: 'bg-indigo-100 border-indigo-400 text-indigo-900',
   ocupada:            'bg-red-100 border-red-400 text-red-900',
   pendiente_limpieza: 'bg-yellow-100 border-yellow-400 text-yellow-900',
   en_limpieza:        'bg-yellow-100 border-yellow-400 text-yellow-900',
@@ -37,7 +38,24 @@ function Habitaciones() {
       .order('numero')
 
     if (error) console.error(error)
-    else setHabitaciones(data)
+    else {
+      // Cargar reservas próximas (próximas 48 horas)
+      const en48h = new Date()
+      en48h.setHours(en48h.getHours() + 48)
+
+      const { data: reservasData } = await supabase
+        .from('reservas')
+        .select('habitacion_id, fecha_llegada')
+        .in('estado', ['pendiente', 'confirmada'])
+        .lte('fecha_llegada', en48h.toISOString())
+
+      const habsConReserva = new Set(reservasData?.map(r => r.habitacion_id) || [])
+
+      setHabitaciones(data.map(h => ({
+        ...h,
+        tieneReservaProxima: habsConReserva.has(h.id)
+      })))
+    }
     setCargando(false)
   }
 
@@ -54,6 +72,7 @@ function Habitaciones() {
 
   return () => supabase.removeChannel(canal)
 }, [])
+  
 
   if (cargando) return (
     <div className="p-4 text-gray-500">Cargando habitaciones...</div>
@@ -116,7 +135,7 @@ function Habitaciones() {
         )}
       {usuario?.rol === 'administrador' && (
         <button
-          onClick={() => navigate('/reportes')}
+          onClick={() => navigate('/reportes-admin')}
           className="text-sm px-4 py-2 bg-purple-600 text-white rounded-xl"
         >
           Reportes
@@ -137,17 +156,32 @@ function Habitaciones() {
           Productos
         </button>
       )}
+      {(usuario?.rol === 'recepcionista' || usuario?.rol === 'administrador') && (
+        <button
+          onClick={() => navigate('/reportes-recepcion')}
+          className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-xl"
+        >
+          Fichas
+        </button>
+      )}
       
       <div className="grid grid-cols-2 gap-3">
-      {habitaciones.map(hab => (
+        {habitaciones.map(hab => (
         <div
           key={hab.id}
           onClick={() => navigate(`/habitacion/${hab.id}`)}
-          className={`border rounded-xl p-3 cursor-pointer ${colores[hab.estado]}`}
+          className={`border rounded-xl p-3 cursor-pointer ${
+            hab.tieneReservaProxima && hab.estado === 'disponible'
+              ? colores['disponible_reserva']
+              : colores[hab.estado]
+          }`}
         >
           <div className="text-2xl font-semibold">{hab.numero}</div>
           <div className="text-sm mt-1">{hab.tipo_actual} · S/{hab.precio_actual}</div>
           <div className="text-xs mt-2 font-medium">{etiquetas[hab.estado]}</div>
+          {hab.tieneReservaProxima && hab.estado === 'disponible' && (
+            <div className="text-xs mt-1 text-indigo-600 font-medium">📅 Reserva próxima</div>
+          )}
         </div>
       ))}
     </div>

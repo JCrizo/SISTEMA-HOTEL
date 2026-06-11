@@ -10,7 +10,7 @@ function CheckIn() {
   const [searchParams] = useSearchParams()
   const reservaId = searchParams.get('reserva')
   const [montoEarly, setMontoEarly] = useState('')
-
+  const [salidaDesdeReserva, setSalidaDesdeReserva] = useState(null)
   // Datos del huésped
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
@@ -32,24 +32,25 @@ function CheckIn() {
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-  async function cargarDatos() {
-    const { data: habData } = await supabase
-      .from('habitaciones')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (habData) {
-      setHab(habData)
-      setTarifa(habData.precio_actual)
-    }
+  useEffect(() => 
+    {
+      async function cargarDatos() {
+        const { data: habData } = await supabase
+          .from('habitaciones')
+          .select('*')
+          .eq('id', id)
+          .single()
+        if (habData) {
+          setHab(habData)
+          setTarifa(habData.precio_actual)
+        }
 
-    if (reservaId) {
-      const { data: reserva } = await supabase
-        .from('reservas')
-        .select('*, clientes(*)')
-        .eq('id', reservaId)
-        .single()
+      if (reservaId) {
+        const { data: reserva } = await supabase
+          .from('reservas')
+          .select('*, clientes(*)')
+          .eq('id', reservaId)
+          .single()
 
       if (reserva) {
         setDni(reserva.clientes?.dni_pasaporte || '')
@@ -66,6 +67,11 @@ function CheckIn() {
         }
         if (parseFloat(reserva.monto_early) > 0) {
           setMontoEarly(reserva.monto_early.toString())
+        }
+        if (reserva.observaciones) setObservaciones(reserva.observaciones)
+        if (reserva.fecha_salida) {
+          const fechaSalidaReserva = new Date(reserva.fecha_salida)
+          setSalidaDesdeReserva(fechaSalidaReserva.toISOString())
         }
       }
     }
@@ -123,17 +129,31 @@ function CheckIn() {
     // 2. Calcular salida estimada
     const ahora = new Date()
     const hora = ahora.getHours()
-    const salidaEstimada = new Date(ahora)
-    if (hora >= 5) {
-      salidaEstimada.setDate(salidaEstimada.getDate() + 1)
+    let salidaEstimada
+
+    if (salidaDesdeReserva) {
+      salidaEstimada = new Date(salidaDesdeReserva)
+    } else {
+      salidaEstimada = new Date(ahora)
+      if (hora >= 5) {
+        salidaEstimada.setDate(salidaEstimada.getDate() + 1)
+      }
+      salidaEstimada.setHours(12, 0, 0, 0)
     }
-    salidaEstimada.setHours(12, 0, 0, 0)
 
     // 3. Crear hospedaje
+    
+      // Obtener turno activo
+    const { data: turnos } = await supabase
+      .from('turnos').select('id').is('cierre', null)
+      .order('apertura', { ascending: false }).limit(1)
+    
+      const turnoActivoId = turnos?.[0]?.id || null
     const { data: hospedaje, error: errHosp } = await supabase
       .from('hospedajes')
       .insert({
         habitacion_id: id,
+        turno_id: turnoActivoId,
         ingreso: ahora.toISOString(),
         salida_estimada: salidaEstimada.toISOString(),
         tarifa_pactada: parseFloat(tarifa),
@@ -145,6 +165,7 @@ function CheckIn() {
         estado: 'activo',
         early_checkin: parseFloat(montoEarly || 0) > 0,
         monto_early: parseFloat(montoEarly || 0),
+        
       })
       .select()
       .single()
@@ -181,14 +202,14 @@ function CheckIn() {
         }
 
         // Actualizar caja del turno activo
-            const { data: turnos } = await supabase
+            const { data: turnosParaCaja } = await supabase
               .from('turnos')
               .select('*')
               .is('cierre', null)
               .order('apertura', { ascending: false })
               .limit(1)
 
-            const turnoActivo = turnos?.[0]
+            const turnoActivo = turnosParaCaja?.[0]
             if (turnoActivo) {
               await supabase
                 .from('turnos')
