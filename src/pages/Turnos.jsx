@@ -32,6 +32,7 @@ function Turnos() {
   const [autorizadoPor, setAutorizadoPor] = useState('')
 
   const [guardando, setGuardando] = useState(false)
+  const [pagosTurno, setPagosTurno] = useState([])
 
   useEffect(() => {
     cargarDatos()
@@ -66,6 +67,13 @@ function Turnos() {
         .eq('turno_id', activo.id)
         .order('created_at', { ascending: false })
       setMovimientos(movs || [])
+
+      // Pagos del turno para desglose efectivo vs otros
+      const { data: pagosDelTurno } = await supabase
+        .from('pagos')
+        .select('monto, metodo, concepto, created_at')
+        .gte('created_at', activo.apertura)
+      setPagosTurno(pagosDelTurno || [])
     }
 
     setCargando(false)
@@ -139,13 +147,23 @@ function Turnos() {
     if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente.')) return
     setGuardando(true)
 
+    // Calcular desglose por medio de pago
+    const efectivo = pagosTurno.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
+    const yape = pagosTurno.filter(p => p.metodo === 'yape').reduce((s, p) => s + parseFloat(p.monto), 0)
+    const tarjeta = pagosTurno.filter(p => p.metodo === 'tarjeta').reduce((s, p) => s + parseFloat(p.monto), 0)
+    const transferencia = pagosTurno.filter(p => p.metodo === 'transferencia').reduce((s, p) => s + parseFloat(p.monto), 0)
+
     await supabase
       .from('turnos')
       .update({
         cierre: new Date().toISOString(),
         caja_principal_actual: parseFloat(cajaPrincipalFinal),
         caja_consumos_actual: parseFloat(cajaConsumosFinal || 0),
-        observaciones
+        observaciones,
+        desglose_efectivo: efectivo,
+        desglose_yape: yape,
+        desglose_tarjeta: tarjeta,
+        desglose_transferencia: transferencia,
       })
       .eq('id', turnoActivo.id)
 
@@ -164,8 +182,7 @@ function Turnos() {
       <h2 className="text-xl font-semibold mb-4">Turnos y caja</h2>
 
       {/* Reporte turno anterior */}
-      {turnoAnterior && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+      {turnoAnterior && (        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
           <p className="text-xs font-medium text-blue-800 uppercase mb-2">Reporte turno anterior</p>
           <p className="text-sm text-blue-700 font-medium capitalize">{turnoAnterior.tipo}</p>
           <p className="text-xs text-blue-600 mt-1">
@@ -184,6 +201,33 @@ function Turnos() {
               <p className="font-semibold">S/{turnoAnterior.caja_consumos_actual}</p>
             </div>
           </div>
+          {turnoAnterior.desglose_efectivo != null && (
+            <div className="mt-3 bg-white rounded-lg p-3">
+              <p className="text-xs text-gray-500 font-medium uppercase mb-2">Desglose medios de pago</p>
+              <div className="flex justify-between text-sm py-1">
+                <span className="text-gray-600">💵 Efectivo</span>
+                <span className="font-semibold text-green-700">S/{parseFloat(turnoAnterior.desglose_efectivo || 0).toFixed(2)}</span>
+              </div>
+              {parseFloat(turnoAnterior.desglose_yape || 0) > 0 && (
+                <div className="flex justify-between text-sm py-1">
+                  <span className="text-gray-500">📱 Yape</span>
+                  <span className="font-medium">S/{parseFloat(turnoAnterior.desglose_yape).toFixed(2)}</span>
+                </div>
+              )}
+              {parseFloat(turnoAnterior.desglose_tarjeta || 0) > 0 && (
+                <div className="flex justify-between text-sm py-1">
+                  <span className="text-gray-500">💳 Tarjeta</span>
+                  <span className="font-medium">S/{parseFloat(turnoAnterior.desglose_tarjeta).toFixed(2)}</span>
+                </div>
+              )}
+              {parseFloat(turnoAnterior.desglose_transferencia || 0) > 0 && (
+                <div className="flex justify-between text-sm py-1">
+                  <span className="text-gray-500">🏦 Transferencia</span>
+                  <span className="font-medium">S/{parseFloat(turnoAnterior.desglose_transferencia).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          )}
           {turnoAnterior.observaciones && (
             <div className="mt-3 bg-white rounded-lg p-2">
               <p className="text-xs text-gray-500 mb-1">Observaciones</p>
@@ -233,6 +277,7 @@ function Turnos() {
       {/* Turno activo */}
       {turnoActivo && (
         <>
+          {/* Turno activo */}
           <div className="bg-white rounded-xl border p-4 mb-3">
             <div className="flex justify-between items-center mb-3">
               <p className="text-xs text-gray-500 font-medium uppercase">Turno activo</p>
@@ -260,6 +305,48 @@ function Turnos() {
                 <p className="font-semibold">S/{turnoActivo.caja_consumos_actual}</p>
               </div>
             </div>
+
+            {/* Desglose por medio de pago */}
+            {pagosTurno.length > 0 && (() => {
+              const efectivo = pagosTurno.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
+              const otros = pagosTurno.filter(p => p.metodo !== 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
+              const yape = pagosTurno.filter(p => p.metodo === 'yape').reduce((s, p) => s + parseFloat(p.monto), 0)
+              const tarjeta = pagosTurno.filter(p => p.metodo === 'tarjeta').reduce((s, p) => s + parseFloat(p.monto), 0)
+              const transferencia = pagosTurno.filter(p => p.metodo === 'transferencia').reduce((s, p) => s + parseFloat(p.monto), 0)
+              return (
+                <div className="mt-3 border-t pt-3">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Ingresos por medio de pago</p>
+                  <div className="flex justify-between text-sm py-1">
+                    <span className="text-gray-600">💵 Efectivo</span>
+                    <span className="font-semibold text-green-700">S/{efectivo.toFixed(2)}</span>
+                  </div>
+                  {yape > 0 && (
+                    <div className="flex justify-between text-sm py-1">
+                      <span className="text-gray-500">📱 Yape</span>
+                      <span className="font-medium">S/{yape.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {tarjeta > 0 && (
+                    <div className="flex justify-between text-sm py-1">
+                      <span className="text-gray-500">💳 Tarjeta</span>
+                      <span className="font-medium">S/{tarjeta.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {transferencia > 0 && (
+                    <div className="flex justify-between text-sm py-1">
+                      <span className="text-gray-500">🏦 Transferencia</span>
+                      <span className="font-medium">S/{transferencia.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {otros > 0 && (
+                    <div className="flex justify-between text-sm py-1 border-t mt-1 pt-1">
+                      <span className="text-gray-500">Otros medios (total)</span>
+                      <span className="font-medium text-blue-700">S/{otros.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
 
           {/* Movimientos */}

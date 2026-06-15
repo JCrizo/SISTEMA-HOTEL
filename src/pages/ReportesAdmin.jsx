@@ -46,7 +46,7 @@ function ReportesAdmin() {
 
     // Stats generales
     const { data: habs } = await supabase.from('habitaciones').select('estado')
-    const { data: pagosData } = await supabase.from('pagos').select('monto, concepto, created_at')
+    const { data: pagosData } = await supabase.from('pagos').select('monto, concepto, metodo, created_at')
       .gte('created_at', fechaInicio.toISOString())
 
     const ingresosHospedaje = pagosData?.filter(p => p.concepto === 'hospedaje')
@@ -56,6 +56,12 @@ function ReportesAdmin() {
     const { data: cocheraData } = await supabase.from('cochera').select('monto')
       .eq('estado_pago', 'pagado').gte('hora_ingreso', fechaInicio.toISOString())
     const ingresosCochera = cocheraData?.reduce((s, c) => s + parseFloat(c.monto), 0) || 0
+
+    // Desglose por medio de pago
+    const totalEfectivo = pagosData?.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
+    const totalYape = pagosData?.filter(p => p.metodo === 'yape').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
+    const totalTarjeta = pagosData?.filter(p => p.metodo === 'tarjeta').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
+    const totalTransferencia = pagosData?.filter(p => p.metodo === 'transferencia').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
 
     const hoyInicio = new Date()
     hoyInicio.setHours(0, 0, 0, 0)
@@ -73,6 +79,10 @@ function ReportesAdmin() {
       totalIngresos: ingresosHospedaje + ingresosConsumos + ingresosCochera,
       checkinsHoy: checkinsData?.length || 0,
       checkoutsHoy: checkoutsData?.length || 0,
+      totalEfectivo,
+      totalYape,
+      totalTarjeta,
+      totalTransferencia,
     })
 
     // Turnos
@@ -179,7 +189,7 @@ function ReportesAdmin() {
             </div>
           </div>
           <div className="bg-white rounded-xl border p-4">
-            <p className="text-xs text-gray-500 font-medium uppercase mb-3">Desglose ingresos</p>
+            <p className="text-xs text-gray-500 font-medium uppercase mb-3">Desglose ingresos por concepto</p>
             <div className="flex justify-between text-sm py-2 border-b">
               <span>Hospedaje</span><span className="font-medium">S/{stats.ingresosHospedaje?.toFixed(2)}</span>
             </div>
@@ -191,6 +201,31 @@ function ReportesAdmin() {
             </div>
             <div className="flex justify-between text-sm py-2 font-semibold">
               <span>Total</span><span className="text-green-700">S/{stats.totalIngresos?.toFixed(2)}</span>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border p-4 mt-3">
+            <p className="text-xs text-gray-500 font-medium uppercase mb-3">Desglose por medio de pago</p>
+            <div className="flex justify-between text-sm py-2 border-b">
+              <span>💵 Efectivo</span><span className="font-semibold text-green-700">S/{stats.totalEfectivo?.toFixed(2)}</span>
+            </div>
+            {stats.totalYape > 0 && (
+              <div className="flex justify-between text-sm py-2 border-b">
+                <span>📱 Yape</span><span className="font-medium">S/{stats.totalYape?.toFixed(2)}</span>
+              </div>
+            )}
+            {stats.totalTarjeta > 0 && (
+              <div className="flex justify-between text-sm py-2 border-b">
+                <span>💳 Tarjeta</span><span className="font-medium">S/{stats.totalTarjeta?.toFixed(2)}</span>
+              </div>
+            )}
+            {stats.totalTransferencia > 0 && (
+              <div className="flex justify-between text-sm py-2 border-b">
+                <span>🏦 Transferencia</span><span className="font-medium">S/{stats.totalTransferencia?.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm py-2 font-semibold border-t mt-1">
+              <span>Otros medios (total)</span>
+              <span className="text-blue-700">S/{((stats.totalYape || 0) + (stats.totalTarjeta || 0) + (stats.totalTransferencia || 0)).toFixed(2)}</span>
             </div>
           </div>
         </>

@@ -36,6 +36,16 @@ function DetalleHabitacion() {
   const [nuevoTipo, setNuevoTipo] = useState('')
   const [nuevoPrecio, setNuevoPrecio] = useState('')
 
+  // Cobro adicional / reabrir (para pendiente_limpieza)
+  const [hospedajeFinalizado, setHospedajeFinalizado] = useState(null)
+  const [pagosFinalizado, setPagosFinalizado] = useState([])
+  const [mostrarCobroAdicional, setMostrarCobroAdicional] = useState(false)
+  const [montoCobroAdicional, setMontoCobroAdicional] = useState('')
+  const [metodoCobroAdicional, setMetodoCobroAdicional] = useState('efectivo')
+  const [conceptoCobroAdicional, setConceptoCobroAdicional] = useState('hospedaje')
+  const [descCobroAdicional, setDescCobroAdicional] = useState('')
+  const [guardandoCobroAdicional, setGuardandoCobroAdicional] = useState(false)
+
   const [montoPago, setMontoPago] = useState('')
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [conceptoPago, setConceptoPago] = useState('hospedaje')
@@ -76,6 +86,24 @@ function DetalleHabitacion() {
         const { data: consumosData } = await supabase
           .from('consumos').select('*').eq('hospedaje_id', hospData.id)
         setConsumos(consumosData || [])
+      }
+    }
+
+    // Cargar hospedaje finalizado para pendiente_limpieza (por si el huésped quiere quedarse más)
+    if (habData?.estado === 'pendiente_limpieza' || habData?.estado === 'en_limpieza' || habData?.estado === 'limpieza_simple') {
+      const { data: hospFin } = await supabase
+        .from('hospedajes')
+        .select('*, huesped_hospedaje(clientes(nombres, dni_pasaporte))')
+        .eq('habitacion_id', id)
+        .eq('estado', 'finalizado')
+        .order('salida_real', { ascending: false })
+        .limit(1)
+        .single()
+      setHospedajeFinalizado(hospFin || null)
+      if (hospFin) {
+        const { data: pagosFinData } = await supabase
+          .from('pagos').select('*').eq('hospedaje_id', hospFin.id)
+        setPagosFinalizado(pagosFinData || [])
       }
     }
     setCargando(false)
@@ -213,6 +241,45 @@ function DetalleHabitacion() {
 
 
 
+
+  async function registrarCobroAdicional() {
+    if (!montoCobroAdicional || parseFloat(montoCobroAdicional) <= 0) return
+    if (!descCobroAdicional.trim()) { alert('Ingresa una descripción del cobro'); return }
+    setGuardandoCobroAdicional(true)
+
+    await supabase.from('pagos').insert({
+      hospedaje_id: hospedajeFinalizado.id,
+      monto: parseFloat(montoCobroAdicional),
+      metodo: metodoCobroAdicional,
+      concepto: conceptoCobroAdicional,
+      observaciones: descCobroAdicional
+    })
+
+    await actualizarCaja(
+      parseFloat(montoCobroAdicional),
+      conceptoCobroAdicional === 'consumo' ? 'consumos' : 'principal'
+    )
+
+    setMontoCobroAdicional('')
+    setDescCobroAdicional('')
+    setMostrarCobroAdicional(false)
+    setGuardandoCobroAdicional(false)
+    cargarDatos()
+  }
+
+     async function reabrirHospedaje() {
+    if (!confirm(`¿Reabrir el hospedaje de ${hospedajeFinalizado?.huesped_hospedaje?.[0]?.clientes?.nombres || 'este huésped'}? La habitación volverá a "Ocupada".`)) return
+
+    await supabase.from('hospedajes')
+      .update({ estado: 'activo', salida_real: null })
+      .eq('id', hospedajeFinalizado.id)
+
+    await supabase.from('habitaciones')
+      .update({ estado: 'ocupada' })
+      .eq('id', id)
+
+    cargarDatos()
+  }
 
   async function hacerCheckout() {
     if (saldo > 0) {
@@ -455,7 +522,60 @@ function DetalleHabitacion() {
              hab.estado === 'en_limpieza' ? 'En limpieza' : 'Limpieza simple'}
           </p>
           <button onClick={() => navigate('/limpieza')}
-            className="w-full py-2 bg-yellow-500 text-white rounded-xl text-sm font-medium">Ir a limpieza</button>
+            className="w-full py-2 bg-yellow-500 text-white rounded-xl text-sm font-medium mb-3">Ir a limpieza</button>
+
+          {/* Opciones si el huésped anterior quiere continuar */}
+          {hospedajeFinalizado && (
+            <>
+              <div className="border-t pt-3 mt-1">
+                <p className="text-xs text-gray-500 font-medium uppercase mb-1">Último huésped</p>
+                <p className="text-sm font-semibold">{hospedajeFinalizado.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}</p>
+                <p className="text-xs text-gray-400 mb-3">Ficha N° {String(hospedajeFinalizado.nro_ficha).padStart(6, '0')} · Checkout: {new Date(hospedajeFinalizado.salida_real).toLocaleString('es-PE')}</p>
+
+                {/* Cobro adicional */}
+                {mostrarCobroAdicional ? (
+                  <div className="bg-blue-50 rounded-xl p-3 mb-3">
+                    <p className="text-xs text-blue-800 font-medium uppercase mb-2">Cobro adicional (misma ficha)</p>
+                    <input type="number" value={montoCobroAdicional} onChange={e => setMontoCobroAdicional(e.target.value)}
+                      placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
+                    <input type="text" value={descCobroAdicional} onChange={e => setDescCobroAdicional(e.target.value)}
+                      placeholder="Descripción (ej: medio día extra)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
+                    <select value={conceptoCobroAdicional} onChange={e => setConceptoCobroAdicional(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
+                      <option value="hospedaje">Hospedaje</option>
+                      <option value="consumo">Consumos</option>
+                      <option value="pago_penalidad">Cargo adicional</option>
+                    </select>
+                    <select value={metodoCobroAdicional} onChange={e => setMetodoCobroAdicional(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2 text-sm mb-3">
+                      <option value="efectivo">Efectivo</option>
+                      <option value="yape">Yape</option>
+                      <option value="tarjeta">Tarjeta</option>
+                      <option value="transferencia">Transferencia</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <button onClick={() => setMostrarCobroAdicional(false)}
+                        className="flex-1 py-2 border rounded-xl text-sm text-gray-600">Cancelar</button>
+                      <button onClick={registrarCobroAdicional} disabled={guardandoCobroAdicional}
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-50">
+                        {guardandoCobroAdicional ? 'Guardando...' : 'Confirmar'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setMostrarCobroAdicional(true)}
+                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-sm font-medium mb-2">
+                    💰 Cobro adicional (horas extra / consumo)
+                  </button>
+                )}
+
+                <button onClick={reabrirHospedaje}
+                  className="w-full py-2 bg-green-600 text-white rounded-xl text-sm font-medium">
+                  🔄 Reabrir hospedaje (se queda más noches)
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

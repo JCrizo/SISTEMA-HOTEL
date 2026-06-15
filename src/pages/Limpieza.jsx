@@ -11,6 +11,7 @@ function Limpieza() {
   const [horasInicio, setHorasInicio] = useState({})
   const [horasFin, setHorasFin] = useState({})
   const [personalLimpieza, setPersonalLimpieza] = useState({})
+  const [tipoLimpieza, setTipoLimpieza] = useState({})
 
   useEffect(() => {
     cargarDatos()
@@ -28,6 +29,8 @@ function Limpieza() {
 
   async function iniciarLimpieza(hab) {
     const horaInicio = horasInicio[hab.id] || new Date().toTimeString().slice(0, 5)
+    // Si es limpieza_simple forzar simple, si no usar lo que eligió el usuario (default: total)
+    const tipo = hab.estado === 'limpieza_simple' ? 'simple' : (tipoLimpieza[hab.id] || 'total')
 
     await supabase
       .from('habitaciones')
@@ -38,16 +41,15 @@ function Limpieza() {
     const [horas, minutos] = horaInicio.split(':')
     ahora.setHours(parseInt(horas), parseInt(minutos), 0, 0)
 
-    await supabase.from('limpieza').insert
-    ( 
+    await supabase.from('limpieza').insert(
       {
-      habitacion_id: hab.id,
-      usuario_id: usuario?.id || null,
-      tipo: hab.estado === 'limpieza_simple' ? 'simple' : 'total',
-      estado: 'en_proceso',
-      hora: ahora.toISOString(),
-      observaciones: personalLimpieza[hab.id] ? `Personal: ${personalLimpieza[hab.id]}` : null
-       }
+        habitacion_id: hab.id,
+        usuario_id: usuario?.id || null,
+        tipo,
+        estado: 'en_proceso',
+        hora: ahora.toISOString(),
+        observaciones: personalLimpieza[hab.id] ? `Personal: ${personalLimpieza[hab.id]}` : null
+      }
     )
 
     cargarDatos()
@@ -118,6 +120,41 @@ function Limpieza() {
                       placeholder="Nombre de quien limpia"
                       className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
                     />
+
+                  {/* Selector de tipo de limpieza solo para pendiente_limpieza */}
+                  {hab.estado === 'pendiente_limpieza' && (
+                    <>
+                      <label className="text-xs text-gray-500 mb-1 block">Tipo de limpieza</label>
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          onClick={() => setTipoLimpieza(prev => ({ ...prev, [hab.id]: 'total' }))}
+                          className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                            (tipoLimpieza[hab.id] || 'total') === 'total'
+                              ? 'bg-yellow-500 text-white border-yellow-500'
+                              : 'bg-white text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          🧹 Limpieza total
+                        </button>
+                        <button
+                          onClick={() => setTipoLimpieza(prev => ({ ...prev, [hab.id]: 'simple' }))}
+                          className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                            tipoLimpieza[hab.id] === 'simple'
+                              ? 'bg-orange-500 text-white border-orange-500'
+                              : 'bg-white text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          🧺 Limpieza simple
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-2">
+                        {(tipoLimpieza[hab.id] || 'total') === 'total'
+                          ? 'El huésped ya se fue — limpieza completa'
+                          : 'El huésped sigue — solo orden rápido'}
+                      </p>
+                    </>
+                  )}
+
                   <label className="text-xs text-gray-500 mb-1 block">Hora de inicio</label>
                   <input
                     type="time"
@@ -128,10 +165,14 @@ function Limpieza() {
                   <button
                     onClick={() => iniciarLimpieza(hab)}
                     className={`w-full py-2 text-white rounded-xl text-sm font-medium ${
-                      hab.estado === 'limpieza_simple' ? 'bg-orange-500' : 'bg-yellow-500'
+                      hab.estado === 'limpieza_simple' || tipoLimpieza[hab.id] === 'simple'
+                        ? 'bg-orange-500'
+                        : 'bg-yellow-500'
                     }`}
                   >
-                    {hab.estado === 'limpieza_simple' ? 'Iniciar limpieza simple' : 'Iniciar limpieza'}
+                    {hab.estado === 'limpieza_simple' || tipoLimpieza[hab.id] === 'simple'
+                      ? 'Iniciar limpieza simple'
+                      : 'Iniciar limpieza total'}
                   </button>
                 </div>
               )}
