@@ -114,7 +114,7 @@ function Cochera() {
     cargarDatos()
   }
 
-  //***
+  
       async function registrarPago(vehiculo) {
       const metodo = metodoPagoVehiculo[vehiculo.id] || 'efectivo'
 
@@ -137,7 +137,7 @@ function Cochera() {
 
       cargarDatos()
     }
-  //**** 
+   
 
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
@@ -254,7 +254,7 @@ function Cochera() {
                 </div>
               </div>
               <div className="flex gap-2 mt-2">
-                //nuevo*****
+                
                 {v.estado_pago === 'pendiente' && v.monto > 0 && (
                         <div className="flex flex-col gap-2">
                           <select
