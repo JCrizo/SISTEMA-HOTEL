@@ -23,6 +23,8 @@ function Cochera() {
   const [mostrarForm, setMostrarForm] = useState(false)
   const [guardando, setGuardando] = useState(false)
 
+  const [metodoPagoVehiculo, setMetodoPagoVehiculo] = useState({})
+
   useEffect(() => {
     cargarDatos()
   }, [])
@@ -112,25 +114,30 @@ function Cochera() {
     cargarDatos()
   }
 
-  async function registrarPago(vehiculo) {
-    await supabase
-      .from('cochera')
-      .update({ estado_pago: 'pagado' })
-      .eq('id', vehiculo.id)
+  //***
+      async function registrarPago(vehiculo) {
+      const metodo = metodoPagoVehiculo[vehiculo.id] || 'efectivo'
 
-    // Sumar a caja principal
-    const { data: turnos } = await supabase
-      .from('turnos').select('*').is('cierre', null)
-      .order('apertura', { ascending: false }).limit(1)
-    const turnoActivo = turnos?.[0]
-    if (turnoActivo) {
-      await supabase.from('turnos')
-        .update({ caja_principal_actual: turnoActivo.caja_principal_actual + parseFloat(vehiculo.monto) })
-        .eq('id', turnoActivo.id)
+      await supabase
+        .from('cochera')
+        .update({ estado_pago: 'pagado', metodo_pago: metodo })
+        .eq('id', vehiculo.id)
+
+      if (metodo === 'efectivo') {
+        const { data: turnos } = await supabase
+          .from('turnos').select('*').is('cierre', null)
+          .order('apertura', { ascending: false }).limit(1)
+        const turnoActivo = turnos?.[0]
+        if (turnoActivo) {
+          await supabase.from('turnos')
+            .update({ caja_principal_actual: turnoActivo.caja_principal_actual + parseFloat(vehiculo.monto) })
+            .eq('id', turnoActivo.id)
+        }
+      }
+
+      cargarDatos()
     }
-
-    cargarDatos()
-  }
+  //**** 
 
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
@@ -247,14 +254,27 @@ function Cochera() {
                 </div>
               </div>
               <div className="flex gap-2 mt-2">
+                //nuevo*****
                 {v.estado_pago === 'pendiente' && v.monto > 0 && (
-                  <button
-                    onClick={() => registrarPago(v)}
-                    className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium"
-                  >
-                    Registrar pago
-                  </button>
-                )}
+                        <div className="flex flex-col gap-2">
+                          <select
+                            value={metodoPagoVehiculo[v.id] || 'efectivo'}
+                            onChange={e => setMetodoPagoVehiculo(prev => ({ ...prev, [v.id]: e.target.value }))}
+                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                          >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="yape">Yape</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                          </select>
+                          <button
+                            onClick={() => registrarPago(v)}
+                            className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium"
+                          >
+                            Registrar pago
+                          </button>
+                        </div>
+                      )}
                 {mostrarExtension === v.id ? (
                   <div className="mt-2 border-t pt-2">
                     <p className="text-xs text-gray-500 mb-1">Cargo adicional cochera</p>
