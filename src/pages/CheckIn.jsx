@@ -22,7 +22,10 @@ function CheckIn() {
   const [nacionalidad, setNacionalidad] = useState('')
 
   // Datos del hospedaje
+  const [tarifaPorNoche, setTarifaPorNoche] = useState('')
   const [tarifa, setTarifa] = useState('')
+  const [noches, setNoches] = useState(1)
+  const [fechaSalida, setFechaSalida] = useState('')
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [nroTicket, setNroTicket] = useState('')
   const [modalPago, setModalPago] = useState('al_salir')
@@ -45,8 +48,17 @@ function CheckIn() {
           .single()
         if (habData) {
           setHab(habData)
-          setTarifa(habData.precio_actual)
+          setTarifaPorNoche(habData.precio_actual)
         }
+
+        // Fecha de salida por defecto: 1 noche desde ahora
+        const ahora = new Date()
+        const hora = ahora.getHours()
+        const salidaPorDefecto = new Date(ahora)
+        if (hora >= 5) {
+          salidaPorDefecto.setDate(salidaPorDefecto.getDate() + 1)
+        }
+        setFechaSalida(salidaPorDefecto.toISOString().split('T')[0])
 
       if (reservaId) {
         const { data: reserva } = await supabase
@@ -62,7 +74,7 @@ function CheckIn() {
         setNacionalidad(reserva.clientes?.nacionalidad || '')
         setCliente(reserva.clientes)
         if (reserva.clientes?.tarifa_habitual) {
-          setTarifa(reserva.clientes.tarifa_habitual)
+          setTarifaPorNoche(reserva.clientes.tarifa_habitual)
         }
         if (parseFloat(reserva.adelanto) > 0) {
           setAdelanto(reserva.adelanto.toString())
@@ -75,12 +87,49 @@ function CheckIn() {
         if (reserva.fecha_salida) {
           const fechaSalidaReserva = new Date(reserva.fecha_salida)
           setSalidaDesdeReserva(fechaSalidaReserva.toISOString())
+          setFechaSalida(fechaSalidaReserva.toISOString().split('T')[0])
+          const diffMs = fechaSalidaReserva.setHours(0,0,0,0) - new Date().setHours(0,0,0,0)
+          const nochesCalculadas = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)))
+          setNoches(nochesCalculadas)
         }
       }
     }
   }
   cargarDatos()
 }, [id, reservaId])
+
+  // Tarifa total = tarifa por noche × número de noches
+  useEffect(() => {
+    const porNoche = parseFloat(tarifaPorNoche) || 0
+    setTarifa((porNoche * noches).toString())
+  }, [tarifaPorNoche, noches])
+
+  function calcularFechaDesdeNoches(n) {
+    const ahora = new Date()
+    const hora = ahora.getHours()
+    const base = new Date(ahora)
+    if (hora >= 5) base.setDate(base.getDate() + 1)
+    base.setDate(base.getDate() + (n - 1))
+    return base.toISOString().split('T')[0]
+  }
+
+  function actualizarNoches(valor) {
+    const n = Math.max(1, parseInt(valor) || 1)
+    setNoches(n)
+    setFechaSalida(calcularFechaDesdeNoches(n))
+    setSalidaDesdeReserva(null)
+  }
+
+  function actualizarFechaSalida(valor) {
+    setFechaSalida(valor)
+    setSalidaDesdeReserva(null)
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const nuevaFecha = new Date(valor + 'T00:00:00')
+    const diffDias = Math.round((nuevaFecha - hoy) / (1000 * 60 * 60 * 24))
+    setNoches(Math.max(1, diffDias))
+  }
+
   async function buscarCliente() {
     if (!dni.trim()) return
     const { data } = await supabase
@@ -94,7 +143,7 @@ function CheckIn() {
       setNombres(data.nombres)
       setTelefono(data.telefono || '')
       setNacionalidad(data.nacionalidad || '')
-      if (data.tarifa_habitual) setTarifa(data.tarifa_habitual)
+      if (data.tarifa_habitual) setTarifaPorNoche(data.tarifa_habitual)
     } else {
       setCliente(null)
       setNombres('')
@@ -107,7 +156,7 @@ function CheckIn() {
     if (!turnoActivo) { setError('No hay un turno activo. Debes iniciar turno antes de continuar.'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
-    if (!tarifa) { setError('La tarifa es obligatoria'); return }
+    if (!tarifaPorNoche) { setError('La tarifa por noche es obligatoria'); return }
     if (reservaId) {
       await supabase
         .from('reservas')
@@ -130,20 +179,10 @@ function CheckIn() {
       clienteId = data.id
     }
 
-    // 2. Calcular salida estimada
+    // 2. Calcular salida estimada a partir de la fecha elegida
+    if (!fechaSalida) { setError('La fecha de salida es obligatoria'); setGuardando(false); return }
     const ahora = new Date()
-    const hora = ahora.getHours()
-    let salidaEstimada
-
-    if (salidaDesdeReserva) {
-      salidaEstimada = new Date(salidaDesdeReserva)
-    } else {
-      salidaEstimada = new Date(ahora)
-      if (hora >= 5) {
-        salidaEstimada.setDate(salidaEstimada.getDate() + 1)
-      }
-      salidaEstimada.setHours(12, 0, 0, 0)
-    }
+    const salidaEstimada = new Date(fechaSalida + 'T12:00:00')
 
     // 3. Crear hospedaje
     const { data: hospedaje, error: errHosp } = await supabase
@@ -313,16 +352,47 @@ function CheckIn() {
         />
       </div>
 
+      {/* Estadía */}
+      <div className="bg-white rounded-xl border p-4 mb-3">
+        <label className="text-xs text-gray-500 font-medium uppercase">Estadía</label>
+        <div className="flex gap-2 mt-2">
+          <div className="flex-1">
+            <label className="text-xs text-gray-400 mb-1 block">Noches</label>
+            <input
+              type="number"
+              min="1"
+              value={noches}
+              onChange={e => actualizarNoches(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs text-gray-400 mb-1 block">Fecha de salida</label>
+            <input
+              type="date"
+              value={fechaSalida}
+              onChange={e => actualizarFechaSalida(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Tarifa y pago */}
       <div className="bg-white rounded-xl border p-4 mb-3">
         <label className="text-xs text-gray-500 font-medium uppercase">Tarifa y pago</label>
         <input
           type="number"
-          value={tarifa}
-          onChange={e => setTarifa(e.target.value)}
-          placeholder="Tarifa (S/)"
+          value={tarifaPorNoche}
+          onChange={e => setTarifaPorNoche(e.target.value)}
+          placeholder="Tarifa por noche (S/)"
           className="w-full border rounded-lg px-3 py-2 text-sm mt-2"
         />
+        {noches > 1 && (
+          <p className="text-xs text-gray-500 mt-1">
+            S/{tarifaPorNoche || 0} × {noches} noches = <span className="font-semibold">S/{parseFloat(tarifa || 0).toFixed(2)}</span>
+          </p>
+        )}
         <select
           value={metodoPago}
           onChange={e => setMetodoPago(e.target.value)}
