@@ -473,15 +473,29 @@ function DetalleHabitacion() {
                   </div>
                 </div>
               )}
-              <button onClick={() => navigate(`/consumos/${id}`)}
-                className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold mb-3">Consumos</button>
-              <button onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
-                className="w-full py-3 bg-purple-600 text-white rounded-xl font-semibold mb-3">Cargo adicional / Penalidad</button>
-              <button onClick={() => setMostrarPago(true)}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold mb-3">Registrar pago</button>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button onClick={() => navigate(`/consumos/${id}`)}
+                  className="py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+                  🛒 Consumos
+                </button>
+                <button onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
+                  className="py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+                  ⚠️ Cargo extra
+                </button>
+                <button onClick={() => setMostrarPago(true)}
+                  className="py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+                  💰 Registrar pago
+                </button>
+                <button
+                  onClick={() => setMostrarExtension(true)}
+                  className="py-2.5 bg-green-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
+                >
+                  📅 Cambiar checkout
+                </button>
+              </div>
             </>
           )}
-          {mostrarExtension ? (
+          {mostrarExtension && (
               <div className="bg-white rounded-xl border p-4 mb-3">
                 <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cambiar fecha de checkout</p>
                 <p className="text-xs text-gray-400 mb-2">
@@ -502,13 +516,6 @@ function DetalleHabitacion() {
                     className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium">Confirmar</button>
                 </div>
               </div>
-            ) : (
-              <button
-                onClick={() => setMostrarExtension(true)}
-                className="w-full py-3 bg-green-700 text-white rounded-xl font-semibold mb-3"
-              >
-                Cambiar fecha de Check-Out
-              </button>
             )}
           <button onClick={hacerCheckout}
             className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold">Hacer checkout</button>
