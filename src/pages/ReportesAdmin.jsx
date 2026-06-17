@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import {
+  agruparIngresosPorDia,
+  exportarReporteGeneralPDF,
+  exportarReporteGeneralExcel,
+  exportarCierreTurnoPDF,
+  exportarCierreTurnoExcel,
+} from '../utils/exportReportes'
 
 function ReportesAdmin() {
   const navigate = useNavigate()
@@ -33,6 +40,10 @@ function ReportesAdmin() {
   const [filtroFichas, setFiltroFichas] = useState('')
   const [fechaFiltroFichas, setFechaFiltroFichas] = useState('')
 
+  // Detalle para exportación de reportes
+  const [pagosDetalle, setPagosDetalle] = useState([])
+  const [cocheraDetalle, setCocheraDetalle] = useState([])
+
   useEffect(() => {
     cargarDatos()
   }, [periodo])
@@ -60,9 +71,11 @@ function ReportesAdmin() {
       .reduce((s, p) => s + parseFloat(p.monto), 0) || 0
     const ingresosConsumos = pagosData?.filter(p => p.concepto === 'consumo')
       .reduce((s, p) => s + parseFloat(p.monto), 0) || 0
-    const { data: cocheraData } = await supabase.from('cochera').select('monto')
+    const { data: cocheraData } = await supabase.from('cochera').select('monto, hora_ingreso')
       .eq('estado_pago', 'pagado').gte('hora_ingreso', fechaInicio.toISOString())
     const ingresosCochera = cocheraData?.reduce((s, c) => s + parseFloat(c.monto), 0) || 0
+    setPagosDetalle(pagosData || [])
+    setCocheraDetalle(cocheraData || [])
 
     // Desglose por medio de pago
     const totalEfectivo = pagosData?.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
@@ -208,13 +221,25 @@ function ReportesAdmin() {
       {/* General */}
       {vista === 'general' && (
         <>
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end items-center gap-2 mb-3">
             <select value={periodo} onChange={e => setPeriodo(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm">
               <option value="hoy">Hoy</option>
               <option value="semana">Últimos 7 días</option>
               <option value="mes">Este mes</option>
             </select>
+            <button
+              onClick={() => exportarReporteGeneralPDF(stats, periodo, agruparIngresosPorDia(pagosDetalle, cocheraDetalle))}
+              className="text-xs px-3 py-2 bg-red-600 text-white rounded-lg font-medium"
+            >
+              📄 PDF
+            </button>
+            <button
+              onClick={() => exportarReporteGeneralExcel(stats, periodo, agruparIngresosPorDia(pagosDetalle, cocheraDetalle))}
+              className="text-xs px-3 py-2 bg-green-700 text-white rounded-lg font-medium"
+            >
+              📊 Excel
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white rounded-xl border p-3">
@@ -248,6 +273,26 @@ function ReportesAdmin() {
             <div className="flex justify-between text-sm py-2 font-semibold">
               <span>Total</span><span className="text-green-700">S/{stats.totalIngresos?.toFixed(2)}</span>
             </div>
+          </div>
+          <div className="bg-white rounded-xl border p-4 mt-3">
+            <p className="text-xs text-gray-500 font-medium uppercase mb-3">Ingresos por día</p>
+            {agruparIngresosPorDia(pagosDetalle, cocheraDetalle).length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-2">Sin ingresos en este período</p>
+            ) : (
+              agruparIngresosPorDia(pagosDetalle, cocheraDetalle).map(d => (
+                <div key={d.fecha} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                  <span className="text-gray-600">
+                    {new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-PE', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  </span>
+                  <div className="flex gap-3 text-xs text-gray-400">
+                    <span>Hosp: S/{d.hospedaje.toFixed(2)}</span>
+                    <span>Cons: S/{d.consumos.toFixed(2)}</span>
+                    <span>Coch: S/{d.cochera.toFixed(2)}</span>
+                  </div>
+                  <span className="font-semibold text-green-700">S/{d.total.toFixed(2)}</span>
+                </div>
+              ))
+            )}
           </div>
           <div className="bg-white rounded-xl border p-4 mt-3">
             <p className="text-xs text-gray-500 font-medium uppercase mb-3">Desglose por medio de pago</p>
@@ -316,9 +361,27 @@ function ReportesAdmin() {
               <button onClick={() => setTurnoSeleccionado(null)}
                 className="mb-3 text-sm text-blue-600">← Volver a turnos</button>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-3">
-                <p className="font-semibold capitalize">{turnoSeleccionado.tipo}</p>
-                <p className="text-xs text-blue-600">{turnoSeleccionado.usuarios?.nombre}</p>
-                <p className="text-xs text-blue-500">{new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold capitalize">{turnoSeleccionado.tipo}</p>
+                    <p className="text-xs text-blue-600">{turnoSeleccionado.usuarios?.nombre}</p>
+                    <p className="text-xs text-blue-500">{new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => exportarCierreTurnoPDF(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                      className="text-xs px-3 py-1.5 bg-red-600 text-white rounded-lg font-medium"
+                    >
+                      📄 PDF
+                    </button>
+                    <button
+                      onClick={() => exportarCierreTurnoExcel(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                      className="text-xs px-3 py-1.5 bg-green-700 text-white rounded-lg font-medium"
+                    >
+                      📊 Excel
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {movimientosTurno.length > 0 && (

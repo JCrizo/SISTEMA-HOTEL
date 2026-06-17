@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { exportarCierreTurnoPDF, exportarCierreTurnoExcel } from '../utils/exportReportes'
 
 function Turnos() {
   const navigate = useNavigate()
@@ -194,7 +195,23 @@ function Turnos() {
 
       {/* Reporte turno anterior */}
       {turnoAnterior && (        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-          <p className="text-xs font-medium text-blue-800 uppercase mb-2">Reporte turno anterior</p>
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-xs font-medium text-blue-800 uppercase">Reporte turno anterior</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => exportarCierreTurnoPDF(turnoAnterior, movimientosAnterior, [], [])}
+                className="text-xs px-2 py-1 bg-red-600 text-white rounded-lg font-medium"
+              >
+                📄 PDF
+              </button>
+              <button
+                onClick={() => exportarCierreTurnoExcel(turnoAnterior, movimientosAnterior, [], [])}
+                className="text-xs px-2 py-1 bg-green-700 text-white rounded-lg font-medium"
+              >
+                📊 Excel
+              </button>
+            </div>
+          </div>
           <p className="text-sm text-blue-700 font-medium capitalize">{turnoAnterior.tipo}</p>
           <p className="text-xs text-blue-600 mt-1">
             Cerrado: {new Date(turnoAnterior.cierre).toLocaleString('es-PE')}
