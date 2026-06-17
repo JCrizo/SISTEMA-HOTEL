@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import AvisoSinTurno from '../components/AvisoSinTurno'
+import { useAuth } from '../context/AuthContext'
 
 function Consumos() {
   const { id } = useParams()
@@ -13,6 +14,7 @@ function Consumos() {
   const [consumos, setConsumos] = useState([])
   const [guardando, setGuardando] = useState(false)
   const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { usuario } = useAuth()
 
   useEffect(() => {
     cargarDatos()
@@ -64,9 +66,19 @@ function Consumos() {
       
     })
 
+    const nuevoStock = Math.max(0, producto.stock - 1)
     await supabase.from('productos')
-    .update({ stock: Math.max(0, producto.stock - 1) })
+    .update({ stock: nuevoStock })
     .eq('id', producto.id)
+
+    await supabase.from('movimientos_stock').insert({
+      producto_id: producto.id,
+      turno_id: turnoActivo.id,
+      tipo: 'consumo',
+      cantidad: -1,
+      stock_resultante: nuevoStock,
+      usuario_id: usuario?.id || null
+    })
 
     cargarDatos()
     setGuardando(false)

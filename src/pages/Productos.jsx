@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
 
 function Productos() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
+  const { turnoActivo } = useTurnoActivo()
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -138,6 +140,16 @@ function Productos() {
     const nuevoStock = Math.max(0, p.stock + cantidad)
     await supabase.from('productos')
       .update({ stock: nuevoStock }).eq('id', p.id)
+
+    await supabase.from('movimientos_stock').insert({
+      producto_id: p.id,
+      turno_id: turnoActivo?.id || null,
+      tipo: 'ajuste_manual',
+      cantidad,
+      stock_resultante: nuevoStock,
+      usuario_id: usuario?.id || null
+    })
+
     cargarProductos()
   }
 
