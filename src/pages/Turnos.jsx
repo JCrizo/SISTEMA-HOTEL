@@ -33,6 +33,7 @@ function Turnos() {
 
   const [guardando, setGuardando] = useState(false)
   const [pagosTurno, setPagosTurno] = useState([])
+  const [movimientosAnterior, setMovimientosAnterior] = useState([])
 
   useEffect(() => {
     cargarDatos()
@@ -58,6 +59,16 @@ function Turnos() {
       .limit(1)
       .single()
     setTurnoAnterior(anterior || null)
+
+    // Movimientos de caja del turno anterior
+    if (anterior) {
+      const { data: movsAnterior } = await supabase
+        .from('movimientos_caja')
+        .select('*')
+        .eq('turno_id', anterior.id)
+        .order('created_at', { ascending: false })
+      setMovimientosAnterior(movsAnterior || [])
+    }
 
     // Movimientos del turno activo
     if (activo) {
@@ -226,6 +237,27 @@ function Turnos() {
                   <span className="font-medium">S/{parseFloat(turnoAnterior.desglose_transferencia).toFixed(2)}</span>
                 </div>
               )}
+            </div>
+          )}
+          {movimientosAnterior.length > 0 && (
+            <div className="mt-3 bg-white rounded-lg p-3">
+              <p className="text-xs text-gray-500 font-medium uppercase mb-2">Movimientos de caja</p>
+              {movimientosAnterior.map(mov => (
+                <div key={mov.id} className="flex justify-between items-start py-1.5 border-b last:border-0">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">{mov.concepto}</p>
+                    <p className="text-xs text-gray-400">
+                      {mov.tipo === 'prestamo_entre_cajas'
+                        ? `Préstamo: ${mov.caja_origen} → ${mov.caja_destino}`
+                        : `Salida de caja ${mov.caja_origen}`}
+                    </p>
+                    {mov.autorizado_por && (
+                      <p className="text-xs text-gray-400">Autorizado: {mov.autorizado_por}</p>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-red-600">− S/{mov.monto}</span>
+                </div>
+              ))}
             </div>
           )}
           {turnoAnterior.observaciones && (

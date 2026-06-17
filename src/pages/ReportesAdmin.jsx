@@ -15,6 +15,7 @@ function ReportesAdmin() {
   const [turnos, setTurnos] = useState([])
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const [hospedajesTurno, setHospedajesTurno] = useState([])
+  const [movimientosTurno, setMovimientosTurno] = useState([])
 
   // Limpieza
   const [limpiezas, setLimpiezas] = useState([])
@@ -120,6 +121,12 @@ function ReportesAdmin() {
       .eq('turno_id', turno.id)
       .order('ingreso')
     setHospedajesTurno(data || [])
+
+    const { data: movs } = await supabase.from('movimientos_caja')
+      .select('*')
+      .eq('turno_id', turno.id)
+      .order('created_at', { ascending: false })
+    setMovimientosTurno(movs || [])
   }
 
   async function buscarFicha() {
@@ -274,6 +281,29 @@ function ReportesAdmin() {
                 <p className="text-xs text-blue-600">{turnoSeleccionado.usuarios?.nombre}</p>
                 <p className="text-xs text-blue-500">{new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</p>
               </div>
+
+              {movimientosTurno.length > 0 && (
+                <div className="bg-white rounded-xl border p-4 mb-3">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Movimientos de caja</p>
+                  {movimientosTurno.map(mov => (
+                    <div key={mov.id} className="flex justify-between items-start py-1.5 border-b last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">{mov.concepto}</p>
+                        <p className="text-xs text-gray-400">
+                          {mov.tipo === 'prestamo_entre_cajas'
+                            ? `Préstamo: ${mov.caja_origen} → ${mov.caja_destino}`
+                            : `Salida de caja ${mov.caja_origen}`}
+                        </p>
+                        {mov.autorizado_por && (
+                          <p className="text-xs text-gray-400">Autorizado: {mov.autorizado_por}</p>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-red-600">− S/{mov.monto}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {hospedajesTurno.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-4">Sin hospedajes en este turno</p>
               ) : (
