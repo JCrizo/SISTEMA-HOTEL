@@ -306,36 +306,80 @@ function ReportesAdmin() {
 
               {hospedajesTurno.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-4">Sin hospedajes en este turno</p>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {hospedajesTurno.map(h => (
-                    <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
-                      className="bg-white rounded-xl border p-4 cursor-pointer">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-semibold">
-                            {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
-                          </p>
-                          <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
-                          <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
-                          <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
-                            h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {h.estado_pago === 'pagado' ? 'Pagado' :
-                             h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
-                          </span>
+              ) : (() => {
+                const activos = hospedajesTurno.filter(h => h.estado === 'activo')
+                const finalizados = hospedajesTurno.filter(h => h.estado !== 'activo')
+                return (
+                  <>
+                    {activos.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 font-medium uppercase mb-2">
+                          Habitaciones aún ocupadas ({activos.length})
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {activos.map(h => (
+                            <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
+                              className="bg-white rounded-xl border-2 border-red-200 p-4 cursor-pointer">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-semibold">
+                                    {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                                  </p>
+                                  <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
+                                  <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
+                                  <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                                    Ocupada
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    )}
+
+                    {finalizados.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase mb-2">
+                          Ya hicieron checkout ({finalizados.length})
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {finalizados.map(h => (
+                            <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
+                              className="bg-white rounded-xl border p-4 cursor-pointer opacity-80">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-semibold">
+                                    {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                                  </p>
+                                  <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
+                                  <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
+                                  <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
+                                    h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {h.estado_pago === 'pagado' ? 'Pagado' :
+                                     h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </>
           )}
         </>
