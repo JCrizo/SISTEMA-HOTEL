@@ -57,7 +57,7 @@ function ReportesRecepcion() {
   return (
     <div className="p-4">
       <button onClick={() => navigate('/')} className="mb-4 text-sm text-blue-600">← Volver</button>
-      <h2 className="text-xl font-semibold mb-4">Mis Reportes</h2>
+      <h2 className="text-xl font-semibold mb-4">Reportes</h2>
 
       <div className="flex gap-2 mb-4">
         <button

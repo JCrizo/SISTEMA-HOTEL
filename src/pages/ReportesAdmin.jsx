@@ -23,9 +23,14 @@ function ReportesAdmin() {
   // Cochera
   const [cocheras, setCocheras] = useState([])
 
-  // Búsqueda ficha
+  // Búsqueda ficha (puntual, por número)
   const [busquedaFicha, setBusquedaFicha] = useState('')
   const [resultadosFicha, setResultadosFicha] = useState([])
+
+  // Fichas (listado completo con filtros)
+  const [todasFichas, setTodasFichas] = useState([])
+  const [filtroFichas, setFiltroFichas] = useState('')
+  const [fechaFiltroFichas, setFechaFiltroFichas] = useState('')
 
   useEffect(() => {
     cargarDatos()
@@ -107,6 +112,17 @@ function ReportesAdmin() {
       .limit(50)
     setCocheras(cocheraAll || [])
 
+    // Fichas (listado completo)
+    const { data: fichasData } = await supabase.from('hospedajes')
+      .select(`
+        *,
+        habitaciones(numero, tipo_actual),
+        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+      `)
+      .order('ingreso', { ascending: false })
+      .limit(50)
+    setTodasFichas(fichasData || [])
+
     setCargando(false)
   }
 
@@ -141,6 +157,21 @@ function ReportesAdmin() {
     setResultadosFicha(data || [])
   }
 
+  const fichasFiltradas = todasFichas.filter(h => {
+    const nroFicha = String(h.nro_ficha).padStart(6, '0')
+    const nombre = h.huesped_hospedaje?.[0]?.clientes?.nombres?.toLowerCase() || ''
+    const dni = h.huesped_hospedaje?.[0]?.clientes?.dni_pasaporte || ''
+    const fechaMatch = fechaFiltroFichas
+      ? new Date(h.ingreso).toISOString().split('T')[0] === fechaFiltroFichas
+      : true
+    return (
+      fechaMatch &&
+      (nroFicha.includes(filtroFichas) ||
+       nombre.includes(filtroFichas.toLowerCase()) ||
+       dni.includes(filtroFichas))
+    )
+  })
+
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
   return (
@@ -153,9 +184,10 @@ function ReportesAdmin() {
         {[
           { key: 'general', label: 'General' },
           { key: 'turnos', label: 'Turnos' },
+          { key: 'fichas', label: 'Fichas' },
           { key: 'limpieza', label: 'Limpieza' },
           { key: 'cochera', label: 'Cochera' },
-          { key: 'ficha', label: 'Buscar ficha' },
+          { key: 'ficha', label: 'Buscar N° ficha' },
         ].map(t => (
           <button key={t.key} onClick={() => setVista(t.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap ${
@@ -381,6 +413,74 @@ function ReportesAdmin() {
                 )
               })()}
             </>
+          )}
+        </>
+      )}
+
+      {/* Fichas */}
+      {vista === 'fichas' && (
+        <>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={filtroFichas}
+              onChange={e => setFiltroFichas(e.target.value)}
+              placeholder="Buscar por ficha, nombre o DNI"
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <input
+            type="date"
+            value={fechaFiltroFichas}
+            onChange={e => setFechaFiltroFichas(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
+          />
+
+          {fichasFiltradas.length === 0 ? (
+            <p className="text-gray-400 text-sm text-center py-4">Sin resultados</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {fichasFiltradas.map(h => (
+                <div
+                  key={h.id}
+                  onClick={() => navigate(`/ficha/${h.id}`)}
+                  className="bg-white rounded-xl border p-4 cursor-pointer"
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <p className="font-semibold">
+                      {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                    </p>
+                    <span className="text-xs font-medium text-blue-600">
+                      N° {String(h.nro_ficha).padStart(6, '0')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Ingreso: {new Date(h.ingreso).toLocaleDateString('es-PE')}
+                  </p>
+                  <div className="flex justify-between mt-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      h.estado === 'activo' ? 'bg-green-100 text-green-800' :
+                      h.estado === 'finalizado' ? 'bg-gray-100 text-gray-600' :
+                      'bg-red-100 text-red-600'
+                    }`}>
+                      {h.estado === 'activo' ? 'Activo' :
+                       h.estado === 'finalizado' ? 'Finalizado' : 'Cancelado'}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
+                      h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {h.estado_pago === 'pagado' ? 'Pagado' :
+                       h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}

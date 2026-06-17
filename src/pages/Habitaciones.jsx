@@ -156,12 +156,12 @@ function Habitaciones() {
           Productos
         </button>
       )}
-      {(usuario?.rol === 'recepcionista' || usuario?.rol === 'administrador') && (
+      {usuario?.rol === 'recepcionista' && (
         <button
           onClick={() => navigate('/reportes-recepcion')}
           className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-xl"
         >
-          Fichas
+          Reportes
         </button>
       )}
       
