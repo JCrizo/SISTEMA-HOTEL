@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
 
 const colores = {
   disponible:         'bg-green-100 border-green-400 text-green-900',
@@ -58,6 +59,7 @@ function DetalleHabitacion() {
   const [mostrarPenalidad, setMostrarPenalidad] = useState(false)
   const [montoPenalidad, setMontoPenalidad] = useState('')
   const [descPenalidad, setDescPenalidad] = useState('')
+  const { turnoActivo } = useTurnoActivo()
 
   useEffect(() => { cargarDatos() }, [id])
 
@@ -125,6 +127,7 @@ function DetalleHabitacion() {
 
   async function registrarPago() {
     if (!montoPago || parseFloat(montoPago) <= 0) return
+    if (!turnoActivo) { alert('No hay un turno activo. Debes iniciar turno antes de registrar un pago.'); return }
     setGuardandoPago(true)
 
     await supabase.from('pagos').insert({
@@ -160,6 +163,7 @@ function DetalleHabitacion() {
   async function registrarPenalidad() {
     if (!montoPenalidad || parseFloat(montoPenalidad) <= 0) return
     if (!descPenalidad.trim()) return
+    if (!turnoActivo) { alert('No hay un turno activo. Debes iniciar turno antes de registrar un cargo.'); return }
 
     await supabase.from('pagos').insert({
       hospedaje_id: hospedaje.id,
@@ -245,6 +249,7 @@ function DetalleHabitacion() {
   async function registrarCobroAdicional() {
     if (!montoCobroAdicional || parseFloat(montoCobroAdicional) <= 0) return
     if (!descCobroAdicional.trim()) { alert('Ingresa una descripción del cobro'); return }
+    if (!turnoActivo) { alert('No hay un turno activo. Debes iniciar turno antes de registrar un cobro.'); return }
     setGuardandoCobroAdicional(true)
 
     await supabase.from('pagos').insert({
@@ -478,12 +483,18 @@ function DetalleHabitacion() {
                   className="py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
                   🛒 Consumos
                 </button>
-                <button onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
-                  className="py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
+                  disabled={!turnoActivo}
+                  className="py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   ⚠️ Cargo extra
                 </button>
-                <button onClick={() => setMostrarPago(true)}
-                  className="py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => setMostrarPago(true)}
+                  disabled={!turnoActivo}
+                  className="py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   💰 Registrar pago
                 </button>
                 <button
@@ -493,6 +504,11 @@ function DetalleHabitacion() {
                   📅 Cambiar checkout
                 </button>
               </div>
+              {!turnoActivo && (
+                <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-center">
+                  🔒 Sin turno activo: no se pueden registrar pagos ni cargos hasta iniciar turno.
+                </p>
+              )}
             </>
           )}
           {mostrarExtension && (
@@ -570,8 +586,11 @@ function DetalleHabitacion() {
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setMostrarCobroAdicional(true)}
-                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-sm font-medium mb-2">
+                  <button
+                    onClick={() => setMostrarCobroAdicional(true)}
+                    disabled={!turnoActivo}
+                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-sm font-medium mb-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
                     💰 Cobro adicional (horas extra / consumo)
                   </button>
                 )}

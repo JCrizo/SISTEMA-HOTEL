@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import AvisoSinTurno from '../components/AvisoSinTurno'
 
 function Consumos() {
   const { id } = useParams()
@@ -10,6 +12,7 @@ function Consumos() {
   const [productos, setProductos] = useState([])
   const [consumos, setConsumos] = useState([])
   const [guardando, setGuardando] = useState(false)
+  const { turnoActivo, cargandoTurno } = useTurnoActivo()
 
   useEffect(() => {
     cargarDatos()
@@ -50,6 +53,7 @@ function Consumos() {
 
   async function agregarConsumo(producto) {
     if (!hospedaje) return
+    if (!turnoActivo) { alert('No hay un turno activo. Debes iniciar turno antes de registrar consumos.'); return }
     setGuardando(true)
 
     await supabase.from('consumos').insert({
@@ -76,7 +80,11 @@ function Consumos() {
 
   const totalConsumos = consumos.reduce((s, c) => s + parseFloat(c.precio_unitario) * c.cantidad, 0)
 
-  if (!hab) return <div className="p-4 text-gray-500">Cargando...</div>
+  if (!hab || cargandoTurno) return <div className="p-4 text-gray-500">Cargando...</div>
+
+  if (!turnoActivo) {
+    return <AvisoSinTurno mensaje="Debes iniciar un turno antes de registrar consumos." />
+  }
 
   return (
     <div className="p-4">

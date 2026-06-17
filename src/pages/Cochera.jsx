@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
 
 function Cochera() {
   const navigate = useNavigate()
@@ -24,6 +25,7 @@ function Cochera() {
   const [guardando, setGuardando] = useState(false)
 
   const [metodoPagoVehiculo, setMetodoPagoVehiculo] = useState({})
+  const { turnoActivo, cargandoTurno } = useTurnoActivo()
 
   useEffect(() => {
     cargarDatos()
@@ -68,6 +70,7 @@ function Cochera() {
 
   async function registrarIngreso() {
     if (!placa.trim()) return
+    if (!turnoActivo) { alert('No hay un turno activo. Debes iniciar turno antes de registrar un ingreso.'); return }
     setGuardando(true)
 
     let hospedajeId = null
@@ -149,13 +152,23 @@ function Cochera() {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Cochera</h2>
-        <button
-          onClick={() => setMostrarForm(!mostrarForm)}
-          className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
-        >
-          + Registrar
-        </button>
+        {turnoActivo && (
+          <button
+            onClick={() => setMostrarForm(!mostrarForm)}
+            className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
+          >
+            + Registrar
+          </button>
+        )}
       </div>
+
+      {!cargandoTurno && !turnoActivo && (
+        <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-4 text-center">
+          <p className="text-sm text-yellow-800">
+            🔒 No hay un turno activo. Inicia turno para poder registrar nuevos ingresos.
+          </p>
+        </div>
+      )}
 
       {mostrarForm && (
         <div className="bg-white rounded-xl border p-4 mb-4">

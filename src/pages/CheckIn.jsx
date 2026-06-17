@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSearchParams } from 'react-router-dom'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import AvisoSinTurno from '../components/AvisoSinTurno'
 
 function CheckIn() {
   const { id } = useParams()
@@ -31,6 +33,7 @@ function CheckIn() {
 
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
+  const { turnoActivo, cargandoTurno } = useTurnoActivo()
 
   useEffect(() => 
     {
@@ -101,6 +104,7 @@ function CheckIn() {
 
   async function confirmarCheckin() {
     setError('')
+    if (!turnoActivo) { setError('No hay un turno activo. Debes iniciar turno antes de continuar.'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
     if (!tarifa) { setError('La tarifa es obligatoria'); return }
@@ -142,18 +146,11 @@ function CheckIn() {
     }
 
     // 3. Crear hospedaje
-    
-      // Obtener turno activo
-    const { data: turnos } = await supabase
-      .from('turnos').select('id').is('cierre', null)
-      .order('apertura', { ascending: false }).limit(1)
-    
-      const turnoActivoId = turnos?.[0]?.id || null
     const { data: hospedaje, error: errHosp } = await supabase
       .from('hospedajes')
       .insert({
         habitacion_id: id,
-        turno_id: turnoActivoId,
+        turno_id: turnoActivo.id,
         ingreso: ahora.toISOString(),
         salida_estimada: salidaEstimada.toISOString(),
         tarifa_pactada: parseFloat(tarifa),
@@ -202,15 +199,7 @@ function CheckIn() {
         }
 
         // Actualizar caja del turno activo
-            const { data: turnosParaCaja } = await supabase
-              .from('turnos')
-              .select('*')
-              .is('cierre', null)
-              .order('apertura', { ascending: false })
-              .limit(1)
-
-            const turnoActivo = turnosParaCaja?.[0]
-            if (turnoActivo) {
+            if (montoPagado > 0) {
               await supabase
                 .from('turnos')
                 .update({
@@ -228,7 +217,11 @@ function CheckIn() {
     navigate('/')
   }
 
-  if (!hab) return <div className="p-4 text-gray-500">Cargando...</div>
+  if (!hab || cargandoTurno) return <div className="p-4 text-gray-500">Cargando...</div>
+
+  if (!turnoActivo) {
+    return <AvisoSinTurno mensaje="Debes iniciar un turno antes de registrar un check-in." />
+  }
 
   return (
     <div className="p-4">

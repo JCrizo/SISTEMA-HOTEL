@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import AvisoSinTurno from '../components/AvisoSinTurno'
 
 function Reservas() {
   const navigate = useNavigate()
@@ -10,6 +12,7 @@ function Reservas() {
   const [mostrarForm, setMostrarForm] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
+  const { turnoActivo, cargandoTurno } = useTurnoActivo()
 
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
@@ -70,6 +73,7 @@ function Reservas() {
 
   async function crearReserva() {
     setError('')
+    if (!turnoActivo) { setError('No hay un turno activo. Debes iniciar turno antes de crear una reserva.'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (!habitacionId) { setError('Selecciona una habitación'); return }
@@ -136,13 +140,23 @@ function Reservas() {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Reservas</h2>
-        <button
-          onClick={() => setMostrarForm(!mostrarForm)}
-          className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
-        >
-          + Nueva
-        </button>
+        {turnoActivo && (
+          <button
+            onClick={() => setMostrarForm(!mostrarForm)}
+            className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
+          >
+            + Nueva
+          </button>
+        )}
       </div>
+
+      {!cargandoTurno && !turnoActivo && (
+        <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-4 text-center">
+          <p className="text-sm text-yellow-800">
+            🔒 No hay un turno activo. Inicia turno para poder crear nuevas reservas.
+          </p>
+        </div>
+      )}
 
       {mostrarForm && (
         <div className="bg-white rounded-xl border p-4 mb-4">
