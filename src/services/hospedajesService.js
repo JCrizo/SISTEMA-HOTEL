@@ -132,14 +132,4 @@ export const hospedajesService = {
     return data
   },
 
-  async obtenerActivoPorHabitacion(habitacionId) {
-    const { data, error } = await supabase
-      .from('hospedajes')
-      .select('*')
-      .eq('habitacion_id', habitacionId)
-      .eq('estado', 'activo')
-      .single()
-    if (error && error.code !== 'PGRST116') throw new Error(error.message)
-    return data || null
-  }
 }
