@@ -108,214 +108,299 @@ export default function PanelHuespedActivo({
   }
 
   return (
-    <>
-      {/* Huésped */}
-      <div className="bg-white rounded-xl border p-4 mb-3 shadow-sm">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-xs text-gray-500 font-medium uppercase">Huésped</p>
-          <p className="text-xs font-medium text-blue-600">Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}</p>
-        </div>
-        <p className="font-semibold">{huesped?.nombres || 'Sin nombre'}</p>
-        <p className="text-sm text-gray-500">{huesped?.dni_pasaporte}</p>
-        {huesped?.telefono && <p className="text-sm text-gray-500 mt-0.5">📞 {huesped.telefono}</p>}
-        
-        <p className="text-xs text-gray-400 mt-2">Ingreso: {new Date(hospedaje.ingreso).toLocaleString('es-PE')}</p>
-        <p className="text-xs text-gray-400">Checkout: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE')}</p>
-        
-        {hospedaje.observaciones && (
-          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs text-yellow-800 font-medium">Observaciones</p>
-            <p className="text-xs text-yellow-700 mt-1">{hospedaje.observaciones}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      {/* COLUMNA IZQUIERDA: Info y Acciones Rápidas */}
+      <div className="space-y-6">
+        {/* Huésped Card */}
+        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              Datos del Huésped
+            </h3>
+            <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
+              Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}
+            </span>
           </div>
-        )}
-        
-        {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
-          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800 font-medium capitalize">
-              Requiere {hospedaje.comprobante}
-              {hospedaje.comprobante === 'factura' && hospedaje.ruc ? ` — RUC: ${hospedaje.ruc}` : ''}
-            </p>
+          
+          <div className="mb-4">
+            <p className="text-xl font-black text-gray-800">{huesped?.nombres || 'Sin nombre'}</p>
+            <div className="flex items-center gap-4 mt-1">
+              <p className="text-sm font-bold text-gray-500">{huesped?.dni_pasaporte}</p>
+              {huesped?.telefono && <p className="text-sm font-bold text-gray-500">📞 {huesped.telefono}</p>}
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* Cuenta */}
-      <div className="bg-white rounded-xl border p-4 mb-3 shadow-sm">
-        <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cuenta</p>
-        <div className="flex justify-between text-sm py-1">
-          <span>Hospedaje</span><span>S/{hospedaje.tarifa_pactada}</span>
-        </div>
-        {totalConsumos > 0 && (
-          <div className="flex justify-between text-sm py-1">
-            <span>Consumos</span><span>S/{totalConsumos.toFixed(2)}</span>
+          
+          <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-2xl p-4">
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ingreso</p>
+              <p className="text-sm font-bold text-gray-700">{new Date(hospedaje.ingreso).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Checkout</p>
+              <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+            </div>
           </div>
-        )}
-        {totalPenalidades > 0 && (
-          <div className="flex justify-between text-sm py-1 text-purple-700">
-            <span>Cargos adicionales</span><span>S/{totalPenalidades.toFixed(2)}</span>
-          </div>
-        )}
-        <div className="flex justify-between text-sm py-1 font-medium border-t mt-1 pt-1">
-          <span>Total</span>
-          <span>S/{(parseFloat(hospedaje.tarifa_pactada) + totalConsumos + totalPenalidades).toFixed(2)}</span>
-        </div>
-        <div className="border-t mt-2 pt-1">
-          {pagosHospedaje > 0 && (
-            <div className="flex justify-between text-sm py-1 text-green-700">
-              <span>Pagado hospedaje</span><span>− S/{pagosHospedaje.toFixed(2)}</span>
+          
+          {hospedaje.observaciones && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-xs font-black text-yellow-800 uppercase tracking-wider mb-1">Observaciones</p>
+              <p className="text-sm font-medium text-yellow-700">{hospedaje.observaciones}</p>
             </div>
           )}
-          {pagosConsumo > 0 && (
-            <div className="flex justify-between text-sm py-1 text-green-700">
-              <span>Pagado consumos</span><span>− S/{pagosConsumo.toFixed(2)}</span>
-            </div>
-          )}
-          {pagosPenalidad > 0 && (
-            <div className="flex justify-between text-sm py-1 text-green-700">
-              <span>Pagado cargos adicionales</span><span>− S/{pagosPenalidad.toFixed(2)}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex justify-between font-semibold py-1 border-t mt-1">
-          <span>Saldo pendiente</span>
-          <span className={saldo > 0 ? 'text-red-600' : 'text-green-600'}>S/{Math.max(0, saldo).toFixed(2)}</span>
-        </div>
-      </div>
-
-      {/* Pagos / Penalidades */}
-      {mostrarPago ? (
-        <div className="bg-white rounded-xl border p-4 mb-3 shadow-sm border-blue-200">
-          <p className="text-xs text-gray-500 font-medium uppercase mb-2">Registrar pago</p>
-          <input type="number" value={montoPago} onChange={e => setMontoPago(e.target.value)}
-            placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
-          <select value={conceptoPago} onChange={e => setConceptoPago(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
-            <option value="hospedaje">Hospedaje</option>
-            <option value="consumo">Consumos</option>
-            <option value="pago_penalidad">Cargo adicional / Penalidad</option>
-          </select>
-          <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2">
-            <option value="efectivo">Efectivo</option>
-            <option value="yape">Yape</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="transferencia">Transferencia</option>
-          </select>
-          {metodoPago === 'tarjeta' && (
-            <input type="text" value={nroTicket} onChange={e => setNroTicket(e.target.value)}
-              placeholder="Nro de ticket (opcional)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
-          )}
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => setMostrarPago(false)}
-              className="flex-1 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleRegistrarPago} disabled={guardandoPago}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-50 hover:bg-blue-700">
-              {guardandoPago ? 'Guardando...' : 'Confirmar pago'}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <>
-          {mostrarPenalidad && (
-            <div className="bg-white rounded-xl border p-4 mb-3 shadow-sm border-purple-200">
-              <p className="text-xs text-gray-500 font-medium uppercase mb-3">Cargos adicionales / Penalidades</p>
-              {pagos.filter(p => p.concepto === 'penalidad').length > 0 ? (
-                <div className="mb-3">
-                  {pagos.filter(p => p.concepto === 'penalidad').map(p => (
-                    <div key={p.id} className="flex justify-between items-start py-2 border-b last:border-0">
-                      <div>
-                        <p className="text-sm font-medium">{p.observaciones || 'Sin descripción'}</p>
-                        <p className="text-xs text-gray-400">{new Date(p.created_at).toLocaleString('es-PE')}</p>
-                      </div>
-                      <span className="text-sm font-medium text-purple-700">S/{parseFloat(p.monto).toFixed(2)}</span>
-                    </div>
-                  ))}
-                  <div className="flex justify-between text-sm font-semibold pt-2 mt-1">
-                    <span>Total cargos</span>
-                    <span className="text-purple-700">S/{totalPenalidades.toFixed(2)}</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400 mb-3">Sin cargos registrados</p>
-              )}
-              <div className="border-t pt-3 mt-2">
-                <p className="text-xs text-gray-500 font-medium mb-2">Agregar cargo</p>
-                <input type="number" value={montoPenalidad} onChange={e => setMontoPenalidad(e.target.value)}
-                  placeholder="Monto (S/)" className="w-full border rounded-lg px-3 py-2 text-sm mb-2" />
-                <input type="text" value={descPenalidad} onChange={e => setDescPenalidad(e.target.value)}
-                  placeholder="Descripción (ej: manchó la sábana)" className="w-full border rounded-lg px-3 py-2 text-sm mb-3" />
-                <div className="flex gap-2">
-                  <button onClick={() => setMostrarPenalidad(false)}
-                    className="flex-1 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50">Cerrar</button>
-                  <button onClick={handleRegistrarPenalidad}
-                    className="flex-1 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700">Agregar</button>
-                </div>
+          
+          {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
+            <div className="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <div>
+                <p className="text-xs font-black text-indigo-800 uppercase tracking-wider capitalize">Requiere {hospedaje.comprobante}</p>
+                {hospedaje.comprobante === 'factura' && hospedaje.ruc && (
+                  <p className="text-sm font-bold text-indigo-600">RUC: {hospedaje.ruc}</p>
+                )}
               </div>
             </div>
           )}
-          
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <button onClick={() => navigate(`/consumos/${hab.id}`)}
-              className="py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-orange-600 transition-colors">
-              🛒 Consumos
-            </button>
-            <button
-              onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
-              disabled={!turnoActivo}
-              className="py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors"
-            >
-              ⚠️ Cargo extra
-            </button>
-            <button
-              onClick={() => setMostrarPago(true)}
-              disabled={!turnoActivo}
-              className="py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-            >
-              💰 Registrar pago
-            </button>
-            <button
-              onClick={() => setMostrarExtension(true)}
-              className="py-2.5 bg-green-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-green-800 transition-colors"
-            >
-              📅 Cambiar checkout
-            </button>
-          </div>
-          
-          {!turnoActivo && (
-            <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-center">
-              🔒 Sin turno activo: no se pueden registrar pagos ni cargos hasta iniciar turno.
-            </p>
-          )}
-        </>
-      )}
+        </div>
 
-      {/* Extensión */}
-      {mostrarExtension && (
-        <div className="bg-white rounded-xl border p-4 mb-3 shadow-sm border-green-200">
-          <p className="text-xs text-gray-500 font-medium uppercase mb-2">Cambiar fecha de checkout</p>
-          <p className="text-xs text-gray-400 mb-2">
-            Checkout actual: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE')}
-          </p>
-          <label className="text-xs text-gray-500 mb-1 block">Nueva fecha de salida</label>
-          <input
-            type="date"
-            value={fechaExtension}
-            onChange={e => setFechaExtension(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
-          />
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => setMostrarExtension(false)}
-              className="flex-1 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleExtenderEstadia}
-              className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700">Confirmar</button>
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => navigate(`/consumos/${hab.id}`)}
+            className="py-3 px-4 bg-white border border-orange-200 text-orange-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-orange-50 hover:border-orange-300 transition-all flex flex-col items-center justify-center gap-1 group">
+            <span className="text-2xl group-hover:scale-110 transition-transform">🍔</span>
+            Punto de Venta
+          </button>
+          <button
+            onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
+            disabled={!turnoActivo}
+            className="py-3 px-4 bg-white border border-purple-200 text-purple-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-purple-50 hover:border-purple-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
+          >
+            <span className="text-2xl group-hover:scale-110 transition-transform">⚠️</span>
+            Cargos Extras
+          </button>
+          <button
+            onClick={() => setMostrarPago(true)}
+            disabled={!turnoActivo}
+            className="py-3 px-4 bg-white border border-blue-200 text-blue-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
+          >
+            <span className="text-2xl group-hover:scale-110 transition-transform">💰</span>
+            Abonar Pago
+          </button>
+          <button
+            onClick={() => setMostrarExtension(true)}
+            className="py-3 px-4 bg-white border border-green-200 text-green-700 rounded-2xl text-sm font-bold shadow-sm hover:bg-green-50 hover:border-green-300 transition-all flex flex-col items-center justify-center gap-1 group"
+          >
+            <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+            Modificar Fechas
+          </button>
+        </div>
+
+        {!turnoActivo && (
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 text-center">
+            <p className="text-sm font-bold text-yellow-800 flex items-center justify-center gap-2">
+              <span>🔒</span> Sin turno activo: opciones de caja bloqueadas.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* COLUMNA DERECHA: Cuenta y Modales */}
+      <div className="space-y-6">
+        {/* Cuenta Resumen */}
+        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Estado de Cuenta
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-bold text-gray-600">Hospedaje</span>
+              <span className="font-black text-gray-800">S/{hospedaje.tarifa_pactada}</span>
+            </div>
+            {totalConsumos > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-bold text-gray-600">Consumos (Room Service)</span>
+                <span className="font-black text-gray-800">S/{totalConsumos.toFixed(2)}</span>
+              </div>
+            )}
+            {totalPenalidades > 0 && (
+              <div className="flex justify-between items-center text-sm text-purple-700">
+                <span className="font-bold">Cargos Adicionales / Penalidades</span>
+                <span className="font-black">S/{totalPenalidades.toFixed(2)}</span>
+              </div>
+            )}
+            
+            <div className="border-t border-dashed border-gray-200 pt-3 my-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-gray-400 uppercase tracking-wider text-xs">Total Facturado</span>
+                <span className="font-black text-lg text-gray-800">
+                  S/{(parseFloat(hospedaje.tarifa_pactada) + totalConsumos + totalPenalidades).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-green-50 rounded-xl p-4 space-y-2 border border-green-100">
+              <p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-2">Abonos Realizados</p>
+              {pagosHospedaje > 0 && (
+                <div className="flex justify-between text-sm text-green-700">
+                  <span className="font-bold">Pago Hospedaje</span><span className="font-black">− S/{pagosHospedaje.toFixed(2)}</span>
+                </div>
+              )}
+              {pagosConsumo > 0 && (
+                <div className="flex justify-between text-sm text-green-700">
+                  <span className="font-bold">Pago Consumos</span><span className="font-black">− S/{pagosConsumo.toFixed(2)}</span>
+                </div>
+              )}
+              {pagosPenalidad > 0 && (
+                <div className="flex justify-between text-sm text-green-700">
+                  <span className="font-bold">Pago Cargos Extras</span><span className="font-black">− S/{pagosPenalidad.toFixed(2)}</span>
+                </div>
+              )}
+              {totalPagadoReal === 0 && (
+                <p className="text-sm font-bold text-green-600/50 italic">Sin abonos registrados</p>
+              )}
+            </div>
+
+            <div className={`rounded-2xl p-5 border-2 flex justify-between items-center ${saldo > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+              <span className={`font-bold uppercase tracking-widest text-xs ${saldo > 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                {saldo > 0 ? 'Saldo a Cobrar' : 'Cuenta Saldada'}
+              </span>
+              <span className={`font-black text-2xl ${saldo > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                S/{Math.max(0, saldo).toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
-      )}
 
-      <button onClick={handleCheckout}
-        className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold shadow-sm hover:bg-red-700 transition-colors">
-        Hacer checkout
-      </button>
-    </>
+        {/* Modal de Pago */}
+        {mostrarPago && (
+          <div className="bg-white rounded-3xl border-2 border-blue-500 p-6 shadow-xl relative animate-fadeIn">
+            <h4 className="text-lg font-black text-blue-900 mb-4 flex items-center gap-2">
+              <span>💰</span> Registrar Nuevo Abono
+            </h4>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Monto (S/)</label>
+                <input type="number" value={montoPago} onChange={e => setMontoPago(e.target.value)}
+                  placeholder="0.00" className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Concepto</label>
+                  <select value={conceptoPago} onChange={e => setConceptoPago(e.target.value)}
+                    className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
+                    <option value="hospedaje">Hospedaje</option>
+                    <option value="consumo">Consumos</option>
+                    <option value="pago_penalidad">Cargo Adicional</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método</label>
+                  <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}
+                    className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="yape">Yape / Plin</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                  </select>
+                </div>
+              </div>
+              
+              {metodoPago === 'tarjeta' && (
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nro. de Operación / Ticket</label>
+                  <input type="text" value={nroTicket} onChange={e => setNroTicket(e.target.value)}
+                    placeholder="Opcional" className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setMostrarPago(false)}
+                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+              <button onClick={handleRegistrarPago} disabled={guardandoPago}
+                className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50">
+                {guardandoPago ? 'Procesando...' : 'Confirmar Pago'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Penalidades */}
+        {mostrarPenalidad && (
+          <div className="bg-white rounded-3xl border-2 border-purple-500 p-6 shadow-xl relative animate-fadeIn">
+             <h4 className="text-lg font-black text-purple-900 mb-4 flex items-center gap-2">
+              <span>⚠️</span> Agregar Cargo Extra
+            </h4>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Monto del cargo (S/)</label>
+                <input type="number" value={montoPenalidad} onChange={e => setMontoPenalidad(e.target.value)}
+                  placeholder="0.00" className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Motivo / Descripción</label>
+                <input type="text" value={descPenalidad} onChange={e => setDescPenalidad(e.target.value)}
+                  placeholder="Ej: Sábana manchada, llave perdida..." className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors" />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setMostrarPenalidad(false)}
+                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+              <button onClick={handleRegistrarPenalidad}
+                className="flex-[2] py-3 bg-purple-600 text-white rounded-xl font-bold shadow-md hover:bg-purple-700 active:scale-[0.98] transition-transform">
+                Aplicar Cargo a la Cuenta
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Extension */}
+        {mostrarExtension && (
+          <div className="bg-white rounded-3xl border-2 border-green-500 p-6 shadow-xl relative animate-fadeIn">
+            <h4 className="text-lg font-black text-green-900 mb-2 flex items-center gap-2">
+              <span>📅</span> Modificar Fechas
+            </h4>
+            <p className="text-sm font-bold text-gray-500 mb-4">
+              Checkout actual: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short'})} a las 12:00 PM
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nueva fecha de salida</label>
+                <input
+                  type="date"
+                  value={fechaExtension}
+                  onChange={e => setFechaExtension(e.target.value)}
+                  className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-gray-50 focus:bg-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setMostrarExtension(false)}
+                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+              <button onClick={handleExtenderEstadia}
+                className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700 active:scale-[0.98] transition-transform">
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        )}
+
+        <button onClick={handleCheckout}
+          className="w-full py-4 mt-6 bg-red-600 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-red-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 border-4 border-red-100">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Finalizar Hospedaje (Checkout)
+        </button>
+
+      </div>
+    </div>
   )
 }
