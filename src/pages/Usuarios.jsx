@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useUsuarios } from '../hooks/useUsuarios'
+
+import FormularioUsuario from '../components/Usuarios/FormularioUsuario'
+import ListaUsuarios from '../components/Usuarios/ListaUsuarios'
 
 function Usuarios() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
-  const [usuarios, setUsuarios] = useState([])
-  const [cargando, setCargando] = useState(true)
+  
+  const {
+    usuarios,
+    cargando,
+    cargarUsuarios,
+    guardarUsuario,
+    toggleActivo
+  } = useUsuarios()
+
   const [mostrarForm, setMostrarForm] = useState(false)
   const [editando, setEditando] = useState(null)
-  const [guardando, setGuardando] = useState(false)
-  const [error, setError] = useState('')
-
-  const [nombre, setNombre] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rol, setRol] = useState('recepcionista')
 
   useEffect(() => {
     if (usuario?.rol !== 'administrador') {
@@ -24,198 +27,69 @@ function Usuarios() {
       return
     }
     cargarUsuarios()
-  }, [])
-
-  async function cargarUsuarios() {
-    const { data } = await supabase
-      .from('usuarios')
-      .select('*')
-      .order('nombre')
-    setUsuarios(data || [])
-    setCargando(false)
-  }
+  }, [usuario, navigate, cargarUsuarios])
 
   function abrirEditar(u) {
     setEditando(u)
-    setNombre(u.nombre)
-    setEmail(u.email)
-    setPassword('')
-    setRol(u.rol)
     setMostrarForm(true)
-    setError('')
   }
 
-  function cancelar() {
+  function cerrarFormulario() {
     setEditando(null)
-    setNombre('')
-    setEmail('')
-    setPassword('')
-    setRol('recepcionista')
     setMostrarForm(false)
-    setError('')
   }
 
-  async function guardarUsuario() {
-    setError('')
-    if (!nombre.trim() || !email.trim()) {
-      setError('Nombre y email son obligatorios')
-      return
-    }
-    if (!editando && !password.trim()) {
-      setError('La contraseña es obligatoria')
-      return
-    }
-    setGuardando(true)
-
-    if (editando) {
-      const updates = {
-        nombre: nombre.trim(),
-        email: email.trim().toLowerCase(),
-        rol
-      }
-      if (password.trim()) updates.password_hash = password
-
-      const { error: err } = await supabase
-        .from('usuarios')
-        .update(updates)
-        .eq('id', editando.id)
-
-      if (err) { setError('Error al actualizar usuario'); setGuardando(false); return }
-    } else {
-      const { error: err } = await supabase.from('usuarios').insert({
-        nombre: nombre.trim(),
-        email: email.trim().toLowerCase(),
-        password_hash: password,
-        rol,
-        activo: true
-      })
-      if (err) { setError('Error al crear usuario — el email ya existe'); setGuardando(false); return }
-    }
-
-    cancelar()
-    setGuardando(false)
-    cargarUsuarios()
+  if (cargando) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-500 font-medium">Cargando personal...</span>
+      </div>
+    )
   }
-
-  async function toggleActivo(u) {
-    await supabase
-      .from('usuarios')
-      .update({ activo: !u.activo })
-      .eq('id', u.id)
-    cargarUsuarios()
-  }
-
-  if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
   return (
-    <div className="p-4">
-      <button onClick={() => navigate('/')} className="mb-4 text-sm text-blue-600">
-        ← Volver
-      </button>
-
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Usuarios</h2>
+    <div className="p-4 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/')} 
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+            title="Volver"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div>
+            <h2 className="text-2xl font-black text-gray-800">Personal y Usuarios</h2>
+            <p className="text-sm text-gray-500 font-medium">Gestiona accesos y roles del sistema</p>
+          </div>
+        </div>
+        
         {!mostrarForm && (
           <button
-            onClick={() => { cancelar(); setMostrarForm(true) }}
-            className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
+            onClick={() => { setEditando(null); setMostrarForm(true); }}
+            className="px-5 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95"
           >
-            + Nuevo
+            + Nuevo Personal
           </button>
         )}
       </div>
 
       {mostrarForm && (
-        <div className="bg-white rounded-xl border p-4 mb-4">
-          <p className="text-xs text-gray-500 font-medium uppercase mb-3">
-            {editando ? `Editando: ${editando.nombre}` : 'Nuevo usuario'}
-          </p>
-          <input
-            type="text"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-            placeholder="Nombre"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Correo electrónico"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder={editando ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <select
-            value={rol}
-            onChange={e => setRol(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
-          >
-            <option value="recepcionista">Recepcionista</option>
-            <option value="administrador">Administrador</option>
-          </select>
-
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-          <div className="flex gap-2">
-            <button
-              onClick={cancelar}
-              className="flex-1 py-2 border rounded-xl text-sm text-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={guardarUsuario}
-              disabled={guardando}
-              className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium disabled:opacity-50"
-            >
-              {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear usuario'}
-            </button>
-          </div>
-        </div>
+        <FormularioUsuario 
+          editando={editando} 
+          onGuardar={guardarUsuario} 
+          onCancelar={cerrarFormulario} 
+        />
       )}
 
-      <div className="flex flex-col gap-3">
-        {usuarios.map(u => (
-          <div key={u.id} className="bg-white rounded-xl border p-4">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="font-semibold">{u.nombre}</p>
-                <p className="text-xs text-gray-500 mt-1">{u.email}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-                  u.rol === 'administrador' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {u.rol}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2 items-end">
-                <button
-                  onClick={() => abrirEditar(u)}
-                  className="text-xs px-3 py-1 bg-blue-100 text-blue-600 rounded-lg font-medium"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => toggleActivo(u)}
-                  className={`text-xs px-3 py-1 rounded-lg font-medium ${
-                    u.activo ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                  }`}
-                >
-                  {u.activo ? 'Desactivar' : 'Activar'}
-                </button>
-              </div>
-            </div>
-            {!u.activo && (
-              <p className="text-xs text-red-400 mt-1">Usuario desactivado</p>
-            )}
-          </div>
-        ))}
-      </div>
+      <ListaUsuarios 
+        usuarios={usuarios} 
+        onEditar={abrirEditar} 
+        onToggleActivo={toggleActivo} 
+      />
     </div>
   )
 }
