@@ -120,5 +120,15 @@ export const hospedajesService = {
       .update({ estado: 'ocupada' })
       .eq('id', habitacionId)
     if (errHab) throw new Error(errHab.message)
+  },
+
+  async obtenerPorId(hospedajeId) {
+    const { data, error } = await supabase
+      .from('hospedajes')
+      .select('*, huesped_hospedaje(clientes(*))')
+      .eq('id', hospedajeId)
+      .single()
+    if (error) throw new Error(error.message)
+    return data
   }
 }

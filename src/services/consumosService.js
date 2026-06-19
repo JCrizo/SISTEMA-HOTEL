@@ -4,8 +4,9 @@ export const consumosService = {
   async obtenerPorHospedaje(hospedajeId) {
     const { data, error } = await supabase
       .from('consumos')
-      .select('*')
+      .select('*, productos(nombre)')
       .eq('hospedaje_id', hospedajeId)
+      .order('created_at')
     if (error) throw new Error(error.message)
     return data || []
   }

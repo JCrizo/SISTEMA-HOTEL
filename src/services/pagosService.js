@@ -6,6 +6,7 @@ export const pagosService = {
       .from('pagos')
       .select('*')
       .eq('hospedaje_id', hospedajeId)
+      .order('created_at')
     if (error) throw new Error(error.message)
     return data || []
   },
