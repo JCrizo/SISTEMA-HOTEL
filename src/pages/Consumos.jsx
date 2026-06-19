@@ -1,145 +1,84 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import { useConsumos } from '../hooks/useConsumos'
+
+import AvisoSinTurno from '../components/AvisoSinTurno'
+import CatalogoProductos from '../components/Consumos/CatalogoProductos'
+import ListaConsumosRegistrados from '../components/Consumos/ListaConsumosRegistrados'
 
 function Consumos() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [hospedaje, setHospedaje] = useState(null)
-  const [hab, setHab] = useState(null)
-  const [productos, setProductos] = useState([])
-  const [consumos, setConsumos] = useState([])
-  const [guardando, setGuardando] = useState(false)
+  const { usuario } = useAuth()
+  const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  
+  const {
+    cargando,
+    hab,
+    productos,
+    consumos,
+    guardando,
+    cargarDatos,
+    agregarConsumo,
+    eliminarConsumo
+  } = useConsumos(id, turnoActivo, usuario)
 
   useEffect(() => {
     cargarDatos()
-  }, [id])
+  }, [cargarDatos])
 
-  async function cargarDatos() {
-    const { data: habData } = await supabase
-      .from('habitaciones')
-      .select('*')
-      .eq('id', id)
-      .single()
-    setHab(habData)
-
-    const { data: hospData } = await supabase
-      .from('hospedajes')
-      .select('*')
-      .eq('habitacion_id', id)
-      .eq('estado', 'activo')
-      .single()
-    setHospedaje(hospData)
-
-    const { data: prodData } = await supabase
-      .from('productos')
-      .select('*')
-      .eq('activo', true)
-      .order('nombre')
-    setProductos(prodData || [])
-
-    if (hospData) {
-      const { data: consData } = await supabase
-        .from('consumos')
-        .select('*, productos(*)')
-        .eq('hospedaje_id', hospData.id)
-        .order('created_at', { ascending: false })
-      setConsumos(consData || [])
-    }
+  if (cargando || cargandoTurno) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-500 font-medium">Cargando datos...</span>
+      </div>
+    )
   }
 
-  async function agregarConsumo(producto) {
-    if (!hospedaje) return
-    setGuardando(true)
-
-    await supabase.from('consumos').insert({
-      hospedaje_id: hospedaje.id,
-      producto_id: producto.id,
-      cantidad: 1,
-      precio_unitario: producto.precio
-      
-    })
-
-    await supabase.from('productos')
-    .update({ stock: Math.max(0, producto.stock - 1) })
-    .eq('id', producto.id)
-
-    cargarDatos()
-    setGuardando(false)
+  if (!turnoActivo) {
+    return <AvisoSinTurno mensaje="Debes iniciar un turno antes de registrar consumos en la habitación." />
   }
 
-  async function eliminarConsumo(consumoId) {
-    if (!confirm('¿Eliminar este consumo?')) return
-    await supabase.from('consumos').delete().eq('id', consumoId)
-    cargarDatos()
-  }
-
-  const totalConsumos = consumos.reduce((s, c) => s + parseFloat(c.precio_unitario) * c.cantidad, 0)
-
-  if (!hab) return <div className="p-4 text-gray-500">Cargando...</div>
+  if (!hab) return null
 
   return (
-    <div className="p-4">
-      <button onClick={() => navigate(`/habitacion/${id}`)} className="mb-4 text-sm text-blue-600">
-        ← Volver
-      </button>
-
-      <h2 className="text-xl font-semibold mb-4">Consumos · Hab {hab.numero}</h2>
-
-      {/* Productos disponibles */}
-      <div className="bg-white rounded-xl border p-4 mb-3">
-        <p className="text-xs text-gray-500 font-medium uppercase mb-3">Agregar producto</p>
-        {productos.length === 0 ? (
-          <p className="text-sm text-gray-400">No hay productos registrados</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {productos.map(prod => (
-              <button
-                key={prod.id}
-                onClick={() => agregarConsumo(prod)}
-                disabled={guardando}
-                className="border rounded-xl p-3 text-left hover:bg-green-50 hover:border-green-400 disabled:opacity-50"
-              >
-                <div className="text-sm font-medium">{prod.nombre}</div>
-                <div className="text-xs text-gray-500 mt-1">S/{prod.precio}</div>
-              </button>
-            ))}
-          </div>
-        )}
+    <div className="p-4 max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
+      <div className="flex items-center gap-4 mb-6">
+        <button 
+          onClick={() => navigate(`/habitacion/${id}`)} 
+          className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+          title="Volver"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <div>
+          <h2 className="text-2xl font-black text-gray-800">
+            Punto de Venta <span className="text-blue-600">· Hab. {hab.numero}</span>
+          </h2>
+          <p className="text-sm text-gray-500 font-medium">Carga productos directamente a la cuenta del huésped</p>
+        </div>
       </div>
 
-      {/* Consumos registrados */}
-      <div className="bg-white rounded-xl border p-4 mb-3">
-        <p className="text-xs text-gray-500 font-medium uppercase mb-3">
-          Consumos registrados
-        </p>
-        {consumos.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin consumos aún</p>
-        ) : (
-          <>
-            {consumos.map(c => (
-              <div key={c.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                <div>
-                  <p className="text-sm font-medium">{c.productos?.nombre}</p>
-                  <p className="text-xs text-gray-400">x{c.cantidad} · S/{c.precio_unitario}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">S/{(c.precio_unitario * c.cantidad).toFixed(2)}</span>
-                  <button
-                    onClick={() => eliminarConsumo(c.id)}
-                    className="text-red-400 text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-between font-semibold pt-2 mt-1">
-              <span>Total consumos</span>
-              <span>S/{totalConsumos.toFixed(2)}</span>
-            </div>
-          </>
-        )}
+      <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+        <div className="flex-[2] min-h-0">
+          <CatalogoProductos 
+            productos={productos} 
+            agregarConsumo={agregarConsumo}
+            guardando={guardando}
+          />
+        </div>
+        
+        <div className="flex-[1.2] min-h-0">
+          <ListaConsumosRegistrados 
+            consumos={consumos}
+            eliminarConsumo={eliminarConsumo}
+          />
+        </div>
       </div>
     </div>
   )

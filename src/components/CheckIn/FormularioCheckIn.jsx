@@ -1,0 +1,503 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+export default function FormularioCheckIn({
+  hab,
+  datosIniciales,
+  turnoActivo,
+  cargando,
+  error,
+  setError,
+  buscarCliente,
+  realizarCheckIn
+}) {
+  const navigate = useNavigate()
+  
+  const [dni, setDni] = useState('')
+  const [tipoDoc, setTipoDoc] = useState('dni')
+  const [cliente, setCliente] = useState(null)
+  const [nombres, setNombres] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [nacionalidad, setNacionalidad] = useState('')
+
+  const [tarifaPorNoche, setTarifaPorNoche] = useState('')
+  const [tarifa, setTarifa] = useState('')
+  const [noches, setNoches] = useState(1)
+  const [fechaSalida, setFechaSalida] = useState('')
+  const [metodoPago, setMetodoPago] = useState('efectivo')
+  const [nroTicket, setNroTicket] = useState('')
+  const [modalPago, setModalPago] = useState('al_salir')
+  const [adelanto, setAdelanto] = useState('')
+  const [montoEarly, setMontoEarly] = useState('')
+  const [comprobante, setComprobante] = useState('ninguno')
+  const [ruc, setRuc] = useState('')
+  const [observaciones, setObservaciones] = useState('')
+
+  // Efecto para cargar datos iniciales de la habitación o reserva
+  useEffect(() => {
+    if (!datosIniciales) return
+
+    setTarifaPorNoche(datosIniciales.habitacion?.precio_actual || '')
+    
+    // Fecha de salida por defecto
+    const ahora = new Date()
+    const hora = ahora.getHours()
+    const salidaPorDefecto = new Date(ahora)
+    if (hora >= 5) salidaPorDefecto.setDate(salidaPorDefecto.getDate() + 1)
+    setFechaSalida(salidaPorDefecto.toISOString().split('T')[0])
+
+    // Si viene de una reserva
+    if (datosIniciales.reserva) {
+      const res = datosIniciales.reserva
+      const cli = res.clientes
+      
+      if (cli) {
+        setDni(cli.dni_pasaporte || '')
+        setNombres(cli.nombres || '')
+        setTelefono(cli.telefono || '')
+        setNacionalidad(cli.nacionalidad || '')
+        setCliente(cli)
+        if (cli.tarifa_habitual) setTarifaPorNoche(cli.tarifa_habitual)
+      }
+      
+      if (parseFloat(res.adelanto) > 0) {
+        setAdelanto(res.adelanto.toString())
+        setModalPago('adelanto')
+      }
+      if (parseFloat(res.monto_early) > 0) {
+        setMontoEarly(res.monto_early.toString())
+      }
+      if (res.observaciones) setObservaciones(res.observaciones)
+      
+      if (res.fecha_salida) {
+        const fechaSalidaReserva = new Date(res.fecha_salida)
+        setFechaSalida(fechaSalidaReserva.toISOString().split('T')[0])
+        const diffMs = fechaSalidaReserva.setHours(0,0,0,0) - new Date().setHours(0,0,0,0)
+        const nochesCalculadas = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)))
+        setNoches(nochesCalculadas)
+      }
+    }
+  }, [datosIniciales])
+
+  // Tarifa total = tarifa por noche × número de noches
+  useEffect(() => {
+    const porNoche = parseFloat(tarifaPorNoche) || 0
+    setTarifa((porNoche * noches).toString())
+  }, [tarifaPorNoche, noches])
+
+  function calcularFechaDesdeNoches(n) {
+    const ahora = new Date()
+    const hora = ahora.getHours()
+    const base = new Date(ahora)
+    if (hora >= 5) base.setDate(base.getDate() + 1)
+    base.setDate(base.getDate() + (n - 1))
+    return base.toISOString().split('T')[0]
+  }
+
+  function actualizarNoches(valor) {
+    const n = Math.max(1, parseInt(valor) || 1)
+    setNoches(n)
+    setFechaSalida(calcularFechaDesdeNoches(n))
+  }
+
+  function actualizarFechaSalida(valor) {
+    setFechaSalida(valor)
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const nuevaFecha = new Date(valor + 'T00:00:00')
+    const diffDias = Math.round((nuevaFecha - hoy) / (1000 * 60 * 60 * 24))
+    setNoches(Math.max(1, diffDias))
+  }
+
+  async function handleBuscarCliente() {
+    if (!dni.trim()) return
+    const data = await buscarCliente(dni.trim())
+    if (data) {
+      setCliente(data)
+      setNombres(data.nombres)
+      setTelefono(data.telefono || '')
+      setNacionalidad(data.nacionalidad || '')
+      if (data.tarifa_habitual) setTarifaPorNoche(data.tarifa_habitual)
+    } else {
+      setCliente(null)
+      setNombres('')
+      setTelefono('')
+    }
+  }
+
+  async function confirmar() {
+    setError(null)
+    if (!turnoActivo) { setError('Debes iniciar turno antes de continuar.'); return }
+    if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
+    if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
+    if (!tarifaPorNoche) { setError('La tarifa por noche es obligatoria'); return }
+    if (!fechaSalida) { setError('La fecha de salida es obligatoria'); return }
+
+    const ahora = new Date()
+    const salidaEstimada = new Date(fechaSalida + 'T12:00:00')
+
+    let montoPagado = 0
+    if (modalPago === 'completo') montoPagado = parseFloat(tarifa)
+    else if (modalPago === 'adelanto' && parseFloat(adelanto) > 0) montoPagado = parseFloat(adelanto)
+
+    const exito = await realizarCheckIn(
+      {
+        habitacionId: hab.id,
+        turnoId: turnoActivo.id,
+        reservaId: datosIniciales?.reserva?.id || null,
+        ingreso: ahora.toISOString(),
+        salida_estimada: salidaEstimada.toISOString(),
+        tarifa_pactada: parseFloat(tarifa),
+        metodo_pago: metodoPago,
+        estado_pago: modalPago === 'completo' ? 'pagado' : modalPago === 'adelanto' ? 'parcial' : 'pendiente',
+        comprobante,
+        ruc: comprobante === 'factura' ? ruc : null,
+        observaciones,
+        monto_early: parseFloat(montoEarly || 0),
+        montoPagado,
+        cajaTurnoActual: turnoActivo.caja_principal_actual,
+        nroTicket
+      },
+      {
+        id: cliente?.id || null,
+        dni_pasaporte: dni.trim(),
+        nombres,
+        telefono,
+        nacionalidad
+      }
+    )
+
+    if (exito) {
+      navigate('/')
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            Registro Check-In
+          </h2>
+          <p className="text-blue-100 font-medium text-sm mt-1">Completa los datos para iniciar la estadía</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-blue-200 font-bold uppercase tracking-widest">Habitación</p>
+          <p className="text-3xl font-black">{hab.numero}</p>
+        </div>
+      </div>
+
+      <div className="p-8 space-y-8">
+        
+        {/* SECCIÓN: HUÉSPED */}
+        <section>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">1</span>
+            Datos del Huésped
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Documento</label>
+              <div className="flex gap-2">
+                <select
+                  value={tipoDoc}
+                  onChange={e => { setTipoDoc(e.target.value); setDni('') }}
+                  className="w-1/3 border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                >
+                  <option value="dni">DNI</option>
+                  <option value="pasaporte">Pasaporte</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <input
+                  type="text"
+                  value={dni}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '')
+                    if (tipoDoc === 'dni') {
+                      if (val.length <= 8) setDni(val)
+                    } else setDni(e.target.value)
+                  }}
+                  onBlur={handleBuscarCliente}
+                  placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
+                  className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                  maxLength={tipoDoc === 'dni' ? 8 : 20}
+                />
+                <button
+                  onClick={handleBuscarCliente}
+                  className="px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl text-sm font-bold transition-colors"
+                >
+                  Buscar
+                </button>
+              </div>
+              {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
+                <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
+              )}
+
+              {cliente && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-xs font-bold text-green-800 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                    Cliente frecuente
+                  </p>
+                  {cliente.tarifa_habitual && (
+                    <p className="text-xs font-bold text-green-700 mt-1 bg-white px-2 py-1 rounded inline-block shadow-sm">
+                      Tarifa habitual: S/{cliente.tarifa_habitual}
+                    </p>
+                  )}
+                  {cliente.lista_negra && (
+                    <p className="text-xs text-red-600 font-black mt-2 bg-red-100 px-2 py-1 rounded inline-block">⚠ EN LISTA NEGRA</p>
+                  )}
+                  {cliente.deuda_pendiente > 0 && (
+                    <p className="text-xs text-orange-600 font-bold mt-2 bg-orange-100 px-2 py-1 rounded inline-block">⚠ Deuda: S/{cliente.deuda_pendiente}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nombre Completo</label>
+                <input
+                  type="text"
+                  value={nombres}
+                  onChange={e => setNombres(e.target.value)}
+                  placeholder="Ej: Juan Pérez"
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Teléfono</label>
+                  <input
+                    type="text"
+                    value={telefono}
+                    onChange={e => setTelefono(e.target.value)}
+                    placeholder="Opcional"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nacionalidad</label>
+                  <input
+                    type="text"
+                    value={nacionalidad}
+                    onChange={e => setNacionalidad(e.target.value)}
+                    placeholder="Ej: Peruana"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN: ESTADÍA */}
+        <section>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">2</span>
+            Datos de Estadía
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+              <label className="text-xs font-bold text-blue-800 uppercase tracking-wide block mb-2">Noches a hospedarse</label>
+              <input
+                type="number"
+                min="1"
+                value={noches}
+                onChange={e => actualizarNoches(e.target.value)}
+                className="w-full border-2 border-white rounded-xl px-4 py-3 text-lg font-black text-blue-900 bg-white outline-none focus:border-blue-500 shadow-sm text-center"
+              />
+            </div>
+            
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 md:col-span-2 flex items-center gap-4">
+              <div className="flex-1">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Fecha estimada de salida</label>
+                <input
+                  type="date"
+                  value={fechaSalida}
+                  onChange={e => actualizarFechaSalida(e.target.value)}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
+                />
+              </div>
+              <div className="hidden md:block w-px h-12 bg-gray-200"></div>
+              <div className="flex-1">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Tarifa por Noche (S/)</label>
+                <input
+                  type="number"
+                  value={tarifaPorNoche}
+                  onChange={e => setTarifaPorNoche(e.target.value)}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN: PAGO */}
+        <section>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">3</span>
+            Facturación y Cobro
+          </h3>
+
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-gray-200 gap-4">
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Monto Total a Pagar</p>
+                <p className="text-4xl font-black text-gray-800 tracking-tighter">
+                  S/{parseFloat(tarifa || 0).toFixed(2)}
+                </p>
+                {noches > 1 && (
+                  <p className="text-xs font-bold text-blue-600 mt-1 bg-blue-50 px-2 py-0.5 rounded inline-block">
+                    S/{tarifaPorNoche || 0} × {noches} noches
+                  </p>
+                )}
+              </div>
+
+              <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
+                {[
+                  { value: 'al_salir', label: 'Al Salir' },
+                  { value: 'adelanto', label: 'Adelanto' },
+                  { value: 'completo', label: 'Completo' },
+                ].map(op => (
+                  <button
+                    key={op.value}
+                    onClick={() => setModalPago(op.value)}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                      modalPago === op.value 
+                        ? 'bg-blue-600 text-white shadow-md' 
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                {modalPago !== 'al_salir' && (
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Medio de Pago</label>
+                    <select
+                      value={metodoPago}
+                      onChange={e => setMetodoPago(e.target.value)}
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                    >
+                      <option value="efectivo">💵 Efectivo</option>
+                      <option value="yape">📱 Yape / Plin</option>
+                      <option value="tarjeta">💳 Tarjeta (POS)</option>
+                      <option value="transferencia">🏦 Transferencia</option>
+                    </select>
+                    {metodoPago === 'tarjeta' && (
+                      <input
+                        type="text"
+                        value={nroTicket}
+                        onChange={e => setNroTicket(e.target.value)}
+                        placeholder="Nro de ticket (opcional)"
+                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {modalPago === 'adelanto' && (
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2 text-blue-700">Monto del Adelanto (S/)</label>
+                    <input
+                      type="number"
+                      value={adelanto}
+                      onChange={e => setAdelanto(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full border-2 border-blue-200 rounded-xl px-4 py-2.5 text-lg font-bold text-blue-900 outline-none focus:border-blue-500 bg-blue-50 transition-colors"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Comprobante a emitir</label>
+                  <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
+                    {['ninguno', 'boleta', 'factura'].map(op => (
+                      <button
+                        key={op}
+                        onClick={() => setComprobante(op)}
+                        className={`flex-1 px-2 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
+                          comprobante === op 
+                            ? 'bg-gray-800 text-white shadow-md' 
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {op}
+                      </button>
+                    ))}
+                  </div>
+                  {comprobante === 'factura' && (
+                    <input
+                      type="text"
+                      value={ruc}
+                      onChange={e => setRuc(e.target.value)}
+                      placeholder="Ingrese RUC (11 dígitos)"
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Observaciones</label>
+                  <textarea
+                    value={observaciones}
+                    onChange={e => setObservaciones(e.target.value)}
+                    placeholder="Algún requerimiento especial..."
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors h-12 resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
+            <p className="text-sm font-bold text-red-600 flex justify-center items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              {error}
+            </p>
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-gray-100 flex gap-4">
+          <button
+            onClick={() => navigate('/')}
+            className="px-8 py-4 border-2 border-gray-200 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmar}
+            disabled={cargando}
+            className="flex-1 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-black text-lg shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
+          >
+            {cargando ? (
+              <span className="flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Procesando...
+              </span>
+            ) : (
+              <>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                Confirmar Check-In
+              </>
+            )}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )
+}

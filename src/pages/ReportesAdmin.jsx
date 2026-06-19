@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import {
+  agruparIngresosPorDia,
+  exportarReporteGeneralPDF,
+  exportarReporteGeneralExcel,
+  exportarCierreTurnoPDF,
+  exportarCierreTurnoExcel,
+} from '../utils/exportReportes'
 
 function ReportesAdmin() {
   const navigate = useNavigate()
@@ -15,6 +22,8 @@ function ReportesAdmin() {
   const [turnos, setTurnos] = useState([])
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const [hospedajesTurno, setHospedajesTurno] = useState([])
+  const [movimientosTurno, setMovimientosTurno] = useState([])
+  const [movimientosStockTurno, setMovimientosStockTurno] = useState([])
 
   // Limpieza
   const [limpiezas, setLimpiezas] = useState([])
@@ -22,9 +31,18 @@ function ReportesAdmin() {
   // Cochera
   const [cocheras, setCocheras] = useState([])
 
-  // Búsqueda ficha
+  // Búsqueda ficha (puntual, por número)
   const [busquedaFicha, setBusquedaFicha] = useState('')
   const [resultadosFicha, setResultadosFicha] = useState([])
+
+  // Fichas (listado completo con filtros)
+  const [todasFichas, setTodasFichas] = useState([])
+  const [filtroFichas, setFiltroFichas] = useState('')
+  const [fechaFiltroFichas, setFechaFiltroFichas] = useState('')
+
+  // Detalle para exportación de reportes
+  const [pagosDetalle, setPagosDetalle] = useState([])
+  const [cocheraDetalle, setCocheraDetalle] = useState([])
 
   useEffect(() => {
     cargarDatos()
@@ -53,9 +71,11 @@ function ReportesAdmin() {
       .reduce((s, p) => s + parseFloat(p.monto), 0) || 0
     const ingresosConsumos = pagosData?.filter(p => p.concepto === 'consumo')
       .reduce((s, p) => s + parseFloat(p.monto), 0) || 0
-    const { data: cocheraData } = await supabase.from('cochera').select('monto')
+    const { data: cocheraData } = await supabase.from('cochera').select('monto, hora_ingreso')
       .eq('estado_pago', 'pagado').gte('hora_ingreso', fechaInicio.toISOString())
     const ingresosCochera = cocheraData?.reduce((s, c) => s + parseFloat(c.monto), 0) || 0
+    setPagosDetalle(pagosData || [])
+    setCocheraDetalle(cocheraData || [])
 
     // Desglose por medio de pago
     const totalEfectivo = pagosData?.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0) || 0
@@ -106,6 +126,17 @@ function ReportesAdmin() {
       .limit(50)
     setCocheras(cocheraAll || [])
 
+    // Fichas (listado completo)
+    const { data: fichasData } = await supabase.from('hospedajes')
+      .select(`
+        *,
+        habitaciones(numero, tipo_actual),
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
+      `)
+      .order('ingreso', { ascending: false })
+      .limit(50)
+    setTodasFichas(fichasData || [])
+
     setCargando(false)
   }
 
@@ -115,11 +146,23 @@ function ReportesAdmin() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .eq('turno_id', turno.id)
       .order('ingreso')
     setHospedajesTurno(data || [])
+
+    const { data: movs } = await supabase.from('movimientos_caja')
+      .select('*')
+      .eq('turno_id', turno.id)
+      .order('created_at', { ascending: false })
+    setMovimientosTurno(movs || [])
+
+    const { data: movsStock } = await supabase.from('movimientos_stock')
+      .select('*, productos(nombre), usuarios(nombre)')
+      .eq('turno_id', turno.id)
+      .order('created_at', { ascending: false })
+    setMovimientosStockTurno(movsStock || [])
   }
 
   async function buscarFicha() {
@@ -128,11 +171,28 @@ function ReportesAdmin() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .eq('nro_ficha', parseInt(busquedaFicha))
     setResultadosFicha(data || [])
   }
+
+  const fichasFiltradas = todasFichas.filter(h => {
+    const nroFicha = String(h.nro_ficha).padStart(6, '0')
+    const nombre = h.huesped_hospedaje?.[0]?.clientes?.nombres?.toLowerCase() || ''
+    const dni = h.huesped_hospedaje?.[0]?.clientes?.dni_pasaporte || ''
+    const telefono = h.huesped_hospedaje?.[0]?.clientes?.telefono || ''
+    const fechaMatch = fechaFiltroFichas
+      ? new Date(h.ingreso).toISOString().split('T')[0] === fechaFiltroFichas
+      : true
+    return (
+      fechaMatch &&
+      (nroFicha.includes(filtroFichas) ||
+       nombre.includes(filtroFichas.toLowerCase()) ||
+       dni.includes(filtroFichas) ||
+       telefono.includes(filtroFichas))
+    )
+  })
 
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
@@ -146,9 +206,10 @@ function ReportesAdmin() {
         {[
           { key: 'general', label: 'General' },
           { key: 'turnos', label: 'Turnos' },
+          { key: 'fichas', label: 'Fichas' },
           { key: 'limpieza', label: 'Limpieza' },
           { key: 'cochera', label: 'Cochera' },
-          { key: 'ficha', label: 'Buscar ficha' },
+          { key: 'ficha', label: 'Buscar N° ficha' },
         ].map(t => (
           <button key={t.key} onClick={() => setVista(t.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap ${
@@ -162,13 +223,25 @@ function ReportesAdmin() {
       {/* General */}
       {vista === 'general' && (
         <>
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end items-center gap-2 mb-3">
             <select value={periodo} onChange={e => setPeriodo(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm">
               <option value="hoy">Hoy</option>
               <option value="semana">Últimos 7 días</option>
               <option value="mes">Este mes</option>
             </select>
+            <button
+              onClick={() => exportarReporteGeneralPDF(stats, periodo, agruparIngresosPorDia(pagosDetalle, cocheraDetalle))}
+              className="text-xs px-3 py-2 bg-red-600 text-white rounded-lg font-medium"
+            >
+              📄 PDF
+            </button>
+            <button
+              onClick={() => exportarReporteGeneralExcel(stats, periodo, agruparIngresosPorDia(pagosDetalle, cocheraDetalle))}
+              className="text-xs px-3 py-2 bg-green-700 text-white rounded-lg font-medium"
+            >
+              📊 Excel
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white rounded-xl border p-3">
@@ -202,6 +275,26 @@ function ReportesAdmin() {
             <div className="flex justify-between text-sm py-2 font-semibold">
               <span>Total</span><span className="text-green-700">S/{stats.totalIngresos?.toFixed(2)}</span>
             </div>
+          </div>
+          <div className="bg-white rounded-xl border p-4 mt-3">
+            <p className="text-xs text-gray-500 font-medium uppercase mb-3">Ingresos por día</p>
+            {agruparIngresosPorDia(pagosDetalle, cocheraDetalle).length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-2">Sin ingresos en este período</p>
+            ) : (
+              agruparIngresosPorDia(pagosDetalle, cocheraDetalle).map(d => (
+                <div key={d.fecha} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
+                  <span className="text-gray-600">
+                    {new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-PE', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  </span>
+                  <div className="flex gap-3 text-xs text-gray-400">
+                    <span>Hosp: S/{d.hospedaje.toFixed(2)}</span>
+                    <span>Cons: S/{d.consumos.toFixed(2)}</span>
+                    <span>Coch: S/{d.cochera.toFixed(2)}</span>
+                  </div>
+                  <span className="font-semibold text-green-700">S/{d.total.toFixed(2)}</span>
+                </div>
+              ))
+            )}
           </div>
           <div className="bg-white rounded-xl border p-4 mt-3">
             <p className="text-xs text-gray-500 font-medium uppercase mb-3">Desglose por medio de pago</p>
@@ -270,43 +363,227 @@ function ReportesAdmin() {
               <button onClick={() => setTurnoSeleccionado(null)}
                 className="mb-3 text-sm text-blue-600">← Volver a turnos</button>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-3">
-                <p className="font-semibold capitalize">{turnoSeleccionado.tipo}</p>
-                <p className="text-xs text-blue-600">{turnoSeleccionado.usuarios?.nombre}</p>
-                <p className="text-xs text-blue-500">{new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold capitalize">{turnoSeleccionado.tipo}</p>
+                    <p className="text-xs text-blue-600">{turnoSeleccionado.usuarios?.nombre}</p>
+                    <p className="text-xs text-blue-500">{new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => exportarCierreTurnoPDF(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                      className="text-xs px-3 py-1.5 bg-red-600 text-white rounded-lg font-medium"
+                    >
+                      📄 PDF
+                    </button>
+                    <button
+                      onClick={() => exportarCierreTurnoExcel(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                      className="text-xs px-3 py-1.5 bg-green-700 text-white rounded-lg font-medium"
+                    >
+                      📊 Excel
+                    </button>
+                  </div>
+                </div>
               </div>
-              {hospedajesTurno.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-4">Sin hospedajes en este turno</p>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {hospedajesTurno.map(h => (
-                    <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
-                      className="bg-white rounded-xl border p-4 cursor-pointer">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-semibold">
-                            {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
-                          </p>
-                          <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
-                          <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
-                          <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
-                            h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {h.estado_pago === 'pagado' ? 'Pagado' :
-                             h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
-                          </span>
-                        </div>
+
+              {movimientosTurno.length > 0 && (
+                <div className="bg-white rounded-xl border p-4 mb-3">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Movimientos de caja</p>
+                  {movimientosTurno.map(mov => (
+                    <div key={mov.id} className="flex justify-between items-start py-1.5 border-b last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">{mov.concepto}</p>
+                        <p className="text-xs text-gray-400">
+                          {mov.tipo === 'prestamo_entre_cajas'
+                            ? `Préstamo: ${mov.caja_origen} → ${mov.caja_destino}`
+                            : `Salida de caja ${mov.caja_origen}`}
+                        </p>
+                        {mov.autorizado_por && (
+                          <p className="text-xs text-gray-400">Autorizado: {mov.autorizado_por}</p>
+                        )}
                       </div>
+                      <span className="text-sm font-medium text-red-600">− S/{mov.monto}</span>
                     </div>
                   ))}
                 </div>
               )}
+
+              {movimientosStockTurno.length > 0 && (
+                <div className="bg-white rounded-xl border p-4 mb-3">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Movimientos de productos</p>
+                  {movimientosStockTurno.map(mov => (
+                    <div key={mov.id} className="flex justify-between items-start py-1.5 border-b last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">{mov.productos?.nombre || 'Producto eliminado'}</p>
+                        <p className="text-xs text-gray-400">
+                          {mov.tipo === 'consumo' ? 'Vendido en consumo' : 'Ajuste manual de stock'}
+                          {mov.usuarios?.nombre ? ` · ${mov.usuarios.nombre}` : ''}
+                        </p>
+                      </div>
+                      <span className={`text-sm font-medium ${mov.cantidad < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {mov.cantidad > 0 ? '+' : ''}{mov.cantidad}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {hospedajesTurno.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-4">Sin hospedajes en este turno</p>
+              ) : (() => {
+                const activos = hospedajesTurno.filter(h => h.estado === 'activo')
+                const finalizados = hospedajesTurno.filter(h => h.estado !== 'activo')
+                return (
+                  <>
+                    {activos.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 font-medium uppercase mb-2">
+                          Habitaciones aún ocupadas ({activos.length})
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {activos.map(h => (
+                            <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
+                              className="bg-white rounded-xl border-2 border-red-200 p-4 cursor-pointer">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-semibold">
+                                    {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                                  </p>
+                                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                                  )}
+                                  <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
+                                  <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
+                                  <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                                    Ocupada
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {finalizados.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase mb-2">
+                          Ya hicieron checkout ({finalizados.length})
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {finalizados.map(h => (
+                            <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)}
+                              className="bg-white rounded-xl border p-4 cursor-pointer opacity-80">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-semibold">
+                                    {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                                  </p>
+                                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                                  )}
+                                  <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
+                                  <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold">S/{h.tarifa_pactada}</p>
+                                  <p className="text-xs text-blue-600">N° {String(h.nro_ficha).padStart(6, '0')}</p>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
+                                    h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {h.estado_pago === 'pagado' ? 'Pagado' :
+                                     h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </>
+          )}
+        </>
+      )}
+
+      {/* Fichas */}
+      {vista === 'fichas' && (
+        <>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={filtroFichas}
+              onChange={e => setFiltroFichas(e.target.value)}
+              placeholder="Buscar por ficha, nombre o DNI"
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <input
+            type="date"
+            value={fechaFiltroFichas}
+            onChange={e => setFechaFiltroFichas(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
+          />
+
+          {fichasFiltradas.length === 0 ? (
+            <p className="text-gray-400 text-sm text-center py-4">Sin resultados</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {fichasFiltradas.map(h => (
+                <div
+                  key={h.id}
+                  onClick={() => navigate(`/ficha/${h.id}`)}
+                  className="bg-white rounded-xl border p-4 cursor-pointer"
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <div>
+                      <p className="font-semibold">
+                        {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                      </p>
+                      {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                        <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-blue-600">
+                      N° {String(h.nro_ficha).padStart(6, '0')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Ingreso: {new Date(h.ingreso).toLocaleDateString('es-PE')}
+                  </p>
+                  <div className="flex justify-between mt-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      h.estado === 'activo' ? 'bg-green-100 text-green-800' :
+                      h.estado === 'finalizado' ? 'bg-gray-100 text-gray-600' :
+                      'bg-red-100 text-red-600'
+                    }`}>
+                      {h.estado === 'activo' ? 'Activo' :
+                       h.estado === 'finalizado' ? 'Finalizado' : 'Cancelado'}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      h.estado_pago === 'pagado' ? 'bg-green-100 text-green-800' :
+                      h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {h.estado_pago === 'pagado' ? 'Pagado' :
+                       h.estado_pago === 'parcial' ? 'Parcial' : 'Pendiente'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}
@@ -397,6 +674,9 @@ function ReportesAdmin() {
                   <p className="font-semibold">
                     {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
                   </p>
+                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                  )}
                   <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero}</p>
                   <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
                 </div>
