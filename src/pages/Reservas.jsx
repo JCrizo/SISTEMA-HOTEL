@@ -1,140 +1,30 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
-import AvisoSinTurno from '../components/AvisoSinTurno'
+import { useReservas } from '../hooks/useReservas'
+import FormularioReserva from '../components/Reservas/FormularioReserva'
 
-function Reservas() {
+export default function Reservas() {
   const navigate = useNavigate()
-  const [reservas, setReservas] = useState([])
-  const [habitaciones, setHabitaciones] = useState([])
-  const [cargando, setCargando] = useState(true)
-  const [mostrarForm, setMostrarForm] = useState(false)
-  const [guardando, setGuardando] = useState(false)
-  const [error, setError] = useState('')
   const { turnoActivo, cargandoTurno } = useTurnoActivo()
-
-  const [dni, setDni] = useState('')
-  const [tipoDoc, setTipoDoc] = useState('dni')
-  const [cliente, setCliente] = useState(null)
-  const [nombres, setNombres] = useState('')
-  const [telefono, setTelefono] = useState('')
-  const [habitacionId, setHabitacionId] = useState('')
-  const [fechaLlegada, setFechaLlegada] = useState('')
-  const [fechaSalida, setFechaSalida] = useState('')
-  const [adelanto, setAdelanto] = useState('')
-  const [montoEarly, setMontoEarly] = useState('')
-  const [observaciones, setObservaciones] = useState('')
+  const { reservas, cargando, error, cargarReservas, anularReserva } = useReservas()
+  
+  const [mostrarForm, setMostrarForm] = useState(false)
 
   useEffect(() => {
-    cargarDatos()
-  }, [])
+    cargarReservas()
+  }, [cargarReservas])
 
-  async function cargarDatos() {
-    const { data: resData } = await supabase
-      .from('reservas')
-      .select(`
-        *,
-        clientes(nombres, dni_pasaporte, telefono),
-        habitaciones(numero, tipo_actual, precio_actual)
-      `)
-      .in('estado', ['pendiente', 'confirmada'])
-      .order('fecha_llegada')
-    setReservas(resData || [])
-
-    const { data: habsData } = await supabase
-      .from('habitaciones')
-      .select('id, numero, tipo_actual, precio_actual')
-      .eq('estado', 'disponible')
-      .order('numero')
-    setHabitaciones(habsData || [])
-
-    setCargando(false)
-  }
-
-  async function buscarCliente() {
-    if (!dni.trim()) return
-    const { data } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('dni_pasaporte', dni.trim())
-      .single()
-
-    if (data) {
-      setCliente(data)
-      setNombres(data.nombres)
-      setTelefono(data.telefono || '')
-    } else {
-      setCliente(null)
-      setNombres('')
-      setTelefono('')
-    }
-  }
-
-  async function crearReserva() {
-    setError('')
-    if (!turnoActivo) { setError('No hay un turno activo. Debes iniciar turno antes de crear una reserva.'); return }
-    if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
-    if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
-    if (!habitacionId) { setError('Selecciona una habitación'); return }
-    if (!fechaLlegada) { setError('La fecha de llegada es obligatoria'); return }
-    setGuardando(true)
-
-    let clienteId
-    if (cliente) {
-      clienteId = cliente.id
-      await supabase
-        .from('clientes')
-        .update({ nombres, telefono })
-        .eq('id', cliente.id)
-    } else {
-      const { data, error: errCliente } = await supabase
-        .from('clientes')
-        .insert({ dni_pasaporte: dni.trim(), nombres, telefono })
-        .select().single()
-      if (errCliente) { setError('Error al guardar cliente'); setGuardando(false); return }
-      clienteId = data.id
-    }
-
-    await supabase.from('reservas').insert({
-      cliente_id: clienteId,
-      habitacion_id: habitacionId,
-      fecha_llegada: new Date(fechaLlegada).toISOString(),
-      fecha_salida: fechaSalida ? new Date(fechaSalida).toISOString() : null,
-      adelanto: parseFloat(adelanto || 0),
-      monto_early: parseFloat(montoEarly || 0),
-      estado: 'confirmada',
-      observaciones
-    })
-
-    setDni('')
-    setCliente(null)
-    setNombres('')
-    setTelefono('')
-    setHabitacionId('')
-    setFechaLlegada('')
-    setAdelanto('')
-    setMontoEarly('')
-    setObservaciones('')
-    setMostrarForm(false)
-    setGuardando(false)
-    cargarDatos()
-  }
-
-  async function anularReserva(reserva) {
+  async function handleAnularReserva(reserva) {
     if (!confirm(`¿Anular reserva de ${reserva.clientes?.nombres}?`)) return
-    await supabase
-      .from('reservas')
-      .update({ estado: 'anulada' })
-      .eq('id', reserva.id)
-    cargarDatos()
+    await anularReserva(reserva.id)
   }
 
-  async function convertirAHospedaje(reserva) {
+  function convertirAHospedaje(reserva) {
     navigate(`/checkin/${reserva.habitacion_id}?reserva=${reserva.id}`)
   }
 
-  if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
+  if (cargando && reservas.length === 0) return <div className="p-4 text-gray-500">Cargando...</div>
 
   return (
     <div className="p-4">
@@ -147,9 +37,9 @@ function Reservas() {
         {turnoActivo && (
           <button
             onClick={() => setMostrarForm(!mostrarForm)}
-            className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl"
+            className="text-sm px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
           >
-            + Nueva
+            {mostrarForm ? 'Cerrar Formulario' : '+ Nueva Reserva'}
           </button>
         )}
       </div>
@@ -162,145 +52,27 @@ function Reservas() {
         </div>
       )}
 
-      {mostrarForm && (
-        <div className="bg-white rounded-xl border p-4 mb-4">
-          <p className="text-xs text-gray-500 font-medium uppercase mb-3">Nueva reserva</p>
-
-          <div className="flex gap-2 mb-2">
-            <select
-                value={tipoDoc}
-                onChange={e => { setTipoDoc(e.target.value); setDni('') }}
-                className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-              >
-                <option value="dni">DNI (8 dígitos)</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="otro">Otro documento</option>
-              </select>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={dni}
-                  onChange={e => {
-                    const val = e.target.value.replace(/\D/g, '')
-                    if (tipoDoc === 'dni') {
-                      if (val.length <= 8) setDni(val)
-                    } else {
-                      setDni(e.target.value)
-                    }
-                  }}
-                  onBlur={buscarCliente}
-                  placeholder={tipoDoc === 'dni' ? '8 dígitos' : tipoDoc === 'pasaporte' ? 'Nro de pasaporte' : 'Nro de documento'}
-                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
-                  maxLength={tipoDoc === 'dni' ? 8 : 20}
-                />
-                
-              </div>
-              {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
-                <p className="text-xs text-red-500 mb-2">El DNI debe tener 8 dígitos</p>
-              )}
-            <button
-              onClick={buscarCliente}
-              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
-            >
-              Buscar
-            </button>
-          </div>
-
-          {cliente && (
-            <div className="mb-2 p-2 bg-green-50 border border-green-300 rounded-lg">
-              <p className="text-xs font-medium text-green-800">✓ Cliente encontrado</p>
-              <p className="text-xs text-green-700 mt-1">{cliente.nombres}</p>
-            </div>
-          )}
-
-          <input
-            type="text"
-            value={nombres}
-            onChange={e => setNombres(e.target.value)}
-            placeholder="Nombre completo"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="text"
-            value={telefono}
-            onChange={e => setTelefono(e.target.value)}
-            placeholder="Teléfono"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <select
-            value={habitacionId}
-            onChange={e => setHabitacionId(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          >
-            <option value="">Seleccionar habitación</option>
-            {habitaciones.map(h => (
-              <option key={h.id} value={h.id}>
-                Hab {h.numero} — {h.tipo_actual} · S/{h.precio_actual}
-              </option>
-            ))}
-          </select>
-          <input
-            type="datetime-local"
-            value={fechaLlegada}
-            onChange={e => setFechaLlegada(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="datetime-local"
-            value={fechaSalida}
-            onChange={e => setFechaSalida(e.target.value)}
-            placeholder="Fecha de salida (opcional)"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="number"
-            value={adelanto}
-            onChange={e => setAdelanto(e.target.value)}
-            placeholder="Adelanto (S/) — opcional"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <input
-            type="number"
-            value={montoEarly}
-            onChange={e => setMontoEarly(e.target.value)}
-            placeholder="Early check-in (S/) — opcional"
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
-          />
-          <textarea
-            value={observaciones}
-            onChange={e => setObservaciones(e.target.value)}
-            placeholder="Observaciones..."
-            className="w-full border rounded-lg px-3 py-2 text-sm mb-3 h-16 resize-none"
-          />
-
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setMostrarForm(false)}
-              className="flex-1 py-2 border rounded-xl text-sm text-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={crearReserva}
-              disabled={guardando}
-              className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium disabled:opacity-50"
-            >
-              {guardando ? 'Guardando...' : 'Confirmar reserva'}
-            </button>
-          </div>
+      {error && (
+        <div className="bg-red-50 border border-red-300 rounded-xl p-4 mb-4 text-center">
+          <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
-      {reservas.length === 0 ? (
-        <div className="bg-white rounded-xl border p-6 text-center">
+      {mostrarForm && (
+        <FormularioReserva 
+          turnoActivo={turnoActivo} 
+          onCancel={() => setMostrarForm(false)} 
+        />
+      )}
+
+      {reservas.length === 0 && !cargando ? (
+        <div className="bg-white rounded-xl border p-6 text-center shadow-sm">
           <p className="text-gray-500">No hay reservas pendientes</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {reservas.map(r => (
-            <div key={r.id} className="bg-white rounded-xl border p-4">
+            <div key={r.id} className="bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="font-semibold">{r.clientes?.nombres}</p>
@@ -330,20 +102,20 @@ function Reservas() {
                 </div>
               )}
               {r.observaciones && (
-                <div className="text-xs text-gray-500 mb-2">
-                  {r.observaciones}
+                <div className="text-xs text-gray-500 mb-2 p-2 bg-gray-50 rounded">
+                  <span className="font-medium">Obs:</span> {r.observaciones}
                 </div>
               )}
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => convertirAHospedaje(r)}
-                  className="flex-1 py-2 bg-green-600 text-white rounded-xl text-sm font-medium"
+                  className="flex-1 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
                 >
                   Check-in
                 </button>
                 <button
-                  onClick={() => anularReserva(r)}
-                  className="flex-1 py-2 bg-red-100 text-red-600 rounded-xl text-sm font-medium"
+                  onClick={() => handleAnularReserva(r)}
+                  className="flex-1 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-100"
                 >
                   Anular
                 </button>
@@ -355,5 +127,3 @@ function Reservas() {
     </div>
   )
 }
-
-export default Reservas
