@@ -169,6 +169,11 @@ function CheckIn() {
     let clienteId
     if (cliente) {
       clienteId = cliente.id
+      const { error: errUpdate } = await supabase
+        .from('clientes')
+        .update({ nombres, telefono, nacionalidad })
+        .eq('id', cliente.id)
+      if (errUpdate) { setError('Error al actualizar cliente'); setGuardando(false); return }
     } else {
       const { data, error } = await supabase
         .from('clientes')

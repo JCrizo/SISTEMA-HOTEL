@@ -95,7 +95,7 @@ function DetalleHabitacion() {
     if (habData?.estado === 'pendiente_limpieza' || habData?.estado === 'en_limpieza' || habData?.estado === 'limpieza_simple') {
       const { data: hospFin } = await supabase
         .from('hospedajes')
-        .select('*, huesped_hospedaje(clientes(nombres, dni_pasaporte))')
+        .select('*, huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))')
         .eq('habitacion_id', id)
         .eq('estado', 'finalizado')
         .order('salida_real', { ascending: false })
@@ -346,6 +346,7 @@ function DetalleHabitacion() {
             </div>
             <p className="font-semibold">{huesped?.nombres || 'Sin nombre'}</p>
             <p className="text-sm text-gray-500">{huesped?.dni_pasaporte}</p>
+            {huesped?.telefono && <p className="text-sm text-gray-500">{huesped.telefono}</p>}
             <p className="text-xs text-gray-400 mt-1">Ingreso: {new Date(hospedaje.ingreso).toLocaleString('es-PE')}</p>
             <p className="text-xs text-gray-400">Checkout: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE')}</p>
             {hospedaje.observaciones && (
@@ -553,6 +554,9 @@ function DetalleHabitacion() {
               <div className="border-t pt-3 mt-1">
                 <p className="text-xs text-gray-500 font-medium uppercase mb-1">Último huésped</p>
                 <p className="text-sm font-semibold">{hospedajeFinalizado.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}</p>
+                {hospedajeFinalizado.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                  <p className="text-xs text-gray-500">{hospedajeFinalizado.huesped_hospedaje?.[0]?.clientes?.telefono}</p>
+                )}
                 <p className="text-xs text-gray-400 mb-3">Ficha N° {String(hospedajeFinalizado.nro_ficha).padStart(6, '0')} · Checkout: {new Date(hospedajeFinalizado.salida_real).toLocaleString('es-PE')}</p>
 
                 {/* Cobro adicional */}

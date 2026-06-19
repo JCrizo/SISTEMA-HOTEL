@@ -21,7 +21,7 @@ function ReportesRecepcion() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .order('ingreso', { ascending: false })
       .limit(50)
@@ -41,6 +41,7 @@ function ReportesRecepcion() {
     const nroFicha = String(h.nro_ficha).padStart(6, '0')
     const nombre = h.huesped_hospedaje?.[0]?.clientes?.nombres?.toLowerCase() || ''
     const dni = h.huesped_hospedaje?.[0]?.clientes?.dni_pasaporte || ''
+    const telefono = h.huesped_hospedaje?.[0]?.clientes?.telefono || ''
     const fechaMatch = fechaFiltro
       ? new Date(h.ingreso).toISOString().split('T')[0] === fechaFiltro
       : true
@@ -48,7 +49,8 @@ function ReportesRecepcion() {
       fechaMatch &&
       (nroFicha.includes(busqueda) ||
        nombre.includes(busqueda.toLowerCase()) ||
-       dni.includes(busqueda))
+       dni.includes(busqueda) ||
+       telefono.includes(busqueda))
     )
   })
 
@@ -107,9 +109,14 @@ function ReportesRecepcion() {
                   className="bg-white rounded-xl border p-4 cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-semibold">
-                      {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
-                    </p>
+                    <div>
+                      <p className="font-semibold">
+                        {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                      </p>
+                      {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                        <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                      )}
+                    </div>
                     <span className="text-xs font-medium text-blue-600">
                       N° {String(h.nro_ficha).padStart(6, '0')}
                     </span>

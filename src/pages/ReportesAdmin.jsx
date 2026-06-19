@@ -131,7 +131,7 @@ function ReportesAdmin() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .order('ingreso', { ascending: false })
       .limit(50)
@@ -146,7 +146,7 @@ function ReportesAdmin() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .eq('turno_id', turno.id)
       .order('ingreso')
@@ -171,7 +171,7 @@ function ReportesAdmin() {
       .select(`
         *,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres, dni_pasaporte))
+        huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))
       `)
       .eq('nro_ficha', parseInt(busquedaFicha))
     setResultadosFicha(data || [])
@@ -181,6 +181,7 @@ function ReportesAdmin() {
     const nroFicha = String(h.nro_ficha).padStart(6, '0')
     const nombre = h.huesped_hospedaje?.[0]?.clientes?.nombres?.toLowerCase() || ''
     const dni = h.huesped_hospedaje?.[0]?.clientes?.dni_pasaporte || ''
+    const telefono = h.huesped_hospedaje?.[0]?.clientes?.telefono || ''
     const fechaMatch = fechaFiltroFichas
       ? new Date(h.ingreso).toISOString().split('T')[0] === fechaFiltroFichas
       : true
@@ -188,7 +189,8 @@ function ReportesAdmin() {
       fechaMatch &&
       (nroFicha.includes(filtroFichas) ||
        nombre.includes(filtroFichas.toLowerCase()) ||
-       dni.includes(filtroFichas))
+       dni.includes(filtroFichas) ||
+       telefono.includes(filtroFichas))
     )
   })
 
@@ -447,6 +449,9 @@ function ReportesAdmin() {
                                   <p className="font-semibold">
                                     {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
                                   </p>
+                                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                                  )}
                                   <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
                                   <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
                                 </div>
@@ -478,6 +483,9 @@ function ReportesAdmin() {
                                   <p className="font-semibold">
                                     {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
                                   </p>
+                                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                                  )}
                                   <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
                                   <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
                                 </div>
@@ -537,9 +545,14 @@ function ReportesAdmin() {
                   className="bg-white rounded-xl border p-4 cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-semibold">
-                      {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
-                    </p>
+                    <div>
+                      <p className="font-semibold">
+                        {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+                      </p>
+                      {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                        <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                      )}
+                    </div>
                     <span className="text-xs font-medium text-blue-600">
                       N° {String(h.nro_ficha).padStart(6, '0')}
                     </span>
@@ -661,6 +674,9 @@ function ReportesAdmin() {
                   <p className="font-semibold">
                     {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
                   </p>
+                  {h.huesped_hospedaje?.[0]?.clientes?.telefono && (
+                    <p className="text-xs text-gray-500">{h.huesped_hospedaje[0].clientes.telefono}</p>
+                  )}
                   <p className="text-xs text-gray-500">Hab {h.habitaciones?.numero}</p>
                   <p className="text-xs text-gray-400">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
                 </div>
