@@ -21,5 +21,14 @@ export const habitacionesService = {
     
     if (error) throw new Error(error.message)
     return data
+  },
+
+  async actualizar(id, updates) {
+    if (Object.keys(updates).length === 0) return
+    const { error } = await supabase
+      .from('habitaciones')
+      .update(updates)
+      .eq('id', id)
+    if (error) throw new Error(error.message)
   }
 }
