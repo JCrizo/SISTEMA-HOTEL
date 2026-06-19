@@ -83,6 +83,10 @@ function Reservas() {
     let clienteId
     if (cliente) {
       clienteId = cliente.id
+      await supabase
+        .from('clientes')
+        .update({ nombres, telefono })
+        .eq('id', cliente.id)
     } else {
       const { data, error: errCliente } = await supabase
         .from('clientes')
@@ -301,6 +305,9 @@ function Reservas() {
                 <div>
                   <p className="font-semibold">{r.clientes?.nombres}</p>
                   <p className="text-xs text-gray-500">{r.clientes?.dni_pasaporte}</p>
+                  {r.clientes?.telefono && (
+                    <p className="text-xs text-gray-500 mt-0.5">📞 {r.clientes.telefono}</p>
+                  )}
                 </div>
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
                   {r.estado}
