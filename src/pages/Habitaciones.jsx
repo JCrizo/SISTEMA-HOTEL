@@ -51,9 +51,21 @@ function Habitaciones() {
 
         const habsConReserva = new Set(reservasData?.map(r => r.habitacion_id) || [])
 
+        // Cargar huéspedes activos
+        const { data: hospedajesActivos } = await supabase
+          .from('hospedajes')
+          .select('habitacion_id, clientes(nombres)')
+          .eq('estado', 'activo')
+
+        const mapHospedajes = {}
+        hospedajesActivos?.forEach(h => {
+          mapHospedajes[h.habitacion_id] = h.clientes?.nombres
+        })
+
         setHabitaciones(data.map(h => ({
           ...h,
-          tieneReservaProxima: habsConReserva.has(h.id)
+          tieneReservaProxima: habsConReserva.has(h.id),
+          huespedActivo: mapHospedajes[h.id] || null
         })))
       }
       setCargando(false)
@@ -170,7 +182,14 @@ function Habitaciones() {
                 
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-semibold opacity-70">{hab.tipo_actual}</p>
-                  <p className="text-lg font-black">S/{hab.precio_actual}</p>
+                  <div className="flex justify-between items-end">
+                    <p className="text-lg font-black">S/{hab.precio_actual}</p>
+                    {hab.estado === 'ocupada' && hab.huespedActivo && (
+                      <p className="text-xs font-bold truncate max-w-[100px] bg-red-800/10 px-2 py-0.5 rounded-md" title={hab.huespedActivo}>
+                        👤 {hab.huespedActivo.split(' ')[0]}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {hab.tieneReservaProxima && hab.estado === 'disponible' && (
