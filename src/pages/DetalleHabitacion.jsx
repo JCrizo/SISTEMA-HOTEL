@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useDetalleHabitacion } from '../hooks/useDetalleHabitacion'
+import { useAuth } from '../context/AuthContext'
 
 import PanelHuespedActivo from '../components/DetalleHabitacion/PanelHuespedActivo'
 import PanelLimpieza from '../components/DetalleHabitacion/PanelLimpieza'
@@ -31,11 +32,13 @@ function DetalleHabitacion() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { turnoActivo } = useTurnoActivo()
+  const { usuario } = useAuth()
   
   const {
     cargando, hab, hospedaje, huesped, pagos, consumos,
     hospedajeFinalizado, cargarDatos, registrarPago, registrarPenalidad,
-    extenderEstadia, actualizarHabitacion, hacerCheckout,
+    extenderEstadia, actualizarHabitacion, actualizarTarifaHospedaje,
+    actualizarDatosHuesped, hacerCheckout,
     registrarCobroAdicional, reabrirHospedaje
   } = useDetalleHabitacion()
 
@@ -135,6 +138,8 @@ function DetalleHabitacion() {
               registrarPenalidad={registrarPenalidad}
               extenderEstadia={extenderEstadia}
               hacerCheckout={hacerCheckout}
+              actualizarTarifaHospedaje={(nuevaTarifa) => actualizarTarifaHospedaje(nuevaTarifa, usuario?.nombre)}
+              actualizarDatosHuesped={actualizarDatosHuesped}
             />
           </div>
         )}

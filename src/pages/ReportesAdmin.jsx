@@ -416,7 +416,9 @@ function ReportesAdmin() {
                       <div>
                         <p className="text-sm font-medium text-gray-700">{mov.productos?.nombre || 'Producto eliminado'}</p>
                         <p className="text-xs text-gray-400">
-                          {mov.tipo === 'consumo' ? 'Vendido en consumo' : 'Ajuste manual de stock'}
+                          {mov.tipo === 'consumo' ? 'Vendido en consumo' :
+                           mov.tipo === 'reposicion_consumo_eliminado' ? 'Repuesto (consumo eliminado)' :
+                           'Ajuste manual de stock'}
                           {mov.usuarios?.nombre ? ` · ${mov.usuarios.nombre}` : ''}
                         </p>
                       </div>

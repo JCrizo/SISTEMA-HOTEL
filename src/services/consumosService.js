@@ -12,6 +12,10 @@ export const consumosService = {
   },
 
   async agregarConsumo(hospedajeId, producto, turnoId, usuarioId) {
+    if (producto.stock <= 0) {
+      throw new Error(`No hay stock disponible de "${producto.nombre}"`)
+    }
+
     const { error: errorConsumo } = await supabase.from('consumos').insert({
       hospedaje_id: hospedajeId,
       producto_id: producto.id,
@@ -38,10 +42,34 @@ export const consumosService = {
     if (errorMov) throw new Error(errorMov.message)
   },
 
-  async eliminarConsumo(consumoId) {
-    // Nota: en un sistema real, al eliminar consumo se debería reponer el stock.
-    // Por ahora mantendré la lógica original que solo elimina.
-    const { error } = await supabase.from('consumos').delete().eq('id', consumoId)
+  async eliminarConsumo(consumo, turnoId, usuarioId) {
+    const { error } = await supabase.from('consumos').delete().eq('id', consumo.id)
     if (error) throw new Error(error.message)
+
+    // Reponer el stock del producto consumido
+    const { data: producto, error: errorProd } = await supabase
+      .from('productos')
+      .select('stock')
+      .eq('id', consumo.producto_id)
+      .single()
+    if (errorProd) throw new Error(errorProd.message)
+
+    const nuevoStock = producto.stock + consumo.cantidad
+
+    const { error: errorUpdate } = await supabase
+      .from('productos')
+      .update({ stock: nuevoStock })
+      .eq('id', consumo.producto_id)
+    if (errorUpdate) throw new Error(errorUpdate.message)
+
+    const { error: errorMov } = await supabase.from('movimientos_stock').insert({
+      producto_id: consumo.producto_id,
+      turno_id: turnoId || null,
+      tipo: 'reposicion_consumo_eliminado',
+      cantidad: consumo.cantidad,
+      stock_resultante: nuevoStock,
+      usuario_id: usuarioId || null
+    })
+    if (errorMov) throw new Error(errorMov.message)
   }
 }

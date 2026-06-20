@@ -50,9 +50,9 @@ export function useConsumos(habitacionId, turnoActivo, usuario) {
     }
   }
 
-  const eliminarConsumo = async (consumoId) => {
+  const eliminarConsumo = async (consumo) => {
     try {
-      await consumosService.eliminarConsumo(consumoId)
+      await consumosService.eliminarConsumo(consumo, turnoActivo?.id, usuario?.id)
       await cargarDatos()
     } catch (error) {
       console.error(error)

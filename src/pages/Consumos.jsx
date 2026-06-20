@@ -44,6 +44,13 @@ function Consumos() {
 
   if (!hab) return null
 
+  async function handleAgregarConsumo(producto) {
+    const resultado = await agregarConsumo(producto)
+    if (!resultado.exito) {
+      alert(resultado.error || 'No se pudo registrar el consumo')
+    }
+  }
+
   return (
     <div className="p-4 max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
       <div className="flex items-center gap-4 mb-6">
@@ -68,7 +75,7 @@ function Consumos() {
         <div className="flex-[2] min-h-0">
           <CatalogoProductos 
             productos={productos} 
-            agregarConsumo={agregarConsumo}
+            agregarConsumo={handleAgregarConsumo}
             guardando={guardando}
           />
         </div>

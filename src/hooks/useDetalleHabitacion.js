@@ -4,6 +4,7 @@ import { hospedajesService } from '../services/hospedajesService'
 import { pagosService } from '../services/pagosService'
 import { consumosService } from '../services/consumosService'
 import { turnosService } from '../services/turnosService'
+import { clientesService } from '../services/clientesService'
 
 export function useDetalleHabitacion() {
   const [cargando, setCargando] = useState(true)
@@ -130,6 +131,40 @@ export function useDetalleHabitacion() {
     }
   }
 
+  const actualizarTarifaHospedaje = async (nuevaTarifaPorNoche, usuarioNombre) => {
+    if (!hospedaje) return false
+    try {
+      const ingreso = new Date(hospedaje.ingreso)
+      const salida = new Date(hospedaje.salida_estimada)
+      const nochesTotales = Math.max(1, Math.round((salida - ingreso) / (1000 * 60 * 60 * 24)))
+      const nuevaTarifaPactada = parseFloat(nuevaTarifaPorNoche) * nochesTotales
+
+      await hospedajesService.actualizarTarifa(
+        hospedaje.id,
+        nuevaTarifaPactada,
+        hospedaje.observaciones,
+        usuarioNombre
+      )
+      await cargarDatos(hab.id)
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
+  const actualizarDatosHuesped = async (datosCliente) => {
+    if (!huesped) return false
+    try {
+      await clientesService.actualizarCliente(huesped.id, datosCliente)
+      await cargarDatos(hab.id)
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
   const hacerCheckout = async () => {
     if (!hospedaje) return false
     try {
@@ -188,6 +223,8 @@ export function useDetalleHabitacion() {
     registrarPenalidad,
     extenderEstadia,
     actualizarHabitacion,
+    actualizarTarifaHospedaje,
+    actualizarDatosHuesped,
     hacerCheckout,
     registrarCobroAdicional,
     reabrirHospedaje
