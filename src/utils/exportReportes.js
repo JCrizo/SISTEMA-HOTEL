@@ -47,6 +47,12 @@ function formatearFecha(fechaIso) {
   })
 }
 
+function etiquetaTipoMovimientoStock(tipo) {
+  if (tipo === 'consumo') return 'Consumo'
+  if (tipo === 'reposicion_consumo_eliminado') return 'Repuesto (consumo eliminado)'
+  return 'Ajuste manual'
+}
+
 /* ---------------------------------------------------------------------- */
 /* Reporte General (resumen del período + desglose por día)                */
 /* ---------------------------------------------------------------------- */
@@ -196,7 +202,7 @@ export function exportarCierreTurnoPDF(turno, movimientosCaja, movimientosStock,
       head: [['Producto', 'Tipo', 'Cantidad']],
       body: movimientosStock.map(m => [
         m.productos?.nombre || 'Producto eliminado',
-        m.tipo === 'consumo' ? 'Consumo' : 'Ajuste manual',
+        etiquetaTipoMovimientoStock(m.tipo),
         m.cantidad > 0 ? `+${m.cantidad}` : `${m.cantidad}`
       ]),
       theme: 'grid',
@@ -261,7 +267,7 @@ export function exportarCierreTurnoExcel(turno, movimientosCaja, movimientosStoc
       ['Producto', 'Tipo', 'Cantidad'],
       ...movimientosStock.map(m => [
         m.productos?.nombre || 'Producto eliminado',
-        m.tipo === 'consumo' ? 'Consumo' : 'Ajuste manual',
+        etiquetaTipoMovimientoStock(m.tipo),
         m.cantidad
       ])
     ]

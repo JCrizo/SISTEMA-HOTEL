@@ -88,6 +88,20 @@ export const hospedajesService = {
     if (error) throw new Error(error.message)
   },
 
+  async actualizarTarifa(hospedajeId, nuevaTarifaPactada, observacionesActuales, usuarioNombre) {
+    const fecha = new Date().toLocaleString('es-PE')
+    const nota = `[${fecha}] Tarifa actualizada a S/${nuevaTarifaPactada.toFixed(2)} por ${usuarioNombre || 'usuario'}.`
+    const nuevasObservaciones = observacionesActuales
+      ? `${observacionesActuales}\n${nota}`
+      : nota
+
+    const { error } = await supabase
+      .from('hospedajes')
+      .update({ tarifa_pactada: nuevaTarifaPactada, observaciones: nuevasObservaciones })
+      .eq('id', hospedajeId)
+    if (error) throw new Error(error.message)
+  },
+
   async hacerCheckout(hospedajeId, habitacionId) {
     const { error: errHosp } = await supabase
       .from('hospedajes')

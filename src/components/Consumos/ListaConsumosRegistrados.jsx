@@ -34,7 +34,7 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
                 S/{(c.precio_unitario * c.cantidad).toFixed(2)}
               </span>
               <button
-                onClick={() => eliminarConsumo(c.id)}
+                onClick={() => eliminarConsumo(c)}
                 className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
                 title="Eliminar consumo"
               >

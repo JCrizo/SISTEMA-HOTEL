@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import EditarHuespedModal from './EditarHuespedModal'
 
 export default function PanelHuespedActivo({
   hab,
@@ -11,9 +12,13 @@ export default function PanelHuespedActivo({
   registrarPago,
   registrarPenalidad,
   extenderEstadia,
-  hacerCheckout
+  hacerCheckout,
+  actualizarTarifaHospedaje,
+  actualizarDatosHuesped
 }) {
   const navigate = useNavigate()
+
+  const [mostrarEditar, setMostrarEditar] = useState(false)
 
   const [mostrarPago, setMostrarPago] = useState(false)
   const [montoPago, setMontoPago] = useState('')
@@ -71,6 +76,12 @@ export default function PanelHuespedActivo({
     const nuevaFecha = new Date(fechaExtension)
     nuevaFecha.setHours(12, 0, 0, 0)
 
+    const ingreso = new Date(hospedaje.ingreso)
+    if (nuevaFecha < ingreso) {
+      alert('La fecha de checkout no puede ser anterior a la fecha de ingreso del huésped (' + ingreso.toLocaleDateString('es-PE') + ').')
+      return
+    }
+
     const checkoutActual = new Date(hospedaje.salida_estimada)
     const diffMs = nuevaFecha - checkoutActual
     const noches = Math.round(diffMs / (1000 * 60 * 60 * 24))
@@ -120,9 +131,18 @@ export default function PanelHuespedActivo({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               Datos del Huésped
             </h3>
-            <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
-              Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
+                Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}
+              </span>
+              <button
+                onClick={() => setMostrarEditar(true)}
+                className="text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-lg border border-gray-200 transition-colors"
+                title="Editar datos del huésped y tarifa"
+              >
+                ✏️ Editar
+              </button>
+            </div>
           </div>
           
           <div className="mb-4">
@@ -378,6 +398,7 @@ export default function PanelHuespedActivo({
                   type="date"
                   value={fechaExtension}
                   onChange={e => setFechaExtension(e.target.value)}
+                  min={new Date(hospedaje.ingreso).toISOString().split('T')[0]}
                   className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-gray-50 focus:bg-white transition-colors"
                 />
               </div>
@@ -401,6 +422,16 @@ export default function PanelHuespedActivo({
         </button>
 
       </div>
+
+      {mostrarEditar && (
+        <EditarHuespedModal
+          huesped={huesped}
+          hospedaje={hospedaje}
+          actualizarTarifaHospedaje={actualizarTarifaHospedaje}
+          actualizarDatosHuesped={actualizarDatosHuesped}
+          onClose={() => setMostrarEditar(false)}
+        />
+      )}
     </div>
   )
 }
