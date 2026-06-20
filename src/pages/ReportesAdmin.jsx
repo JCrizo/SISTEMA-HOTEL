@@ -657,6 +657,20 @@ function ReportesAdmin() {
                         <span>🕒 {new Date(turnoSeleccionado.apertura).toLocaleString('es-PE')}</span>
                       </div>
                     </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => exportarCierreTurnoPDF(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                        className="text-xs px-4 py-2.5 bg-red-600 text-white rounded-xl font-black shadow-sm hover:bg-red-700 transition-colors"
+                      >
+                        📄 PDF
+                      </button>
+                      <button
+                        onClick={() => exportarCierreTurnoExcel(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                        className="text-xs px-4 py-2.5 bg-green-700 text-white rounded-xl font-black shadow-sm hover:bg-green-800 transition-colors"
+                      >
+                        📊 Excel
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -672,6 +686,31 @@ function ReportesAdmin() {
                             <p className="text-xs font-bold text-gray-400">{mov.tipo === 'prestamo_entre_cajas' ? `Caja ${mov.caja_origen} a ${mov.caja_destino}` : `Salida de ${mov.caja_origen}`}</p>
                           </div>
                           <span className="text-sm font-black text-red-600 bg-red-50 px-3 py-1 rounded-lg">− S/{mov.monto}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Movimientos de Productos (Stock) */}
+                {movimientosStockTurno.length > 0 && (
+                  <div className="bg-white rounded-3xl border border-gray-100 p-6 mb-6 shadow-sm">
+                    <p className="text-xs text-gray-400 font-black uppercase tracking-widest mb-4">Movimientos de Productos</p>
+                    <div className="space-y-3">
+                      {movimientosStockTurno.map(mov => (
+                        <div key={mov.id} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+                          <div>
+                            <p className="text-sm font-black text-gray-800">{mov.productos?.nombre || 'Producto eliminado'}</p>
+                            <p className="text-xs font-bold text-gray-400">
+                              {mov.tipo === 'consumo' ? 'Vendido en consumo' :
+                               mov.tipo === 'reposicion_consumo_eliminado' ? 'Repuesto (consumo eliminado)' :
+                               'Ajuste manual de stock'}
+                              {mov.usuarios?.nombre ? ` · ${mov.usuarios.nombre}` : ''}
+                            </p>
+                          </div>
+                          <span className={`text-sm font-black px-3 py-1 rounded-lg ${mov.cantidad < 0 ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
+                            {mov.cantidad > 0 ? '+' : ''}{mov.cantidad}
+                          </span>
                         </div>
                       ))}
                     </div>
