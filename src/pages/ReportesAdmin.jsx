@@ -674,6 +674,74 @@ function ReportesAdmin() {
                   </div>
                 </div>
 
+                <div className="bg-white border border-gray-100 shadow-sm rounded-3xl p-6 mb-6">
+                  <p className="text-xs text-gray-400 font-black uppercase tracking-widest mb-4">Resumen de Caja</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-gray-50 rounded-2xl p-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Caja Principal</p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400">Inicial</p>
+                          <p className="text-lg font-black text-gray-700">S/{parseFloat(turnoSeleccionado.caja_principal_anterior || 0).toFixed(2)}</p>
+                        </div>
+                        <span className="text-gray-300 font-black">→</span>
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-gray-400">{turnoSeleccionado.cierre ? 'Final' : 'Actual'}</p>
+                          <p className="text-lg font-black text-blue-700">S/{parseFloat(turnoSeleccionado.caja_principal_actual || 0).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-2xl p-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Caja Consumos</p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400">Inicial</p>
+                          <p className="text-lg font-black text-gray-700">S/{parseFloat(turnoSeleccionado.caja_consumos_anterior || 0).toFixed(2)}</p>
+                        </div>
+                        <span className="text-gray-300 font-black">→</span>
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-gray-400">{turnoSeleccionado.cierre ? 'Final' : 'Actual'}</p>
+                          <p className="text-lg font-black text-blue-700">S/{parseFloat(turnoSeleccionado.caja_consumos_actual || 0).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {turnoSeleccionado.cierre && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div className="bg-green-50 rounded-xl p-3 text-center">
+                        <p className="text-[10px] font-bold text-green-600 uppercase">Efectivo</p>
+                        <p className="text-sm font-black text-green-700">S/{parseFloat(turnoSeleccionado.desglose_efectivo || 0).toFixed(2)}</p>
+                      </div>
+                      <div className="bg-purple-50 rounded-xl p-3 text-center">
+                        <p className="text-[10px] font-bold text-purple-600 uppercase">Yape</p>
+                        <p className="text-sm font-black text-purple-700">S/{parseFloat(turnoSeleccionado.desglose_yape || 0).toFixed(2)}</p>
+                      </div>
+                      <div className="bg-blue-50 rounded-xl p-3 text-center">
+                        <p className="text-[10px] font-bold text-blue-600 uppercase">Tarjeta</p>
+                        <p className="text-sm font-black text-blue-700">S/{parseFloat(turnoSeleccionado.desglose_tarjeta || 0).toFixed(2)}</p>
+                      </div>
+                      <div className="bg-orange-50 rounded-xl p-3 text-center">
+                        <p className="text-[10px] font-bold text-orange-600 uppercase">Transferencia</p>
+                        <p className="text-sm font-black text-orange-700">S/{parseFloat(turnoSeleccionado.desglose_transferencia || 0).toFixed(2)}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {turnoSeleccionado.cierre && (
+                    <p className="text-xs font-bold text-gray-400 mb-2">
+                      🕒 Cerrado: {new Date(turnoSeleccionado.cierre).toLocaleString('es-PE')}
+                    </p>
+                  )}
+
+                  {turnoSeleccionado.observaciones && (
+                    <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3 mt-2">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-yellow-700 mb-1">Notas del turno</p>
+                      <p className="text-sm font-bold text-yellow-800 whitespace-pre-line">{turnoSeleccionado.observaciones}</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Movimientos de Caja */}
                 {movimientosTurno.length > 0 && (
                   <div className="bg-white rounded-3xl border border-gray-100 p-6 mb-6 shadow-sm">

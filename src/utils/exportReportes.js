@@ -175,8 +175,8 @@ export function exportarCierreTurnoPDF(turno, movimientosCaja, movimientosStock,
     startY: 37,
     head: [['Caja', 'Monto inicial', 'Monto final']],
     body: [
-      ['Principal', `S/${turno.caja_principal_inicial?.toFixed(2) || '0.00'}`, `S/${turno.caja_principal_actual?.toFixed(2) || turno.caja_principal_final?.toFixed(2) || '0.00'}`],
-      ['Consumos', `S/${turno.caja_consumos_inicial?.toFixed(2) || '0.00'}`, `S/${turno.caja_consumos_actual?.toFixed(2) || turno.caja_consumos_final?.toFixed(2) || '0.00'}`],
+      ['Principal', `S/${parseFloat(turno.caja_principal_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_principal_actual || 0).toFixed(2)}`],
+      ['Consumos', `S/${parseFloat(turno.caja_consumos_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_consumos_actual || 0).toFixed(2)}`],
     ],
     theme: 'grid',
     headStyles: { fillColor: [37, 99, 235] },
@@ -243,8 +243,8 @@ export function exportarCierreTurnoExcel(turno, movimientosCaja, movimientosStoc
     [turno.cierre ? `Cierre: ${new Date(turno.cierre).toLocaleString('es-PE')}` : 'Turno aún abierto'],
     [],
     ['Caja', 'Monto inicial (S/)', 'Monto final (S/)'],
-    ['Principal', turno.caja_principal_inicial || 0, turno.caja_principal_actual ?? turno.caja_principal_final ?? 0],
-    ['Consumos', turno.caja_consumos_inicial || 0, turno.caja_consumos_actual ?? turno.caja_consumos_final ?? 0],
+    ['Principal', parseFloat(turno.caja_principal_anterior || 0), parseFloat(turno.caja_principal_actual || 0)],
+    ['Consumos', parseFloat(turno.caja_consumos_anterior || 0), parseFloat(turno.caja_consumos_actual || 0)],
   ]
   const wsResumen = XLSX.utils.aoa_to_sheet(resumenData)
   XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen')
