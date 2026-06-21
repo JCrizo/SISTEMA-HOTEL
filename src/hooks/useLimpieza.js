@@ -1,17 +1,32 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { limpiezaService } from '../services/limpiezaService'
 import { habitacionesService } from '../services/habitacionesService'
+import { tiposLimpiezaService } from '../services/tiposLimpiezaService'
 
 export function useLimpieza() {
   const [habitaciones, setHabitaciones] = useState([])
+  const [tiposLimpieza, setTiposLimpieza] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
+
+  const cargarTiposLimpieza = useCallback(async () => {
+    try {
+      const data = await tiposLimpiezaService.obtenerTodos()
+      setTiposLimpieza(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }, [])
+
+  useEffect(() => {
+    cargarTiposLimpieza()
+  }, [cargarTiposLimpieza])
 
   const cargarHabitaciones = useCallback(async () => {
     setCargando(true)
     setError(null)
     try {
-      const data = await limpiezaService.obtenerHabitacionesEnLimpieza()
+      const data = await limpiezaService.obtenerTodasLasHabitaciones()
       setHabitaciones(data)
     } catch (err) {
       console.error(err)
@@ -21,8 +36,9 @@ export function useLimpieza() {
     }
   }, [])
 
-  const iniciarLimpieza = async (hab, usuarioId, personal, tipoSeleccionado, horaInicio) => {
+  const iniciarLimpieza = async (hab, usuarioId, personal, tipoSeleccionado, tipoLimpiezaId, horaInicio) => {
     try {
+      const esPostCheckout = ['pendiente_limpieza', 'limpieza_simple'].includes(hab.estado)
       const tipo = hab.estado === 'limpieza_simple' ? 'simple' : tipoSeleccionado
 
       const ahora = new Date()
@@ -33,12 +49,18 @@ export function useLimpieza() {
         habitacionId: hab.id,
         usuarioId,
         tipo,
+        tipoLimpiezaId,
         hora: ahora.toISOString(),
         observaciones: personal ? `Personal: ${personal}` : null
       })
 
-      await habitacionesService.actualizar(hab.id, { estado: 'en_limpieza' })
-      
+      // Si la habitación estaba ocupada (limpieza de mantenimiento), no se cambia
+      // su estado: el huésped sigue dentro. Solo se actualiza el estado para el
+      // flujo post-checkout, que sí debe reflejar que está siendo limpiada.
+      if (esPostCheckout) {
+        await habitacionesService.actualizar(hab.id, { estado: 'en_limpieza' })
+      }
+
       await cargarHabitaciones()
       return true
     } catch (err) {
@@ -51,8 +73,14 @@ export function useLimpieza() {
   const habilitarHabitacion = async (hab, horaFin) => {
     try {
       await limpiezaService.finalizarLimpieza(hab.id, `Fin: ${horaFin}`)
-      await habitacionesService.actualizar(hab.id, { estado: 'disponible' })
-      
+
+      // Solo liberar la habitación (ponerla disponible) si estaba en el flujo
+      // post-checkout. Si era limpieza de mantenimiento en una habitación
+      // ocupada, su estado no cambió y no hace falta tocarlo.
+      if (hab.estado === 'en_limpieza') {
+        await habitacionesService.actualizar(hab.id, { estado: 'disponible' })
+      }
+
       await cargarHabitaciones()
       return true
     } catch (err) {
@@ -64,9 +92,11 @@ export function useLimpieza() {
 
   return {
     habitaciones,
+    tiposLimpieza,
     cargando,
     error,
     cargarHabitaciones,
+    cargarTiposLimpieza,
     iniciarLimpieza,
     habilitarHabitacion
   }

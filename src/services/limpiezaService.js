@@ -12,14 +12,33 @@ export const limpiezaService = {
     return data || []
   },
 
+  async obtenerTodasLasHabitaciones() {
+    const { data, error } = await supabase
+      .from('habitaciones')
+      .select(`
+        *,
+        hospedajes(id, ingreso, huesped_hospedaje(clientes(nombres)))
+      `)
+      .order('numero')
+
+    if (error) throw new Error(error.message)
+
+    // Quedarnos solo con el hospedaje activo de cada habitación, si lo tiene
+    return (data || []).map(h => ({
+      ...h,
+      hospedajeActivo: h.hospedajes?.find(hh => !hh.salida_real) || null
+    }))
+  },
+
   async registrarInicioLimpieza(datos) {
-    const { habitacionId, usuarioId, tipo, hora, observaciones } = datos
+    const { habitacionId, usuarioId, tipo, tipoLimpiezaId, hora, observaciones } = datos
     const { data, error } = await supabase
       .from('limpieza')
       .insert({
         habitacion_id: habitacionId,
         usuario_id: usuarioId,
         tipo,
+        tipo_limpieza_id: tipoLimpiezaId || null,
         estado: 'en_proceso',
         hora,
         observaciones
@@ -41,5 +60,23 @@ export const limpiezaService = {
     
     if (error) throw new Error(error.message)
     return data
+  },
+
+  async obtenerHistorial(fechaFiltro) {
+    let query = supabase
+      .from('limpieza')
+      .select('*, habitaciones(numero), usuarios(nombre), tipos_limpieza(nombre)')
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    if (fechaFiltro) {
+      const inicio = new Date(fechaFiltro + 'T00:00:00').toISOString()
+      const fin = new Date(fechaFiltro + 'T23:59:59').toISOString()
+      query = query.gte('created_at', inicio).lte('created_at', fin)
+    }
+
+    const { data, error } = await query
+    if (error) throw new Error(error.message)
+    return data || []
   }
 }

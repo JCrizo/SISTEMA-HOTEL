@@ -39,6 +39,7 @@ function ReportesAdmin() {
 
   // Limpieza, Cochera, Fichas
   const [limpiezas, setLimpiezas] = useState([])
+  const [fechaFiltroLimpieza, setFechaFiltroLimpieza] = useState('')
   const [cocheras, setCocheras] = useState([])
   const [todasFichas, setTodasFichas] = useState([])
   const [filtroFichas, setFiltroFichas] = useState('')
@@ -265,7 +266,7 @@ function ReportesAdmin() {
   async function cargarListasAdicionales() {
     const [turnosData, limpData, cocheraAll, fichasData] = await Promise.all([
       supabase.from('turnos').select('*, usuarios(nombre)').order('apertura', { ascending: false }).limit(100),
-      supabase.from('limpieza').select('*, habitaciones(numero, tipo_actual)').order('hora', { ascending: false }).limit(50),
+      supabase.from('limpieza').select('*, habitaciones(numero, tipo_actual), usuarios(nombre), tipos_limpieza(nombre)').order('hora', { ascending: false }).limit(100),
       supabase.from('cochera').select('*, hospedajes(habitacion_id, habitaciones(numero))').order('hora_ingreso', { ascending: false }).limit(100),
       supabase.from('hospedajes').select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))`).order('ingreso', { ascending: false }).limit(100)
     ])
@@ -313,6 +314,10 @@ function ReportesAdmin() {
   const turnosFiltrados = fechaFiltroTurnos 
     ? turnos.filter(t => new Date(t.apertura).toISOString().split('T')[0] === fechaFiltroTurnos)
     : turnos
+
+  const limpiezasFiltradas = fechaFiltroLimpieza
+    ? limpiezas.filter(l => l.hora && new Date(l.hora).toISOString().split('T')[0] === fechaFiltroLimpieza)
+    : limpiezas
 
   const cocherasFiltradas = fechaFiltroCochera
     ? cocheras.filter(c => new Date(c.hora_ingreso).toISOString().split('T')[0] === fechaFiltroCochera)
@@ -911,17 +916,45 @@ function ReportesAdmin() {
 
         {/* ===================== LIMPIEZA ===================== */}
         {vista === 'limpieza' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
-            {limpiezas.map(l => (
-              <div key={l.id} className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl border border-blue-100">🧹</div>
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md ${l.tipo === 'total' ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'}`}>{l.tipo === 'total' ? 'Total' : 'Simple'}</span>
+          <div className="animate-fadeIn">
+            <div className="mb-6 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 w-max">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Filtrar Fecha:</span>
+              <input type="date" value={fechaFiltroLimpieza} onChange={e=>setFechaFiltroLimpieza(e.target.value)}
+                className="bg-gray-50 rounded-xl px-3 py-1.5 text-sm font-bold text-gray-700 outline-none" />
+              {fechaFiltroLimpieza && <button onClick={()=>setFechaFiltroLimpieza('')} className="text-red-500 text-xs font-bold px-2">X</button>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {limpiezasFiltradas.map(l => (
+                <div key={l.id} className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl border border-blue-100">🧹</div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md ${l.tipo === 'total' ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'}`}>
+                        {l.tipo === 'total' ? 'Total' : 'Simple'}
+                      </span>
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md ${l.estado === 'completada' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {l.estado === 'completada' ? 'Completada' : 'En proceso'}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="font-black text-gray-800 text-xl mb-1">Hab {l.habitaciones?.numero}</p>
+                  {l.tipos_limpieza?.nombre && (
+                    <p className="text-xs font-bold text-blue-600 mb-1">{l.tipos_limpieza.nombre}</p>
+                  )}
+                  <p className="text-xs font-bold text-gray-400">Inicio: {l.hora ? new Date(l.hora).toLocaleString('es-PE') : 'No registrado'}</p>
+                  {l.usuarios?.nombre && (
+                    <p className="text-xs font-bold text-gray-400">👤 {l.usuarios.nombre}</p>
+                  )}
+                  {l.observaciones && (
+                    <p className="text-xs text-gray-400 mt-2 italic whitespace-pre-line">{l.observaciones}</p>
+                  )}
                 </div>
-                <p className="font-black text-gray-800 text-xl mb-1">Hab {l.habitaciones?.numero}</p>
-                <p className="text-xs font-bold text-gray-400">Inicio: {l.hora ? new Date(l.hora).toLocaleString('es-PE') : 'No registrado'}</p>
-              </div>
-            ))}
+              ))}
+              {limpiezasFiltradas.length === 0 && (
+                <p className="text-gray-400 font-bold col-span-3 text-center py-8">No hay limpiezas registradas en esta fecha.</p>
+              )}
+            </div>
           </div>
         )}
 
