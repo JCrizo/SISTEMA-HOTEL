@@ -17,16 +17,19 @@ export const limpiezaService = {
       .from('habitaciones')
       .select(`
         *,
-        hospedajes(id, ingreso, huesped_hospedaje(clientes(nombres)))
+        hospedajes(id, ingreso, estado, huesped_hospedaje(clientes(nombres)))
       `)
       .order('numero')
 
     if (error) throw new Error(error.message)
 
-    // Quedarnos solo con el hospedaje activo de cada habitación, si lo tiene
+    // Quedarnos solo con el hospedaje ACTIVO de cada habitación, si lo tiene.
+    // No basta con que salida_real esté vacío: hay que verificar el estado
+    // explícitamente, o se siguen mostrando huéspedes de hospedajes ya
+    // finalizados en habitaciones que ya quedaron disponibles.
     return (data || []).map(h => ({
       ...h,
-      hospedajeActivo: h.hospedajes?.find(hh => !hh.salida_real) || null
+      hospedajeActivo: h.hospedajes?.find(hh => hh.estado === 'activo') || null
     }))
   },
 
