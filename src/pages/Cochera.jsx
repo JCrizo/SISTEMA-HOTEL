@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import { useAuth } from '../context/AuthContext'
 
 function Cochera() {
   const navigate = useNavigate()
@@ -12,6 +13,7 @@ function Cochera() {
   const [tipo, setTipo] = useState('particular')
   const [habitacionId, setHabitacionId] = useState('')
   const [monto, setMonto] = useState('')
+  const [metodoPago, setMetodoPago] = useState('efectivo')
   const [horaIngreso, setHoraIngreso] = useState(
   new Date().toTimeString().slice(0, 5)
   )
@@ -26,6 +28,7 @@ function Cochera() {
 
   const [metodoPagoVehiculo, setMetodoPagoVehiculo] = useState({})
   const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { usuario } = useAuth()
 
   useEffect(() => {
     cargarDatos()
@@ -90,13 +93,16 @@ function Cochera() {
       hospedaje_id: hospedajeId,
       hora_ingreso: ahora.toISOString(),
       monto: parseFloat(monto || 0),
-      estado_pago: parseFloat(monto || 0) === 0 ? 'pagado' : 'pendiente'
+      estado_pago: parseFloat(monto || 0) === 0 ? 'pagado' : 'pendiente',
+      metodo_pago: metodoPago,
+      usuario_id: usuario?.id || null
     })
 
     setPlaca('')
     setTipo('particular')
     setHabitacionId('')
     setMonto('')
+    setMetodoPago('efectivo')
     setMostrarForm(false)
     setGuardando(false)
     cargarDatos()
@@ -260,6 +266,22 @@ function Cochera() {
                   className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
                 />
               </div>
+
+              {parseFloat(monto || 0) > 0 && (
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método de pago</label>
+                  <select
+                    value={metodoPago}
+                    onChange={e => setMetodoPago(e.target.value)}
+                    className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                  >
+                    <option value="efectivo">Efectivo</option>
+                    <option value="yape">Yape</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                  </select>
+                </div>
+              )}
             </div>
             
             <div className="flex gap-3 pt-6 border-t border-gray-100">

@@ -20,7 +20,8 @@ export const consumosService = {
       hospedaje_id: hospedajeId,
       producto_id: producto.id,
       cantidad: 1,
-      precio_unitario: producto.precio
+      precio_unitario: producto.precio,
+      usuario_id: usuarioId || null
     })
     if (errorConsumo) throw new Error(errorConsumo.message)
 
