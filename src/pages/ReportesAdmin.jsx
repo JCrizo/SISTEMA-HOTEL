@@ -34,6 +34,7 @@ function ReportesAdmin() {
   const [turnos, setTurnos] = useState([])
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const [hospedajesTurno, setHospedajesTurno] = useState([])
+  const [hospedajesArrastrados, setHospedajesArrastrados] = useState([])
   const [movimientosTurno, setMovimientosTurno] = useState([])
   const [movimientosStockTurno, setMovimientosStockTurno] = useState([])
 
@@ -278,10 +279,24 @@ function ReportesAdmin() {
 
   async function cargarHospedajesTurno(turno) {
     setTurnoSeleccionado(turno)
-    const { data } = await supabase.from('hospedajes')
+
+    // Hospedajes que se originaron en este turno (check-in hecho durante el turno)
+    const { data: nuevos } = await supabase.from('hospedajes')
       .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))`)
       .eq('turno_id', turno.id).order('ingreso')
-    setHospedajesTurno(data || [])
+    setHospedajesTurno(nuevos || [])
+
+    // Hospedajes que ya estaban ocupados ANTES de que abriera este turno y
+    // que seguían ocupados en ese momento (fotografía histórica): entraron
+    // antes de la apertura, y o bien siguen activos hoy, o su salida real
+    // fue posterior a la apertura de este turno (salieron después de que
+    // este turno ya había comenzado).
+    const { data: arrastrados } = await supabase.from('hospedajes')
+      .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))`)
+      .lt('ingreso', turno.apertura)
+      .or(`salida_real.is.null,salida_real.gt.${turno.apertura}`)
+      .order('ingreso')
+    setHospedajesArrastrados(arrastrados || [])
 
     const { data: movs } = await supabase.from('movimientos_caja')
       .select('*').eq('turno_id', turno.id).order('created_at', { ascending: false })
@@ -664,13 +679,13 @@ function ReportesAdmin() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => exportarCierreTurnoPDF(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                        onClick={() => exportarCierreTurnoPDF(turnoSeleccionado, movimientosTurno, movimientosStockTurno, [...hospedajesArrastrados, ...hospedajesTurno])}
                         className="text-xs px-4 py-2.5 bg-red-600 text-white rounded-xl font-black shadow-sm hover:bg-red-700 transition-colors"
                       >
                         📄 PDF
                       </button>
                       <button
-                        onClick={() => exportarCierreTurnoExcel(turnoSeleccionado, movimientosTurno, movimientosStockTurno, hospedajesTurno)}
+                        onClick={() => exportarCierreTurnoExcel(turnoSeleccionado, movimientosTurno, movimientosStockTurno, [...hospedajesArrastrados, ...hospedajesTurno])}
                         className="text-xs px-4 py-2.5 bg-green-700 text-white rounded-xl font-black shadow-sm hover:bg-green-800 transition-colors"
                       >
                         📊 Excel
@@ -791,33 +806,35 @@ function ReportesAdmin() {
                 )}
 
                 {/* Listas de Hospedaje Turno (IGUAL A CAPTURA DEL USUARIO) */}
-                {hospedajesTurno.length === 0 ? (
+                {hospedajesTurno.length === 0 && hospedajesArrastrados.length === 0 ? (
                   <p className="text-gray-400 text-sm font-bold text-center py-8">Sin hospedajes en este turno</p>
                 ) : (() => {
                   const activos = hospedajesTurno.filter(h => h.estado === 'activo')
                   const finalizados = hospedajesTurno.filter(h => h.estado !== 'activo')
+                  const arrastradosActivos = hospedajesArrastrados.filter(h => h.estado === 'activo')
+                  const arrastradosFinalizados = hospedajesArrastrados.filter(h => h.estado !== 'activo')
                   return (
                     <div className="space-y-8">
+                      {(arrastradosActivos.length > 0 || arrastradosFinalizados.length > 0) && (
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">
+                            Ya estaban ocupadas al iniciar este turno ({arrastradosActivos.length + arrastradosFinalizados.length})
+                          </p>
+                          <p className="text-[10px] font-bold text-gray-400 mb-3">Check-in hecho en un turno anterior</p>
+                          <div className="flex flex-col gap-3">
+                            {[...arrastradosActivos, ...arrastradosFinalizados].map(h => (
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} arrastrada />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {activos.length > 0 && (
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Habitaciones Ocupadas ({activos.length})</p>
                           <div className="flex flex-col gap-3">
                             {activos.map(h => (
-                              <div key={h.id} className="bg-white rounded-2xl border border-red-100 shadow-sm p-5 cursor-pointer hover:border-red-300 transition-colors" onClick={()=>navigate(`/ficha/${h.id}`)}>
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <p className="font-black text-gray-800">{h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}</p>
-                                    <p className="text-xs font-bold text-gray-400">{h.huesped_hospedaje?.[0]?.clientes?.telefono}</p>
-                                    <p className="text-xs font-bold text-gray-500 mt-1">Hab {h.habitaciones?.numero} - {h.habitaciones?.tipo_actual}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 mt-1">{new Date(h.ingreso).toLocaleString('es-PE')}</p>
-                                  </div>
-                                  <div className="text-right flex flex-col items-end">
-                                    <p className="text-base font-black text-gray-800">S/{h.tarifa_pactada}</p>
-                                    <p className="text-[10px] font-black text-indigo-500 mt-1 mb-2">N° {String(h.nro_ficha).padStart(6, '0')}</p>
-                                    <span className="text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">Ocupada</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} />
                             ))}
                           </div>
                         </div>
@@ -828,25 +845,7 @@ function ReportesAdmin() {
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Ya hicieron checkout ({finalizados.length})</p>
                           <div className="flex flex-col gap-3">
                             {finalizados.map(h => (
-                              <div key={h.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 cursor-pointer hover:border-gray-300 transition-colors" onClick={()=>navigate(`/ficha/${h.id}`)}>
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <p className="font-black text-gray-800 uppercase">{h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}</p>
-                                    <p className="text-xs font-bold text-gray-400">{h.huesped_hospedaje?.[0]?.clientes?.telefono}</p>
-                                    <p className="text-xs font-bold text-gray-500 mt-1">Hab {h.habitaciones?.numero} - {h.habitaciones?.tipo_actual}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 mt-1">{new Date(h.salida_real).toLocaleString('es-PE')}</p>
-                                  </div>
-                                  <div className="text-right flex flex-col items-end">
-                                    <p className="text-base font-black text-gray-800">S/{h.tarifa_pactada}</p>
-                                    <p className="text-[10px] font-black text-indigo-500 mt-1 mb-2">N° {String(h.nro_ficha).padStart(6, '0')}</p>
-                                    <span className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${
-                                      h.estado_pago === 'pagado' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
-                                    }`}>
-                                      {h.estado_pago === 'pagado' ? 'Pagado' : 'Pendiente'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} />
                             ))}
                           </div>
                         </div>
@@ -979,6 +978,53 @@ function ReportesAdmin() {
         )}
 
       </main>
+    </div>
+  )
+}
+
+function TarjetaHospedajeTurno({ h, navigate, arrastrada }) {
+  const esActivo = h.estado === 'activo'
+  return (
+    <div
+      onClick={() => navigate(`/ficha/${h.id}`)}
+      className={`bg-white rounded-2xl border shadow-sm p-5 cursor-pointer transition-colors ${
+        arrastrada
+          ? 'border-amber-200 hover:border-amber-400'
+          : esActivo
+            ? 'border-red-100 hover:border-red-300'
+            : 'border-gray-100 hover:border-gray-300'
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <p className={`font-black text-gray-800 ${!esActivo ? 'uppercase' : ''}`}>
+            {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
+          </p>
+          <p className="text-xs font-bold text-gray-400">{h.huesped_hospedaje?.[0]?.clientes?.telefono}</p>
+          <p className="text-xs font-bold text-gray-500 mt-1">Hab {h.habitaciones?.numero} - {h.habitaciones?.tipo_actual}</p>
+          <p className="text-[10px] font-bold text-gray-400 mt-1">
+            Ingreso: {new Date(h.ingreso).toLocaleString('es-PE')}
+          </p>
+          {!esActivo && h.salida_real && (
+            <p className="text-[10px] font-bold text-gray-400">
+              Salida: {new Date(h.salida_real).toLocaleString('es-PE')}
+            </p>
+          )}
+        </div>
+        <div className="text-right flex flex-col items-end">
+          <p className="text-base font-black text-gray-800">S/{h.tarifa_pactada}</p>
+          <p className="text-[10px] font-black text-indigo-500 mt-1 mb-2">N° {String(h.nro_ficha).padStart(6, '0')}</p>
+          {esActivo ? (
+            <span className="text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">Ocupada</span>
+          ) : (
+            <span className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${
+              h.estado_pago === 'pagado' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
+            }`}>
+              {h.estado_pago === 'pagado' ? 'Pagado' : 'Pendiente'}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
