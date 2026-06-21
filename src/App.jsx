@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Login from './pages/Login'
@@ -8,13 +9,20 @@ import Consumos from './pages/Consumos'
 import Limpieza from './pages/Limpieza'
 import Turnos from './pages/Turnos'
 import Cochera from './pages/Cochera'
-import Reportes from './pages/Reportes'
 import Usuarios from './pages/Usuarios'
 import Reservas from './pages/Reservas'
 import Productos from './pages/Productos'
 import ReportesRecepcion from './pages/ReportesRecepcion'
 import FichaHospedaje from './pages/FichaHospedaje'
-import ReportesAdmin from './pages/ReportesAdmin'
+
+// Cargadas bajo demanda: incluyen recharts, jspdf y xlsx, que pesan bastante
+// y solo se necesitan al entrar a reportes o exportar.
+const Reportes = lazy(() => import('./pages/Reportes'))
+const ReportesAdmin = lazy(() => import('./pages/ReportesAdmin'))
+
+function CargandoPagina() {
+  return <div className="p-4 text-gray-500">Cargando...</div>
+}
 
 
 
@@ -41,13 +49,13 @@ function App() {
         <Route path="/limpieza" element={<RutaProtegida><Limpieza /></RutaProtegida>} />
         <Route path="/turnos" element={<RutaProtegida roles={['recepcionista','administrador']}><Turnos /></RutaProtegida>} />
         <Route path="/cochera" element={<RutaProtegida roles={['recepcionista','administrador']}><Cochera /></RutaProtegida>} />
-        <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><Reportes /></RutaProtegida>} />
+        <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><Suspense fallback={<CargandoPagina />}><Reportes /></Suspense></RutaProtegida>} />
         <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><Usuarios /></RutaProtegida>} />
         <Route path="/reservas" element={<RutaProtegida roles={['recepcionista','administrador']}><Reservas /></RutaProtegida>} />
         <Route path="/productos" element={<RutaProtegida roles={['administrador', 'recepcionista']}><Productos /></RutaProtegida>} />
         <Route path="/reportes-recepcion" element={<RutaProtegida roles={['recepcionista','administrador']}><ReportesRecepcion /></RutaProtegida>} />
         <Route path="/ficha/:id" element={<RutaProtegida><FichaHospedaje /></RutaProtegida>} />
-        <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><ReportesAdmin /></RutaProtegida>} />
+        <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><Suspense fallback={<CargandoPagina />}><ReportesAdmin /></Suspense></RutaProtegida>} />
       </Routes>
     </div>
   )
