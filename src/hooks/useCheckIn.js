@@ -44,13 +44,13 @@ export function useCheckIn() {
     }
   }
 
-  const realizarCheckIn = async (datosTransaccion, clienteDatos) => {
+  const realizarCheckIn = async (datosTransaccion, clienteDatos, acompanantes = []) => {
     setCargando(true)
     setError(null)
     try {
       let clienteId = clienteDatos.id
       
-      // Crear o actualizar cliente
+      // Crear o actualizar cliente titular
       if (clienteId) {
         await clientesService.actualizarCliente(clienteId, {
           nombres: clienteDatos.nombres,
@@ -67,10 +67,35 @@ export function useCheckIn() {
         clienteId = nuevo.id
       }
 
+      // Crear o recuperar acompañantes
+      const acompanantesIds = []
+      for (const ac of acompanantes) {
+        if (!ac.dni.trim() || !ac.nombres.trim()) continue // Skip inestables
+        
+        let acId = ac.clienteId
+        if (acId) {
+          await clientesService.actualizarCliente(acId, {
+            nombres: ac.nombres,
+            telefono: ac.telefono,
+            nacionalidad: ac.nacionalidad
+          })
+          acompanantesIds.push(acId)
+        } else {
+          const nuevo = await clientesService.crearCliente({
+            dni_pasaporte: ac.dni,
+            nombres: ac.nombres,
+            telefono: ac.telefono,
+            nacionalidad: ac.nacionalidad
+          })
+          acompanantesIds.push(nuevo.id)
+        }
+      }
+
       // Ejecutar la transacción de hospedaje
       await hospedajesService.crearCheckIn({
         ...datosTransaccion,
-        clienteId
+        clienteId,
+        acompanantesIds
       })
 
       setCargando(false)

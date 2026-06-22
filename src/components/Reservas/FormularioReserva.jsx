@@ -137,10 +137,49 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
             )}
             {cliente && (
-              <p className="text-xs font-bold text-green-600 bg-green-50 px-3 py-2 rounded-lg mt-2 inline-flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                Cliente registrado
-              </p>
+              <div className="mt-2 bg-indigo-50 border border-indigo-100 p-3 rounded-xl space-y-2">
+                <p className="text-xs font-bold text-indigo-700 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                  Cliente registrado
+                </p>
+                {(() => {
+                  if (!cliente.huesped_hospedaje || cliente.huesped_hospedaje.length === 0) return null;
+                  
+                  // Filtrar los que tienen hospedajes (por si acaso viene null en inner join)
+                  const historicos = cliente.huesped_hospedaje
+                    .map(h => h.hospedajes)
+                    .filter(Boolean)
+                    .sort((a, b) => new Date(b.ingreso) - new Date(a.ingreso));
+
+                  if (historicos.length === 0) return null;
+
+                  const ultimo = historicos[0];
+                  
+                  // Calcular habitación favorita (la que más se repite)
+                  const conteoHabitaciones = {};
+                  let maxCount = 0;
+                  let favorita = 'N/A';
+                  
+                  historicos.forEach(h => {
+                    if (h.habitaciones?.numero) {
+                      const num = h.habitaciones.numero;
+                      conteoHabitaciones[num] = (conteoHabitaciones[num] || 0) + 1;
+                      if (conteoHabitaciones[num] > maxCount) {
+                        maxCount = conteoHabitaciones[num];
+                        favorita = num;
+                      }
+                    }
+                  });
+
+                  return (
+                    <div className="text-[10px] text-indigo-800 space-y-1 pt-1 border-t border-indigo-100/50">
+                      <p><span className="font-bold">Última visita:</span> {new Date(ultimo.ingreso).toLocaleDateString()} (S/{ultimo.tarifa_pactada})</p>
+                      <p><span className="font-bold">Hab. favorita:</span> {favorita} ({maxCount} veces)</p>
+                      <p><span className="font-bold">Total visitas:</span> {historicos.length}</p>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
           </div>
 

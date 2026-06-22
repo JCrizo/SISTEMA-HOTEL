@@ -23,10 +23,20 @@ export const hospedajesService = {
       .select().single()
     if (errHosp) throw new Error('Error al crear hospedaje: ' + errHosp.message)
 
+    // Insertar titular
     const { error: errVinc } = await supabase.from('huesped_hospedaje').insert({
       hospedaje_id: hospedaje.id, cliente_id: clienteId, es_titular: true
     })
-    if (errVinc) throw new Error('Error al vincular huésped: ' + errVinc.message)
+    if (errVinc) throw new Error('Error al vincular huésped titular: ' + errVinc.message)
+
+    // Insertar acompañantes
+    if (datos.acompanantesIds && datos.acompanantesIds.length > 0) {
+      const inserts = datos.acompanantesIds.map(acId => ({
+        hospedaje_id: hospedaje.id, cliente_id: acId, es_titular: false
+      }))
+      const { error: errAcomp } = await supabase.from('huesped_hospedaje').insert(inserts)
+      if (errAcomp) throw new Error('Error al vincular acompañantes: ' + errAcomp.message)
+    }
 
     if (montoPagado > 0) {
       const { error: errPago } = await supabase.from('pagos').insert({

@@ -4,7 +4,16 @@ export const clientesService = {
   async buscarPorDniPasaporte(dniPasaporte) {
     const { data, error } = await supabase
       .from('clientes')
-      .select('*')
+      .select(`
+        *,
+        huesped_hospedaje (
+          hospedajes (
+            tarifa_pactada,
+            ingreso,
+            habitaciones (numero)
+          )
+        )
+      `)
       .eq('dni_pasaporte', dniPasaporte)
       .single()
     

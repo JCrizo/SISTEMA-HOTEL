@@ -164,7 +164,8 @@ export default function FormularioCheckIn({
         nombres,
         telefono,
         nacionalidad
-      }
+      },
+      acompanantes
     )
 
     if (exito) {
@@ -172,8 +173,44 @@ export default function FormularioCheckIn({
     }
   }
 
+  const [acompanantes, setAcompanantes] = useState([])
+  
+  function agregarAcompanante() {
+    setAcompanantes([...acompanantes, { dni: '', tipoDoc: 'dni', nombres: '', telefono: '', nacionalidad: '', clienteId: null }])
+  }
+
+  function eliminarAcompanante(index) {
+    const nuevos = [...acompanantes]
+    nuevos.splice(index, 1)
+    setAcompanantes(nuevos)
+  }
+
+  function actualizarAcompanante(index, campo, valor) {
+    const nuevos = [...acompanantes]
+    nuevos[index][campo] = valor
+    setAcompanantes(nuevos)
+  }
+
+  async function buscarAcompanante(index) {
+    const ac = acompanantes[index]
+    if (!ac.dni.trim()) return
+    const data = await buscarCliente(ac.dni.trim())
+    if (data) {
+      actualizarAcompanante(index, 'nombres', data.nombres)
+      actualizarAcompanante(index, 'telefono', data.telefono || '')
+      actualizarAcompanante(index, 'nacionalidad', data.nacionalidad || '')
+      actualizarAcompanante(index, 'clienteId', data.id)
+    } else {
+      actualizarAcompanante(index, 'nombres', '')
+      actualizarAcompanante(index, 'telefono', '')
+      actualizarAcompanante(index, 'clienteId', null)
+    }
+  }
+
+  // --- RENDERING ...
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+      {/* ... header ... */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
@@ -190,11 +227,11 @@ export default function FormularioCheckIn({
 
       <div className="p-8 space-y-8">
         
-        {/* SECCIÓN: HUÉSPED */}
+        {/* SECCIÓN: HUÉSPED TITULAR */}
         <section>
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">1</span>
-            Datos del Huésped
+            Huésped Titular
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
@@ -236,13 +273,49 @@ export default function FormularioCheckIn({
               )}
 
               {cliente && (
-                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                  <p className="text-xs font-bold text-green-800 flex items-center gap-1">
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
+                  <p className="text-xs font-bold text-blue-800 flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                     Cliente frecuente
                   </p>
+                  
+                  {(() => {
+                    if (!cliente.huesped_hospedaje || cliente.huesped_hospedaje.length === 0) return null;
+                    
+                    const historicos = cliente.huesped_hospedaje
+                      .map(h => h.hospedajes)
+                      .filter(Boolean)
+                      .sort((a, b) => new Date(b.ingreso) - new Date(a.ingreso));
+
+                    if (historicos.length === 0) return null;
+
+                    const ultimo = historicos[0];
+                    const conteoHabitaciones = {};
+                    let maxCount = 0;
+                    let favorita = 'N/A';
+                    
+                    historicos.forEach(h => {
+                      if (h.habitaciones?.numero) {
+                        const num = h.habitaciones.numero;
+                        conteoHabitaciones[num] = (conteoHabitaciones[num] || 0) + 1;
+                        if (conteoHabitaciones[num] > maxCount) {
+                          maxCount = conteoHabitaciones[num];
+                          favorita = num;
+                        }
+                      }
+                    });
+
+                    return (
+                      <div className="text-[10px] text-blue-800 space-y-1 pt-1 border-t border-blue-200/50">
+                        <p><span className="font-bold">Última visita:</span> {new Date(ultimo.ingreso).toLocaleDateString()} (S/{ultimo.tarifa_pactada})</p>
+                        <p><span className="font-bold">Hab. favorita:</span> {favorita} ({maxCount} veces)</p>
+                        <p><span className="font-bold">Total visitas:</span> {historicos.length}</p>
+                      </div>
+                    );
+                  })()}
+
                   {cliente.tarifa_habitual && (
-                    <p className="text-xs font-bold text-green-700 mt-1 bg-white px-2 py-1 rounded inline-block shadow-sm">
+                    <p className="text-xs font-bold text-blue-700 mt-1 bg-white px-2 py-1 rounded inline-block shadow-sm">
                       Tarifa habitual: S/{cliente.tarifa_habitual}
                     </p>
                   )}
@@ -290,6 +363,78 @@ export default function FormularioCheckIn({
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* SECCIÓN ACOMPAÑANTES */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                Acompañantes ({acompanantes.length})
+              </h4>
+              <button 
+                onClick={agregarAcompanante}
+                className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-colors flex items-center gap-1"
+              >
+                + Agregar persona
+              </button>
+            </div>
+            
+            {acompanantes.length > 0 && (
+              <div className="space-y-4">
+                {acompanantes.map((ac, idx) => (
+                  <div key={idx} className="bg-white border-2 border-gray-100 p-4 rounded-2xl relative shadow-sm">
+                    <button 
+                      onClick={() => eliminarAcompanante(idx)}
+                      className="absolute -top-3 -right-3 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shadow-sm"
+                      title="Eliminar acompañante"
+                    >
+                      ✕
+                    </button>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Documento</label>
+                        <div className="flex gap-2">
+                          <select
+                            value={ac.tipoDoc}
+                            onChange={e => { actualizarAcompanante(idx, 'tipoDoc', e.target.value); actualizarAcompanante(idx, 'dni', '') }}
+                            className="w-1/3 border-2 border-gray-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                          >
+                            <option value="dni">DNI</option>
+                            <option value="pasaporte">Pasap</option>
+                            <option value="otro">Otro</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={ac.dni}
+                            onChange={e => {
+                              const val = e.target.value.replace(/\D/g, '')
+                              if (ac.tipoDoc === 'dni') {
+                                if (val.length <= 8) actualizarAcompanante(idx, 'dni', val)
+                              } else actualizarAcompanante(idx, 'dni', e.target.value)
+                            }}
+                            onBlur={() => buscarAcompanante(idx)}
+                            placeholder={ac.tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
+                            className="flex-1 border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                            maxLength={ac.tipoDoc === 'dni' ? 8 : 20}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Nombre Completo</label>
+                        <input
+                          type="text"
+                          value={ac.nombres}
+                          onChange={e => actualizarAcompanante(idx, 'nombres', e.target.value)}
+                          placeholder="Nombre del acompañante"
+                          className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

@@ -158,11 +158,27 @@ export default function PanelHuespedActivo({
           </div>
           
           <div className="mb-4">
-            <p className="text-xl font-black text-gray-800">{huesped?.nombres || 'Sin nombre'}</p>
+            <p className="text-xl font-black text-gray-800">{huesped?.nombres || 'Sin nombre'} <span className="text-sm font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded ml-2">Titular</span></p>
             <div className="flex items-center gap-4 mt-1">
               <p className="text-sm font-bold text-gray-500">{huesped?.dni_pasaporte}</p>
               {huesped?.telefono && <p className="text-sm font-bold text-gray-500">📞 {huesped.telefono}</p>}
             </div>
+
+            {/* ACOMPAÑANTES */}
+            {hospedaje.huesped_hospedaje && hospedaje.huesped_hospedaje.filter(h => !h.es_titular).length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Acompañantes</p>
+                <div className="space-y-1.5">
+                  {hospedaje.huesped_hospedaje.filter(h => !h.es_titular).map((ac, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                      <p className="text-sm font-bold text-gray-700">{ac.clientes?.nombres}</p>
+                      <span className="text-xs font-bold text-gray-400">({ac.clientes?.dni_pasaporte})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-2xl p-4">

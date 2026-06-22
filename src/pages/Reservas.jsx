@@ -2,32 +2,42 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useReservas } from '../hooks/useReservas'
+import { useCalendario } from '../hooks/useCalendario'
 import FormularioReserva from '../components/Reservas/FormularioReserva'
 import CambiarHabitacionReservaModal from '../components/Reservas/CambiarHabitacionReservaModal'
+import CalendarioReservas from '../components/Reservas/CalendarioReservas'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 
 export default function Reservas() {
   const navigate = useNavigate()
   const { turnoActivo, cargandoTurno, turnoAjeno } = useTurnoActivo()
-  const { reservas, cargando, error, cargarReservas, anularReserva } = useReservas()
+  const { reservas, cargando: cargandoRes, error: errorRes, cargarReservas, anularReserva } = useReservas()
+  const { habitaciones, ocupaciones, cargando: cargandoCal, cargarDatos: cargarCalendario } = useCalendario()
   
   const [mostrarForm, setMostrarForm] = useState(false)
   const [reservaACambiar, setReservaACambiar] = useState(null)
+  const [vistaActual, setVistaActual] = useState('lista') // 'lista' o 'calendario'
 
   useEffect(() => {
     cargarReservas()
   }, [cargarReservas])
 
+  useEffect(() => {
+    if (vistaActual === 'calendario') {
+      cargarCalendario()
+    }
+  }, [vistaActual, cargarCalendario])
+
   async function handleAnularReserva(reserva) {
     if (!confirm('¿Seguro que deseas anular esta reserva?')) return
-    await anularReserva(reserva, usuario)
+    await anularReserva(reserva, null) // Si hay contexto de usuario, pasarlo
   }
 
   function convertirAHospedaje(reserva) {
     navigate(`/checkin/${reserva.habitacion_id}?reserva=${reserva.id}`)
   }
 
-  if (cargando && reservas.length === 0) return (
+  if (cargandoRes && reservas.length === 0) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
     </div>
@@ -40,7 +50,7 @@ export default function Reservas() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10 mb-6">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate('/')} 
@@ -54,20 +64,39 @@ export default function Reservas() {
               <p className="text-sm text-gray-500 font-medium">Programa y administra las llegadas</p>
             </div>
           </div>
-          {turnoActivo && (
-            <button
-              onClick={() => setMostrarForm(!mostrarForm)}
-              className={`text-sm px-5 py-2.5 font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 ${
-                mostrarForm 
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-              }`}
-            >
-              {mostrarForm ? 'Cerrar Formulario' : (
-                <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg> Nueva Reserva</>
-              )}
-            </button>
-          )}
+          
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Selector de Vista */}
+            <div className="bg-gray-100 p-1 rounded-xl flex items-center">
+              <button
+                onClick={() => setVistaActual('lista')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vistaActual === 'lista' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Vista Lista
+              </button>
+              <button
+                onClick={() => setVistaActual('calendario')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vistaActual === 'calendario' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Calendario
+              </button>
+            </div>
+
+            {turnoActivo && (
+              <button
+                onClick={() => setMostrarForm(!mostrarForm)}
+                className={`text-sm px-5 py-2.5 font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 ${
+                  mostrarForm 
+                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                }`}
+              >
+                {mostrarForm ? 'Cerrar Formulario' : (
+                  <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg> Nueva Reserva</>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -81,21 +110,32 @@ export default function Reservas() {
           </div>
         )}
 
-        {error && (
+        {errorRes && (
           <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
             <span className="text-2xl">⚠️</span>
-            <p className="text-sm font-bold text-red-800">{error}</p>
+            <p className="text-sm font-bold text-red-800">{errorRes}</p>
           </div>
         )}
 
         {mostrarForm && (
-          <FormularioReserva 
-            turnoActivo={turnoActivo} 
-            onCancel={() => setMostrarForm(false)} 
-          />
+          <div className="mb-8">
+            <FormularioReserva 
+              turnoActivo={turnoActivo} 
+              onCancel={() => setMostrarForm(false)} 
+            />
+          </div>
         )}
 
-        {reservas.length === 0 && !cargando ? (
+        {vistaActual === 'calendario' ? (
+          <CalendarioReservas 
+            habitaciones={habitaciones} 
+            ocupaciones={ocupaciones} 
+            cargando={cargandoCal} 
+          />
+        ) : (
+          /* Vista Lista Original */
+          <>
+            {reservas.length === 0 && !cargandoRes ? (
           <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center shadow-sm flex flex-col items-center justify-center">
             <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-300 text-4xl mb-4">
               📅
@@ -196,6 +236,8 @@ export default function Reservas() {
             reserva={reservaACambiar}
             onClose={() => setReservaACambiar(null)}
           />
+        )}
+          </>
         )}
       </main>
     </div>
