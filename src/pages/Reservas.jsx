@@ -4,10 +4,11 @@ import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useReservas } from '../hooks/useReservas'
 import FormularioReserva from '../components/Reservas/FormularioReserva'
 import CambiarHabitacionReservaModal from '../components/Reservas/CambiarHabitacionReservaModal'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 
 export default function Reservas() {
   const navigate = useNavigate()
-  const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { turnoActivo, cargandoTurno, turnoAjeno } = useTurnoActivo()
   const { reservas, cargando, error, cargarReservas, anularReserva } = useReservas()
   
   const [mostrarForm, setMostrarForm] = useState(false)
@@ -31,6 +32,10 @@ export default function Reservas() {
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
     </div>
   )
+
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">

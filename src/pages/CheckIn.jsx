@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useCheckIn } from '../hooks/useCheckIn'
 import AvisoSinTurno from '../components/AvisoSinTurno'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 import FormularioCheckIn from '../components/CheckIn/FormularioCheckIn'
 
 export default function CheckIn() {
@@ -11,7 +12,7 @@ export default function CheckIn() {
   const reservaId = searchParams.get('reserva')
   const navigate = useNavigate()
 
-  const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { turnoActivo, cargandoTurno, turnoAjeno } = useTurnoActivo()
   const { 
     hab, 
     datosIniciales, 
@@ -33,6 +34,10 @@ export default function CheckIn() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
+  }
+
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
   }
 
   if (!turnoActivo) {

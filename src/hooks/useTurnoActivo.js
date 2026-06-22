@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 /**
  * Hook para saber si hay un turno de caja activo (sin cierre).
@@ -8,14 +9,17 @@ import { supabase } from '../lib/supabase'
  *  - turnoActivo: undefined mientras carga, null si no hay turno abierto,
  *    o el objeto del turno si existe uno activo.
  *  - cargandoTurno: true mientras se hace la consulta inicial.
+ *  - turnoAjeno: true si el turno abierto pertenece a otro usuario.
  *
  * Se usa para bloquear acciones (check-in, consumos, pagos, cochera,
  * reservas) que no deberían registrarse sin un turno abierto, ya que
  * quedarían sin asociar a ninguna caja.
  */
 export function useTurnoActivo() {
+  const { usuario } = useAuth()
   const [turnoActivo, setTurnoActivo] = useState(undefined)
   const [cargandoTurno, setCargandoTurno] = useState(true)
+  const [turnoAjeno, setTurnoAjeno] = useState(false)
 
   useEffect(() => {
     let activo = true
@@ -29,14 +33,26 @@ export function useTurnoActivo() {
         .limit(1)
 
       if (activo) {
-        setTurnoActivo(data?.[0] || null)
+        const turno = data?.[0] || null
+        setTurnoActivo(turno)
+        
+        if (turno && usuario && turno.usuario_id !== usuario.id && usuario.rol !== 'administrador') {
+          setTurnoAjeno(true)
+        } else {
+          setTurnoAjeno(false)
+        }
+        
         setCargandoTurno(false)
       }
     }
 
-    verificar()
-    return () => { activo = false }
-  }, [])
+    // Only run when we have loaded the auth context properly
+    if (usuario !== undefined) {
+      verificar()
+    }
 
-  return { turnoActivo, cargandoTurno }
+    return () => { activo = false }
+  }, [usuario])
+
+  return { turnoActivo, cargandoTurno, turnoAjeno }
 }

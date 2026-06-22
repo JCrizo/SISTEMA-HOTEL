@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import PanelHuespedActivo from '../components/DetalleHabitacion/PanelHuespedActivo'
 import PanelLimpieza from '../components/DetalleHabitacion/PanelLimpieza'
 import ConfigHabitacion from '../components/DetalleHabitacion/ConfigHabitacion'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 
 const colores = {
   disponible:         'from-green-500 to-emerald-600 shadow-green-200 text-white',
@@ -31,7 +32,7 @@ const etiquetas = {
 function DetalleHabitacion() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { turnoActivo } = useTurnoActivo()
+  const { turnoActivo, turnoAjeno } = useTurnoActivo()
   const { usuario } = useAuth()
   
   const {
@@ -57,6 +58,10 @@ function DetalleHabitacion() {
     </div>
   )
   
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
+  }
+
   if (!hab) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-red-50 text-red-600 p-6 rounded-2xl border-2 border-red-200 text-center max-w-md">

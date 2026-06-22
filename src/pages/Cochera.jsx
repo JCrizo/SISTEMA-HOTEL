@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useAuth } from '../context/AuthContext'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 
 function Cochera() {
   const navigate = useNavigate()
@@ -27,7 +28,7 @@ function Cochera() {
   const [guardando, setGuardando] = useState(false)
 
   const [metodoPagoVehiculo, setMetodoPagoVehiculo] = useState({})
-  const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { turnoActivo, cargandoTurno, turnoAjeno } = useTurnoActivo()
   const { usuario } = useAuth()
 
   useEffect(() => {
@@ -143,11 +144,15 @@ function Cochera() {
     cargarDatos()
   }
 
-  if (cargando) return (
+  if (cargandoTurno || cargando) return (
     <div className="flex justify-center items-center h-screen bg-gray-50">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
     </div>
   )
+
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">

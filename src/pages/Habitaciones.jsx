@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useTurnoActivo } from '../hooks/useTurnoActivo'
 
 const estilosHabitacion = {
   disponible:         'bg-green-100 border-green-300 hover:bg-green-200 hover:border-green-400 hover:shadow-green-200 text-green-900',
@@ -29,6 +30,7 @@ function Habitaciones() {
   const [cargando, setCargando] = useState(true)
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
+  const { turnoAjeno } = useTurnoActivo()
 
   useEffect(() => {
     async function cargar() {
@@ -139,6 +141,24 @@ function Habitaciones() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 mt-6">
+        {turnoAjeno && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">⚠️</span>
+              <div>
+                <h3 className="text-red-800 font-black text-lg">Turno Abierto por Otro Usuario</h3>
+                <p className="text-sm font-medium text-red-700">No podrás realizar operaciones hasta que cierres el turno en la caja.</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => navigate('/turnos')}
+              className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors whitespace-nowrap"
+            >
+              Ir a Caja a Cerrar
+            </button>
+          </div>
+        )}
+
         <div className="mb-8">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Accesos Rápidos</p>
           <div className="flex gap-3 flex-nowrap overflow-x-auto pb-2 scrollbar-hide">

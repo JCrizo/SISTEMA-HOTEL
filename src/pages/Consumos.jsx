@@ -5,6 +5,7 @@ import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useConsumos } from '../hooks/useConsumos'
 
 import AvisoSinTurno from '../components/AvisoSinTurno'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 import CatalogoProductos from '../components/Consumos/CatalogoProductos'
 import ListaConsumosRegistrados from '../components/Consumos/ListaConsumosRegistrados'
 
@@ -12,7 +13,7 @@ function Consumos() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { usuario } = useAuth()
-  const { turnoActivo, cargandoTurno } = useTurnoActivo()
+  const { turnoActivo, cargandoTurno, turnoAjeno } = useTurnoActivo()
   
   const {
     cargando,
@@ -36,6 +37,10 @@ function Consumos() {
         <span className="ml-3 text-gray-500 font-medium">Cargando datos...</span>
       </div>
     )
+  }
+
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
   }
 
   if (!turnoActivo) {

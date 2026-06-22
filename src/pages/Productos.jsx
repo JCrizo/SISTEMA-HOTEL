@@ -7,11 +7,12 @@ import { useProductos } from '../hooks/useProductos'
 import ListaCategorias from '../components/Productos/ListaCategorias'
 import FormularioProducto from '../components/Productos/FormularioProducto'
 import ListaProductos from '../components/Productos/ListaProductos'
+import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 
 function Productos() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
-  const { turnoActivo } = useTurnoActivo()
+  const { turnoActivo, turnoAjeno } = useTurnoActivo()
   
   const {
     productos,
@@ -51,6 +52,10 @@ function Productos() {
         <span className="ml-3 text-gray-500 font-medium">Cargando inventario...</span>
       </div>
     )
+  }
+
+  if (turnoAjeno) {
+    return <BloqueoTurnoAjeno />
   }
 
   const productosFiltrados = filtroCategoria === 'todas'
