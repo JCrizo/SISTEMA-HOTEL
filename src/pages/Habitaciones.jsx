@@ -54,18 +54,24 @@ function Habitaciones() {
         // Cargar huéspedes activos
         const { data: hospedajesActivos } = await supabase
           .from('hospedajes')
-          .select('habitacion_id, clientes(nombres)')
+          .select('habitacion_id, salida_estimada, clientes(nombres)')
           .eq('estado', 'activo')
 
         const mapHospedajes = {}
         hospedajesActivos?.forEach(h => {
-          mapHospedajes[h.habitacion_id] = h.clientes?.nombres
+          mapHospedajes[h.habitacion_id] = {
+            nombre: h.clientes?.nombres,
+            salida_estimada: h.salida_estimada
+          }
         })
 
         setHabitaciones(data.map(h => ({
           ...h,
           tieneReservaProxima: habsConReserva.has(h.id),
-          huespedActivo: mapHospedajes[h.id] || null
+          huespedActivo: mapHospedajes[h.id]?.nombre || null,
+          checkoutVencido: mapHospedajes[h.id]?.salida_estimada
+            ? new Date(mapHospedajes[h.id].salida_estimada) < new Date()
+            : false
         })))
       }
       setCargando(false)
@@ -195,6 +201,11 @@ function Habitaciones() {
                 {hab.tieneReservaProxima && hab.estado === 'disponible' && (
                   <div className="absolute -top-3 -right-3 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
                     Reserva Próxima
+                  </div>
+                )}
+                {hab.checkoutVencido && (
+                  <div className="absolute -top-3 -left-3 bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
+                    ⚠ Checkout vencido
                   </div>
                 )}
               </div>

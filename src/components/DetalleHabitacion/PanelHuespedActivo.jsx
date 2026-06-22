@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import EditarHuespedModal from './EditarHuespedModal'
+import CambiarHabitacionHospedajeModal from './CambiarHabitacionHospedajeModal'
 
 export default function PanelHuespedActivo({
   hab,
@@ -14,11 +15,13 @@ export default function PanelHuespedActivo({
   extenderEstadia,
   hacerCheckout,
   actualizarTarifaHospedaje,
-  actualizarDatosHuesped
+  actualizarDatosHuesped,
+  cambiarHabitacionHospedaje
 }) {
   const navigate = useNavigate()
 
   const [mostrarEditar, setMostrarEditar] = useState(false)
+  const [mostrarCambioHab, setMostrarCambioHab] = useState(false)
 
   const [mostrarPago, setMostrarPago] = useState(false)
   const [montoPago, setMontoPago] = useState('')
@@ -142,6 +145,13 @@ export default function PanelHuespedActivo({
               >
                 ✏️ Editar
               </button>
+              <button
+                onClick={() => setMostrarCambioHab(true)}
+                className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-lg border border-indigo-100 transition-colors"
+                title="Mover a otra habitación"
+              >
+                🔄 Cambiar hab.
+              </button>
             </div>
           </div>
           
@@ -160,7 +170,16 @@ export default function PanelHuespedActivo({
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Checkout</p>
-              <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+              {new Date(hospedaje.salida_estimada) < new Date() ? (
+                <>
+                  <p className="text-sm font-bold text-orange-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+                  <p className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">
+                    ⚠ Checkout vencido
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+              )}
             </div>
           </div>
           

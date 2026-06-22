@@ -37,6 +37,16 @@ export const reservasService = {
     return true
   },
 
+  async cambiarHabitacion(reservaId, nuevaHabitacionId) {
+    const { error } = await supabase
+      .from('reservas')
+      .update({ habitacion_id: nuevaHabitacionId })
+      .eq('id', reservaId)
+
+    if (error) throw new Error(error.message)
+    return true
+  },
+
   async obtenerPorId(id) {
     const { data, error } = await supabase
       .from('reservas')

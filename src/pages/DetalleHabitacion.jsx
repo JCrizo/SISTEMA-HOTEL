@@ -38,7 +38,7 @@ function DetalleHabitacion() {
     cargando, hab, hospedaje, huesped, pagos, consumos,
     hospedajeFinalizado, cargarDatos, registrarPago, registrarPenalidad,
     extenderEstadia, actualizarHabitacion, actualizarTarifaHospedaje,
-    actualizarDatosHuesped, hacerCheckout,
+    actualizarDatosHuesped, cambiarHabitacionHospedaje, hacerCheckout,
     registrarCobroAdicional, reabrirHospedaje
   } = useDetalleHabitacion()
 
@@ -140,6 +140,13 @@ function DetalleHabitacion() {
               hacerCheckout={hacerCheckout}
               actualizarTarifaHospedaje={(nuevaTarifa) => actualizarTarifaHospedaje(nuevaTarifa, usuario?.nombre)}
               actualizarDatosHuesped={actualizarDatosHuesped}
+              cambiarHabitacionHospedaje={async (nuevaHabitacionId) => {
+                const resultado = await cambiarHabitacionHospedaje(nuevaHabitacionId, usuario?.nombre)
+                if (resultado.exito) {
+                  navigate(`/habitacion/${resultado.nuevaHabitacionId}`)
+                }
+                return resultado
+              }}
             />
           </div>
         )}

@@ -88,6 +88,46 @@ export const hospedajesService = {
     if (error) throw new Error(error.message)
   },
 
+  async cambiarHabitacion(hospedajeId, habitacionAnteriorId, nuevaHabitacionId, observacionesActuales, usuarioNombre) {
+    // 1. Verificar que la nueva habitación esté realmente disponible
+    const { data: nuevaHab, error: errorNuevaHab } = await supabase
+      .from('habitaciones')
+      .select('estado')
+      .eq('id', nuevaHabitacionId)
+      .single()
+    if (errorNuevaHab) throw new Error(errorNuevaHab.message)
+    if (nuevaHab.estado !== 'disponible') {
+      throw new Error('La habitación seleccionada ya no está disponible')
+    }
+
+    // 2. Mover el hospedaje a la nueva habitación, dejando registro del cambio
+    const fecha = new Date().toLocaleString('es-PE')
+    const nota = `[${fecha}] Cambio de habitación registrado por ${usuarioNombre || 'usuario'}.`
+    const nuevasObservaciones = observacionesActuales
+      ? `${observacionesActuales}\n${nota}`
+      : nota
+
+    const { error: errorHosp } = await supabase
+      .from('hospedajes')
+      .update({ habitacion_id: nuevaHabitacionId, observaciones: nuevasObservaciones })
+      .eq('id', hospedajeId)
+    if (errorHosp) throw new Error(errorHosp.message)
+
+    // 3. La habitación anterior queda pendiente de limpieza (como un checkout normal)
+    const { error: errorHabAnterior } = await supabase
+      .from('habitaciones')
+      .update({ estado: 'pendiente_limpieza' })
+      .eq('id', habitacionAnteriorId)
+    if (errorHabAnterior) throw new Error(errorHabAnterior.message)
+
+    // 4. La nueva habitación pasa a ocupada
+    const { error: errorHabNueva } = await supabase
+      .from('habitaciones')
+      .update({ estado: 'ocupada' })
+      .eq('id', nuevaHabitacionId)
+    if (errorHabNueva) throw new Error(errorHabNueva.message)
+  },
+
   async actualizarTarifa(hospedajeId, nuevaTarifaPactada, observacionesActuales, usuarioNombre) {
     const fecha = new Date().toLocaleString('es-PE')
     const nota = `[${fecha}] Tarifa actualizada a S/${nuevaTarifaPactada.toFixed(2)} por ${usuarioNombre || 'usuario'}.`

@@ -12,6 +12,16 @@ export const habitacionesService = {
     return data || []
   },
 
+  async obtenerTodas() {
+    const { data, error } = await supabase
+      .from('habitaciones')
+      .select('id, numero, tipo_actual, precio_actual, estado')
+      .order('numero')
+
+    if (error) throw new Error(error.message)
+    return data || []
+  },
+
   async obtenerPorId(id) {
     const { data, error } = await supabase
       .from('habitaciones')

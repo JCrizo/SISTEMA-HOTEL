@@ -3,9 +3,20 @@ import { useReservas } from '../../hooks/useReservas'
 import { useHabitaciones } from '../../hooks/useHabitaciones'
 import { clientesService } from '../../services/clientesService'
 
+function etiquetaEstado(estado) {
+  const etiquetas = {
+    ocupada: 'Ocupada',
+    pendiente_limpieza: 'Pend. limpieza',
+    en_limpieza: 'En limpieza',
+    limpieza_simple: 'Limpieza simple',
+    mantenimiento: 'Mantenimiento'
+  }
+  return etiquetas[estado] || estado
+}
+
 export default function FormularioReserva({ onCancel, turnoActivo }) {
   const { crearReserva, error: errorReserva } = useReservas()
-  const { habitaciones, cargarDisponibles } = useHabitaciones()
+  const { habitaciones, cargarTodas } = useHabitaciones()
 
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
@@ -23,8 +34,8 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const [errorValidacion, setErrorValidacion] = useState('')
 
   useEffect(() => {
-    cargarDisponibles()
-  }, [cargarDisponibles])
+    cargarTodas()
+  }, [cargarTodas])
 
   async function buscarCliente() {
     if (!dni.trim()) return
@@ -179,10 +190,15 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               <option value="">Seleccionar habitación...</option>
               {habitaciones.map(h => (
                 <option key={h.id} value={h.id}>
-                  Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual})
+                  Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual}){h.estado !== 'disponible' ? ` · ${etiquetaEstado(h.estado)} ahora` : ''}
                 </option>
               ))}
             </select>
+            {habitacionId && habitaciones.find(h => h.id === habitacionId)?.estado !== 'disponible' && (
+              <p className="text-xs text-amber-600 font-bold mt-1.5 bg-amber-50 px-3 py-2 rounded-lg">
+                ⚠ Esta habitación está {etiquetaEstado(habitaciones.find(h => h.id === habitacionId)?.estado).toLowerCase()} en este momento. Confirma que estará libre para la fecha de llegada.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

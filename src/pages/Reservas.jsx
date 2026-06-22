@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useReservas } from '../hooks/useReservas'
 import FormularioReserva from '../components/Reservas/FormularioReserva'
+import CambiarHabitacionReservaModal from '../components/Reservas/CambiarHabitacionReservaModal'
 
 export default function Reservas() {
   const navigate = useNavigate()
   const { turnoActivo, cargandoTurno } = useTurnoActivo()
-  const { reservas, cargando, error, cargarReservas, anularReserva } = useReservas()
+  const { reservas, cargando, error, cargarReservas, anularReserva, cambiarHabitacionReserva } = useReservas()
   
   const [mostrarForm, setMostrarForm] = useState(false)
+  const [reservaCambiandoHab, setReservaCambiandoHab] = useState(null)
 
   useEffect(() => {
     cargarReservas()
@@ -159,18 +161,26 @@ export default function Reservas() {
                   )}
                 </div>
 
-                <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex gap-3">
+                <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex flex-col gap-2">
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => convertirAHospedaje(r)}
+                      className="flex-[2] py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
+                    >
+                      Hacer Check-in
+                    </button>
+                    <button
+                      onClick={() => handleAnularReserva(r)}
+                      className="flex-1 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-sm font-bold transition-colors"
+                    >
+                      Anular
+                    </button>
+                  </div>
                   <button
-                    onClick={() => convertirAHospedaje(r)}
-                    className="flex-[2] py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
+                    onClick={() => setReservaCambiandoHab(r)}
+                    className="py-2 bg-white hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-xl text-xs font-bold transition-colors"
                   >
-                    Hacer Check-in
-                  </button>
-                  <button
-                    onClick={() => handleAnularReserva(r)}
-                    className="flex-1 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-sm font-bold transition-colors"
-                  >
-                    Anular
+                    🔄 Cambiar habitación
                   </button>
                 </div>
               </div>
@@ -178,6 +188,14 @@ export default function Reservas() {
           </div>
         )}
       </main>
+
+      {reservaCambiandoHab && (
+        <CambiarHabitacionReservaModal
+          reserva={reservaCambiandoHab}
+          cambiarHabitacionReserva={cambiarHabitacionReserva}
+          onClose={() => setReservaCambiandoHab(null)}
+        />
+      )}
     </div>
   )
 }

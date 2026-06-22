@@ -153,6 +153,25 @@ export function useDetalleHabitacion() {
     }
   }
 
+  const cambiarHabitacionHospedaje = async (nuevaHabitacionId, usuarioNombre) => {
+    if (!hospedaje || !hab) return { exito: false }
+    try {
+      await hospedajesService.cambiarHabitacion(
+        hospedaje.id,
+        hab.id,
+        nuevaHabitacionId,
+        hospedaje.observaciones,
+        usuarioNombre
+      )
+      // No recargamos hab.id: esa habitación ya no tiene el hospedaje activo
+      // (quedó pendiente de limpieza). El componente debe navegar a la nueva.
+      return { exito: true, nuevaHabitacionId }
+    } catch (error) {
+      console.error(error)
+      return { exito: false, error: error.message }
+    }
+  }
+
   const actualizarDatosHuesped = async (datosCliente) => {
     if (!huesped) return false
     try {
@@ -225,6 +244,7 @@ export function useDetalleHabitacion() {
     actualizarHabitacion,
     actualizarTarifaHospedaje,
     actualizarDatosHuesped,
+    cambiarHabitacionHospedaje,
     hacerCheckout,
     registrarCobroAdicional,
     reabrirHospedaje
