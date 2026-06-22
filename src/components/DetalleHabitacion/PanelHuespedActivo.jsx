@@ -451,6 +451,14 @@ export default function PanelHuespedActivo({
           onClose={() => setMostrarEditar(false)}
         />
       )}
+
+      {mostrarCambioHab && (
+        <CambiarHabitacionHospedajeModal
+          hab={hab}
+          cambiarHabitacionHospedaje={cambiarHabitacionHospedaje}
+          onClose={() => setMostrarCambioHab(false)}
+        />
+      )}
     </div>
   )
 }
