@@ -13,25 +13,22 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
   const [limpiezaIniciada, setLimpiezaIniciada] = useState(false)
 
   const esPostCheckout = ['pendiente_limpieza', 'limpieza_simple'].includes(hab.estado)
-  const enLimpiezaPostCheckout = hab.estado === 'en_limpieza'
-  const mostrandoFinalizar = enLimpiezaPostCheckout || limpiezaIniciada
+  const limpiezaActiva = hab.limpiezaActiva
 
   async function handleIniciar() {
     if (!tipoLimpiezaId) { alert('Selecciona un tipo de limpieza'); return }
     setGuardando(true)
     const exito = await iniciarLimpieza(hab, usuario?.id, personal, tipoSeleccionado, tipoLimpiezaId, horaInicio)
-    if (exito && !esPostCheckout) setLimpiezaIniciada(true)
     setGuardando(false)
   }
 
   async function handleHabilitar() {
-    const mensaje = esPostCheckout || enLimpiezaPostCheckout
+    const mensaje = esPostCheckout || hab.estado === 'en_limpieza'
       ? `¿Marcar Hab ${hab.numero} como disponible?`
       : `¿Marcar la limpieza de mantenimiento de Hab ${hab.numero} como finalizada?`
     if (!confirm(mensaje)) return
     setGuardando(true)
     await habilitarHabitacion(hab, horaFin)
-    setLimpiezaIniciada(false)
     setMostrarForm(false)
     setGuardando(false)
   }
@@ -53,6 +50,9 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
     disponible: 'Disponible',
     mantenimiento: 'Mantenimiento'
   }
+
+  // If there's an active cleaning on an occupied/available room, it's a maintenance cleaning
+  const esLimpiezaMantenimiento = limpiezaActiva && (hab.estado === 'ocupada' || hab.estado === 'disponible')
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
@@ -85,16 +85,14 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
         />
       )}
 
-      {/* En proceso de limpieza (post-checkout) */}
-      {enLimpiezaPostCheckout && (
-        <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} />
+      {/* En proceso de limpieza (post-checkout o mantenimiento) */}
+      {limpiezaActiva && (
+        <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={esLimpiezaMantenimiento} />
       )}
 
       {/* Habitaciones ocupadas o disponibles: limpieza de mantenimiento opcional */}
-      {!esPostCheckout && !enLimpiezaPostCheckout && (hab.estado === 'ocupada' || hab.estado === 'disponible') && (
-        limpiezaIniciada ? (
-          <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento />
-        ) : mostrarForm ? (
+      {!esPostCheckout && !limpiezaActiva && (hab.estado === 'ocupada' || hab.estado === 'disponible') && (
+        mostrarForm ? (
           <FormularioLimpieza
             tiposLimpieza={tiposLimpieza}
             personal={personal} setPersonal={setPersonal}
