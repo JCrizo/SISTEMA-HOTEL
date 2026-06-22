@@ -16,7 +16,7 @@ export default function AbrirTurno({ abrirTurno }) {
       usuarioId: usuario?.id,
       cajaPrincipalInicial,
       cajaConsumosInicial: cajaConsumosInicial || 0
-    })
+    }, usuario)
     setGuardando(false)
   }
 

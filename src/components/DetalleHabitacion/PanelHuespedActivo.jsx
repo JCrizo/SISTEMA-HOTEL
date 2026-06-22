@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import EditarHuespedModal from './EditarHuespedModal'
 import CambiarHabitacionActivaModal from './CambiarHabitacionActivaModal'
+import { useAuth } from '../../context/AuthContext'
 
 export default function PanelHuespedActivo({
   hab,
@@ -19,6 +20,7 @@ export default function PanelHuespedActivo({
   cambiarHabitacion
 }) {
   const navigate = useNavigate()
+  const { usuario } = useAuth()
 
   const [mostrarEditar, setMostrarEditar] = useState(false)
   const [mostrarCambioHab, setMostrarCambioHab] = useState(false)
@@ -115,7 +117,7 @@ export default function PanelHuespedActivo({
       if (!confirm('¿Confirmar checkout?')) return
     }
 
-    const exito = await hacerCheckout()
+    const exito = await hacerCheckout(usuario)
     if (exito) {
       navigate('/')
     }

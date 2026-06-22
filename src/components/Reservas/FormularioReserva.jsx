@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useReservas } from '../../hooks/useReservas'
 import { useHabitaciones } from '../../hooks/useHabitaciones'
 import { clientesService } from '../../services/clientesService'
+import { useAuth } from '../../context/AuthContext'
 
 export default function FormularioReserva({ onCancel, turnoActivo }) {
   const { crearReserva, error: errorReserva } = useReservas()
   const { habitaciones, cargarTodas } = useHabitaciones()
+  const { usuario } = useAuth()
 
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
@@ -69,7 +71,8 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
         dni_pasaporte: dni.trim(),
         nombres,
         telefono
-      }
+      },
+      usuario
     )
 
     if (exito) {

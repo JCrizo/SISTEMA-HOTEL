@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { reservasService } from '../services/reservasService'
 import { clientesService } from '../services/clientesService'
+import { auditoriaService } from '../services/auditoriaService'
 
 export const useReservas = create((set, get) => ({
   reservas: [],
@@ -17,7 +18,7 @@ export const useReservas = create((set, get) => ({
     }
   },
 
-  crearReserva: async (reservaData, clienteParams) => {
+  crearReserva: async (reservaData, clienteParams, usuario) => {
     set({ error: null })
     try {
       let clienteId = clienteParams.clienteId
@@ -39,10 +40,20 @@ export const useReservas = create((set, get) => ({
       }
 
       // Crear la reserva con el clienteId
-      await reservasService.crearReserva({
+      const nuevaReserva = await reservasService.crearReserva({
         ...reservaData,
         cliente_id: clienteId
       })
+
+      // Auditoría
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'CREAR_RESERVA',
+          'Reservas',
+          `Creó reserva para ${clienteParams.nombres} con adelanto de S/${reservaData.adelanto || 0}`
+        )
+      }
 
       // Recargar las reservas
       await get().cargarReservas()
@@ -53,9 +64,20 @@ export const useReservas = create((set, get) => ({
     }
   },
 
-  anularReserva: async (reservaId) => {
+  anularReserva: async (reserva, usuario) => {
     try {
-      await reservasService.anularReserva(reservaId)
+      await reservasService.anularReserva(reserva.id)
+      
+      // Auditoría
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'ANULAR_RESERVA',
+          'Reservas',
+          `Anuló reserva de ${reserva.clientes?.nombres} (Adelanto: S/${reserva.adelanto || 0})`
+        )
+      }
+
       await get().cargarReservas()
       return true
     } catch (error) {
@@ -64,9 +86,20 @@ export const useReservas = create((set, get) => ({
     }
   },
 
-  actualizarHabitacionReserva: async (reservaId, habitacionId) => {
+  actualizarHabitacionReserva: async (reserva, habitacionId, usuario) => {
     try {
-      await reservasService.actualizarHabitacion(reservaId, habitacionId)
+      await reservasService.actualizarHabitacion(reserva.id, habitacionId)
+      
+      // Auditoría
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'MODIFICAR_RESERVA',
+          'Reservas',
+          `Cambió la habitación de la reserva de ${reserva.clientes?.nombres} (ID Habitación: ${habitacionId})`
+        )
+      }
+
       await get().cargarReservas()
       return true
     } catch (error) {

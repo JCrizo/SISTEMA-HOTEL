@@ -19,8 +19,8 @@ export default function Reservas() {
   }, [cargarReservas])
 
   async function handleAnularReserva(reserva) {
-    if (!confirm(`¿Anular reserva de ${reserva.clientes?.nombres}?`)) return
-    await anularReserva(reserva.id)
+    if (!confirm('¿Seguro que deseas anular esta reserva?')) return
+    await anularReserva(reserva, usuario)
   }
 
   function convertirAHospedaje(reserva) {

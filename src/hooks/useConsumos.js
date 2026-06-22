@@ -4,6 +4,8 @@ import { hospedajesService } from '../services/hospedajesService'
 import { productosService } from '../services/productosService'
 import { consumosService } from '../services/consumosService'
 
+import { auditoriaService } from '../services/auditoriaService'
+
 export function useConsumos(habitacionId, turnoActivo, usuario) {
   const [cargando, setCargando] = useState(true)
   const [hab, setHab] = useState(null)
@@ -53,6 +55,15 @@ export function useConsumos(habitacionId, turnoActivo, usuario) {
   const eliminarConsumo = async (consumo) => {
     try {
       await consumosService.eliminarConsumo(consumo, turnoActivo?.id, usuario?.id)
+      
+      // Auditoría
+      await auditoriaService.registrarAccion(
+        usuario,
+        'ELIMINAR_CONSUMO',
+        'Consumos',
+        `Eliminó ${consumo.cantidad}x ${consumo.productos?.nombre} (S/${consumo.precio_unitario}) de la habitación ${hab?.numero}`
+      )
+
       await cargarDatos()
     } catch (error) {
       console.error(error)

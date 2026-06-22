@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { turnosService } from '../services/turnosService'
 import { movimientosService } from '../services/movimientosService'
 import { pagosService } from '../services/pagosService'
+import { auditoriaService } from '../services/auditoriaService'
 
 export function useTurnos() {
   const [cargando, setCargando] = useState(true)
@@ -39,9 +40,19 @@ export function useTurnos() {
     }
   }, [])
 
-  const abrirTurno = async (datos) => {
+  const abrirTurno = async (datos, usuario) => {
     try {
       await turnosService.abrirTurno(datos)
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'ABRIR_CAJA',
+          'Turnos',
+          `Abrió caja con inicial de S/${datos.caja_principal_anterior || 0}`
+        )
+      }
+
       await cargarDatos()
       return true
     } catch (error) {
@@ -50,7 +61,7 @@ export function useTurnos() {
     }
   }
 
-  const registrarMovimiento = async (datos) => {
+  const registrarMovimiento = async (datos, usuario) => {
     if (!turnoActivo) return false
     try {
       await movimientosService.registrarMovimiento({
@@ -77,6 +88,17 @@ export function useTurnos() {
       }
 
       await turnosService.actualizarCajas(turnoActivo.id, updates)
+      
+      if (usuario) {
+        const tipoLog = datos.tipo === 'salida' ? 'SALIDA_DINERO' : 'PRESTAMO_CAJAS'
+        await auditoriaService.registrarAccion(
+          usuario,
+          tipoLog,
+          'Turnos',
+          `Registró ${datos.tipo} por S/${datos.monto}. Motivo: ${datos.concepto}`
+        )
+      }
+
       await cargarDatos()
       return true
     } catch (error) {
@@ -85,7 +107,7 @@ export function useTurnos() {
     }
   }
 
-  const cerrarTurno = async (cajaPrincipalFinal, cajaConsumosFinal, observaciones) => {
+  const cerrarTurno = async (cajaPrincipalFinal, cajaConsumosFinal, observaciones, usuario) => {
     if (!turnoActivo) return false
     try {
       const efectivo = pagosTurno.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
@@ -102,6 +124,16 @@ export function useTurnos() {
         desglose_tarjeta: tarjeta,
         desglose_transferencia: transferencia,
       })
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'CERRAR_CAJA',
+          'Turnos',
+          `Cerró caja declarando S/${cajaPrincipalFinal} en principal y S/${cajaConsumosFinal} en consumos`
+        )
+      }
+
       return true
     } catch (error) {
       console.error(error)

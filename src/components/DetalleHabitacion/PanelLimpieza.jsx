@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function PanelLimpieza({ 
   hab, 
@@ -9,6 +10,7 @@ export default function PanelLimpieza({
   reabrirHospedaje 
 }) {
   const navigate = useNavigate()
+  const { usuario } = useAuth()
   
   const [mostrarCobroAdicional, setMostrarCobroAdicional] = useState(false)
   const [montoCobroAdicional, setMontoCobroAdicional] = useState('')
@@ -27,7 +29,8 @@ export default function PanelLimpieza({
       parseFloat(montoCobroAdicional),
       metodoCobroAdicional,
       conceptoCobroAdicional,
-      descCobroAdicional
+      descCobroAdicional,
+      usuario
     )
     if (exito) {
       setMontoCobroAdicional('')
@@ -39,7 +42,7 @@ export default function PanelLimpieza({
 
   async function handleReabrir() {
     if (!confirm(`¿Reabrir el hospedaje de ${hospedajeFinalizado?.huesped_hospedaje?.[0]?.clientes?.nombres || 'este huésped'}? La habitación volverá a "Ocupada".`)) return
-    await reabrirHospedaje()
+    await reabrirHospedaje(usuario)
   }
 
   return (

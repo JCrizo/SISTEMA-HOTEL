@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 
 export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarMovimiento }) {
   const [mostrarMovimiento, setMostrarMovimiento] = useState(false)
@@ -9,6 +10,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
   const [conceptoMov, setConceptoMov] = useState('')
   const [autorizadoPor, setAutorizadoPor] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const { usuario } = useAuth()
 
   const efectivo = pagosTurno.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
   const yape = pagosTurno.filter(p => p.metodo === 'yape').reduce((s, p) => s + parseFloat(p.monto), 0)
@@ -26,7 +28,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
       monto: montoMov,
       concepto: conceptoMov,
       autorizadoPor
-    })
+    }, usuario)
     if (exito) {
       setMontoMov('')
       setConceptoMov('')

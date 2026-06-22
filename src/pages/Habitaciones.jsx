@@ -109,6 +109,7 @@ function Habitaciones() {
     { label: 'Reportes', icon: '📈', path: '/reportes-recepcion', roles: ['recepcionista'], color: 'bg-cyan-600 hover:bg-cyan-700' },
     { label: 'Reportes Admin', icon: '📊', path: '/reportes-admin', roles: ['administrador'], color: 'bg-purple-600 hover:bg-purple-700' },
     { label: 'Usuarios', icon: '👥', path: '/usuarios', roles: ['administrador'], color: 'bg-gray-800 hover:bg-black' },
+    { label: 'Auditoría', icon: '🛡️', path: '/auditoria', roles: ['administrador'], color: 'bg-red-800 hover:bg-red-900' },
   ]
 
   return (

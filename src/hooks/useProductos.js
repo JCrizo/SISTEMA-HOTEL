@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { productosService } from '../services/productosService'
 import { categoriasService } from '../services/categoriasService'
+import { auditoriaService } from '../services/auditoriaService'
 
 export function useProductos(turnoActivo, usuario) {
   const [productos, setProductos] = useState([])
@@ -41,6 +42,16 @@ export function useProductos(turnoActivo, usuario) {
       }
       await cargarCategorias()
       if (id) await cargarProductos()
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          id ? 'EDITAR_CATEGORIA' : 'CREAR_CATEGORIA',
+          'Inventario',
+          `${id ? 'Editó' : 'Creó'} la categoría: ${nombre}`
+        )
+      }
+
       return { exito: true }
     } catch (error) {
       console.error(error)
@@ -53,6 +64,16 @@ export function useProductos(turnoActivo, usuario) {
       await categoriasService.eliminarCategoria(cat.id)
       await cargarCategorias()
       await cargarProductos()
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'ELIMINAR_CATEGORIA',
+          'Inventario',
+          `Eliminó la categoría: ${cat.nombre}`
+        )
+      }
+
       return { exito: true }
     } catch (error) {
       console.error(error)
@@ -68,6 +89,16 @@ export function useProductos(turnoActivo, usuario) {
         await productosService.crearProducto(datos)
       }
       await cargarProductos()
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          editando ? 'EDITAR_PRODUCTO' : 'CREAR_PRODUCTO',
+          'Inventario',
+          `${editando ? 'Editó' : 'Creó'} el producto: ${datos.nombre}`
+        )
+      }
+
       return { exito: true }
     } catch (error) {
       console.error(error)
@@ -79,6 +110,15 @@ export function useProductos(turnoActivo, usuario) {
     try {
       await productosService.cambiarEstadoActivo(p.id, p.activo)
       await cargarProductos()
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          p.activo ? 'DESACTIVAR_PRODUCTO' : 'ACTIVAR_PRODUCTO',
+          'Inventario',
+          `Cambió estado del producto ${p.nombre} a ${p.activo ? 'inactivo' : 'activo'}`
+        )
+      }
     } catch (error) {
       console.error(error)
     }
@@ -88,6 +128,15 @@ export function useProductos(turnoActivo, usuario) {
     try {
       await productosService.ajustarStock(p, cantidad, turnoActivo?.id, usuario?.id)
       await cargarProductos()
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'AJUSTE_STOCK',
+          'Inventario',
+          `Ajustó stock de ${p.nombre}. Cambio: ${cantidad > 0 ? '+' : ''}${cantidad}`
+        )
+      }
     } catch (error) {
       console.error(error)
     }

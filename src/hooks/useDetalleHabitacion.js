@@ -5,6 +5,7 @@ import { pagosService } from '../services/pagosService'
 import { consumosService } from '../services/consumosService'
 import { turnosService } from '../services/turnosService'
 import { clientesService } from '../services/clientesService'
+import { auditoriaService } from '../services/auditoriaService'
 
 export function useDetalleHabitacion() {
   const [cargando, setCargando] = useState(true)
@@ -165,10 +166,20 @@ export function useDetalleHabitacion() {
     }
   }
 
-  const hacerCheckout = async () => {
+  const hacerCheckout = async (usuario) => {
     if (!hospedaje) return false
     try {
       await hospedajesService.hacerCheckout(hospedaje.id, hab.id)
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'CHECKOUT',
+          'Habitaciones',
+          `Realizó Checkout de la habitación ${hab.numero}`
+        )
+      }
+
       return true
     } catch (error) {
       console.error(error)
@@ -177,7 +188,7 @@ export function useDetalleHabitacion() {
   }
 
   // Lógica para hospedaje finalizado
-  const registrarCobroAdicional = async (monto, metodo, concepto, descripcion) => {
+  const registrarCobroAdicional = async (monto, metodo, concepto, descripcion, usuario) => {
     if (!hospedajeFinalizado) return false
     try {
       await pagosService.registrarPago({
@@ -189,6 +200,16 @@ export function useDetalleHabitacion() {
       })
       const tipoCaja = concepto === 'consumo' ? 'consumos' : 'principal'
       await turnosService.sumarACaja(parseFloat(monto), tipoCaja)
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'COBRO_ADICIONAL_POST_CHECKOUT',
+          'Habitaciones',
+          `Cobró S/${monto} extra a habitación ${hab.numero}. Motivo: ${concepto}`
+        )
+      }
+
       await cargarDatos(hab.id)
       return true
     } catch (error) {
@@ -197,10 +218,20 @@ export function useDetalleHabitacion() {
     }
   }
 
-  const reabrirHospedaje = async () => {
+  const reabrirHospedaje = async (usuario) => {
     if (!hospedajeFinalizado) return false
     try {
       await hospedajesService.reabrirHospedaje(hospedajeFinalizado.id, hab.id)
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'REABRIR_HOSPEDAJE',
+          'Habitaciones',
+          `Reabrió el hospedaje (deshizo checkout) de la habitación ${hab.numero}`
+        )
+      }
+
       await cargarDatos(hab.id)
       return true
     } catch (error) {
@@ -209,10 +240,20 @@ export function useDetalleHabitacion() {
     }
   }
 
-  const cambiarHabitacion = async (nuevaHabitacionId) => {
+  const cambiarHabitacion = async (nuevaHabitacionId, usuario) => {
     if (!hospedaje || !hab) return false
     try {
       await hospedajesService.cambiarHabitacion(hospedaje.id, hab.id, nuevaHabitacionId)
+      
+      if (usuario) {
+        await auditoriaService.registrarAccion(
+          usuario,
+          'CAMBIAR_HABITACION',
+          'Habitaciones',
+          `Movió al huésped de la habitación ${hab.numero} a la habitación ID: ${nuevaHabitacionId}`
+        )
+      }
+
       return true
     } catch (error) {
       console.error(error)

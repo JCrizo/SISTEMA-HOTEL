@@ -1,27 +1,33 @@
 import { useState, useEffect } from 'react'
-import { useHabitaciones } from '../../hooks/useHabitaciones'
+import { habitacionesService } from '../../services/habitacionesService'
 import { useReservas } from '../../hooks/useReservas'
+import { useAuth } from '../../context/AuthContext'
 
 export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
-  const { habitaciones, cargarTodas } = useHabitaciones()
-  const { actualizarHabitacionReserva } = useReservas()
-  const [nuevaHabitacionId, setNuevaHabitacionId] = useState(reserva.habitacion_id)
+  const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([])
+  const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
+  const [nuevaHabitacionId, setNuevaHabitacionId] = useState('')
   const [error, setError] = useState('')
+  const { actualizarHabitacionReserva } = useReservas()
+  const { usuario } = useAuth()
 
   useEffect(() => {
-    cargarTodas()
-  }, [cargarTodas])
-
-  async function handleGuardar() {
-    if (!nuevaHabitacionId) return
-    if (nuevaHabitacionId === reserva.habitacion_id) {
-      onClose()
-      return
+    async function cargarHabitaciones() {
+      const todas = await habitacionesService.obtenerTodas()
+      // Filtramos las que NO están ocupadas, ni en limpieza profunda, ni mantenimiento, etc.
+      // Puedes adaptar el filtro según tu lógica de negocio.
+      const disponibles = todas.filter(h => h.estado !== 'ocupada' && h.estado !== 'mantenimiento')
+      setHabitacionesDisponibles(disponibles)
+      setCargando(false)
     }
+    cargarHabitaciones()
+  }, [])
 
+  async function handleConfirmar() {
+    if (!nuevaHabitacionId) return
     setGuardando(true)
-    const exito = await actualizarHabitacionReserva(reserva.id, nuevaHabitacionId)
+    const exito = await actualizarHabitacionReserva(reserva, nuevaHabitacionId, usuario)
     setGuardando(false)
     if (exito) {
       onClose()
@@ -57,7 +63,8 @@ export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
                 onChange={e => setNuevaHabitacionId(e.target.value)}
                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-indigo-500 bg-gray-50 transition-colors"
               >
-                {habitaciones.map(h => (
+                <option value="">Selecciona una habitación</option>
+                {habitacionesDisponibles.map(h => (
                   <option key={h.id} value={h.id}>
                     Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual}) - {h.estado}
                   </option>
@@ -74,8 +81,8 @@ export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
             Cancelar
           </button>
           <button 
-            onClick={handleGuardar}
-            disabled={guardando}
+            onClick={handleConfirmar}
+            disabled={guardando || !nuevaHabitacionId}
             className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm disabled:opacity-50 transition-colors"
           >
             {guardando ? 'Guardando...' : 'Confirmar'}

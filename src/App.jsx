@@ -14,6 +14,7 @@ import Reservas from './pages/Reservas'
 import Productos from './pages/Productos'
 import ReportesRecepcion from './pages/ReportesRecepcion'
 import FichaHospedaje from './pages/FichaHospedaje'
+import Auditoria from './pages/Auditoria'
 
 // Cargadas bajo demanda: incluyen recharts, jspdf y xlsx, que pesan bastante
 // y solo se necesitan al entrar a reportes o exportar.
@@ -56,6 +57,7 @@ function App() {
         <Route path="/reportes-recepcion" element={<RutaProtegida roles={['recepcionista','administrador']}><ReportesRecepcion /></RutaProtegida>} />
         <Route path="/ficha/:id" element={<RutaProtegida><FichaHospedaje /></RutaProtegida>} />
         <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><Suspense fallback={<CargandoPagina />}><ReportesAdmin /></Suspense></RutaProtegida>} />
+        <Route path="/auditoria" element={<RutaProtegida roles={['administrador']}><Auditoria /></RutaProtegida>} />
       </Routes>
     </div>
   )

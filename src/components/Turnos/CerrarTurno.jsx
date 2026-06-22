@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function CerrarTurno({ cerrarTurno }) {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, usuario } = useAuth()
   const [cajaPrincipalFinal, setCajaPrincipalFinal] = useState('')
   const [cajaConsumosFinal, setCajaConsumosFinal] = useState('')
   const [observaciones, setObservaciones] = useState('')
@@ -15,7 +15,7 @@ export default function CerrarTurno({ cerrarTurno }) {
     if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente para entregar el turno.')) return
     
     setGuardando(true)
-    const exito = await cerrarTurno(cajaPrincipalFinal, cajaConsumosFinal, observaciones)
+    const exito = await cerrarTurno(cajaPrincipalFinal, cajaConsumosFinal, observaciones, usuario)
     if (exito) {
       logout()
       navigate('/login')

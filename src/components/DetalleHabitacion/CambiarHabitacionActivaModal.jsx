@@ -1,15 +1,25 @@
 import { useState, useEffect } from 'react'
-import { useHabitaciones } from '../../hooks/useHabitaciones'
+import { habitacionesService } from '../../services/habitacionesService'
+import { useAuth } from '../../context/AuthContext'
 
 export default function CambiarHabitacionActivaModal({ hospedaje, habActual, cambiarHabitacion, onClose }) {
-  const { habitaciones, cargarDisponibles } = useHabitaciones()
-  const [nuevaHabitacionId, setNuevaHabitacionId] = useState('')
+  const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([])
+  const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
+  const [nuevaHabitacionId, setNuevaHabitacionId] = useState('')
   const [error, setError] = useState('')
+  const { usuario } = useAuth()
 
   useEffect(() => {
-    cargarDisponibles()
-  }, [cargarDisponibles])
+    async function cargarHabitaciones() {
+      const todas = await habitacionesService.obtenerTodas()
+      // Filtramos solo las disponibles
+      const disponibles = todas.filter(h => h.estado === 'disponible' || h.estado === 'habilitada')
+      setHabitacionesDisponibles(disponibles)
+      setCargando(false)
+    }
+    cargarHabitaciones()
+  }, [])
 
   async function handleGuardar() {
     if (!nuevaHabitacionId) return
@@ -21,7 +31,7 @@ export default function CambiarHabitacionActivaModal({ hospedaje, habActual, cam
     if (!confirm('¿Confirma que desea mover a este huésped a una nueva habitación? La cuenta y consumos se trasladarán.')) return
 
     setGuardando(true)
-    const exito = await cambiarHabitacion(nuevaHabitacionId)
+    const exito = await cambiarHabitacion(nuevaHabitacionId, usuario)
     setGuardando(false)
     
     if (exito) {
@@ -58,10 +68,10 @@ export default function CambiarHabitacionActivaModal({ hospedaje, habActual, cam
               <select
                 value={nuevaHabitacionId}
                 onChange={e => setNuevaHabitacionId(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 bg-gray-50 transition-colors"
+                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-indigo-500 bg-gray-50 transition-colors"
               >
-                <option value="">-- Seleccionar --</option>
-                {habitaciones.map(h => (
+                <option value="">Selecciona una habitación</option>
+                {habitacionesDisponibles.map(h => (
                   <option key={h.id} value={h.id}>
                     Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual})
                   </option>
