@@ -170,7 +170,16 @@ export default function PanelHuespedActivo({
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Checkout</p>
-              <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+              {new Date(hospedaje.salida_estimada) < new Date() ? (
+                <>
+                  <p className="text-sm font-bold text-orange-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+                  <p className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">
+                    ⚠ Checkout vencido
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+              )}
             </div>
           </div>
           
