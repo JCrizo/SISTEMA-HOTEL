@@ -62,5 +62,16 @@ export const useReservas = create((set, get) => ({
       set({ error: error.message })
       return false
     }
+  },
+
+  actualizarHabitacionReserva: async (reservaId, habitacionId) => {
+    try {
+      await reservasService.actualizarHabitacion(reservaId, habitacionId)
+      await get().cargarReservas()
+      return true
+    } catch (error) {
+      set({ error: error.message })
+      return false
+    }
   }
 }))

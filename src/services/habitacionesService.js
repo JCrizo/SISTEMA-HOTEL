@@ -1,6 +1,15 @@
 import { supabase } from '../lib/supabase'
 
 export const habitacionesService = {
+  async obtenerTodas() {
+    const { data, error } = await supabase
+      .from('habitaciones')
+      .select('id, numero, tipo_actual, precio_actual, estado')
+      .order('numero')
+    if (error) throw new Error(error.message)
+    return data || []
+  },
+
   async obtenerDisponibles() {
     const { data, error } = await supabase
       .from('habitaciones')

@@ -146,4 +146,29 @@ export const hospedajesService = {
     return data
   },
 
+  async cambiarHabitacion(hospedajeId, oldHabitacionId, newHabitacionId) {
+    // 1. Update hospedaje to point to new room
+    const { error: errHosp } = await supabase
+      .from('hospedajes')
+      .update({ habitacion_id: newHabitacionId })
+      .eq('id', hospedajeId)
+    if (errHosp) throw new Error('Error actualizando hospedaje: ' + errHosp.message)
+
+    // 2. Mark old room as pendiente_limpieza
+    const { error: errOldHab } = await supabase
+      .from('habitaciones')
+      .update({ estado: 'pendiente_limpieza' })
+      .eq('id', oldHabitacionId)
+    if (errOldHab) throw new Error('Error actualizando habitación anterior: ' + errOldHab.message)
+
+    // 3. Mark new room as ocupada
+    const { error: errNewHab } = await supabase
+      .from('habitaciones')
+      .update({ estado: 'ocupada' })
+      .eq('id', newHabitacionId)
+    if (errNewHab) throw new Error('Error ocupando nueva habitación: ' + errNewHab.message)
+    
+    return true
+  }
+
 }

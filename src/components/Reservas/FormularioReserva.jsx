@@ -5,7 +5,7 @@ import { clientesService } from '../../services/clientesService'
 
 export default function FormularioReserva({ onCancel, turnoActivo }) {
   const { crearReserva, error: errorReserva } = useReservas()
-  const { habitaciones, cargarDisponibles } = useHabitaciones()
+  const { habitaciones, cargarTodas } = useHabitaciones()
 
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
@@ -23,8 +23,8 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const [errorValidacion, setErrorValidacion] = useState('')
 
   useEffect(() => {
-    cargarDisponibles()
-  }, [cargarDisponibles])
+    cargarTodas()
+  }, [cargarTodas])
 
   async function buscarCliente() {
     if (!dni.trim()) return
@@ -179,7 +179,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               <option value="">Seleccionar habitación...</option>
               {habitaciones.map(h => (
                 <option key={h.id} value={h.id}>
-                  Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual})
+                  Hab {h.numero} — {h.tipo_actual} (S/{h.precio_actual}) - {h.estado}
                 </option>
               ))}
             </select>

@@ -39,7 +39,7 @@ function DetalleHabitacion() {
     hospedajeFinalizado, cargarDatos, registrarPago, registrarPenalidad,
     extenderEstadia, actualizarHabitacion, actualizarTarifaHospedaje,
     actualizarDatosHuesped, hacerCheckout,
-    registrarCobroAdicional, reabrirHospedaje
+    registrarCobroAdicional, reabrirHospedaje, cambiarHabitacion
   } = useDetalleHabitacion()
 
   useEffect(() => {
@@ -140,6 +140,7 @@ function DetalleHabitacion() {
               hacerCheckout={hacerCheckout}
               actualizarTarifaHospedaje={(nuevaTarifa) => actualizarTarifaHospedaje(nuevaTarifa, usuario?.nombre)}
               actualizarDatosHuesped={actualizarDatosHuesped}
+              cambiarHabitacion={cambiarHabitacion}
             />
           </div>
         )}

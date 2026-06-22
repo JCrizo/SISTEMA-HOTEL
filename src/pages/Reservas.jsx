@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useReservas } from '../hooks/useReservas'
 import FormularioReserva from '../components/Reservas/FormularioReserva'
+import CambiarHabitacionReservaModal from '../components/Reservas/CambiarHabitacionReservaModal'
 
 export default function Reservas() {
   const navigate = useNavigate()
@@ -10,6 +11,7 @@ export default function Reservas() {
   const { reservas, cargando, error, cargarReservas, anularReserva } = useReservas()
   
   const [mostrarForm, setMostrarForm] = useState(false)
+  const [reservaACambiar, setReservaACambiar] = useState(null)
 
   useEffect(() => {
     cargarReservas()
@@ -159,12 +161,18 @@ export default function Reservas() {
                   )}
                 </div>
 
-                <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex gap-3">
+                  <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex flex-wrap gap-3">
                   <button
                     onClick={() => convertirAHospedaje(r)}
                     className="flex-[2] py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
                   >
                     Hacer Check-in
+                  </button>
+                  <button
+                    onClick={() => setReservaACambiar(r)}
+                    className="flex-1 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl text-sm font-bold transition-colors"
+                  >
+                    Cambiar Hab
                   </button>
                   <button
                     onClick={() => handleAnularReserva(r)}
@@ -176,6 +184,13 @@ export default function Reservas() {
               </div>
             ))}
           </div>
+        )}
+
+        {reservaACambiar && (
+          <CambiarHabitacionReservaModal
+            reserva={reservaACambiar}
+            onClose={() => setReservaACambiar(null)}
+          />
         )}
       </main>
     </div>

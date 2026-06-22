@@ -209,6 +209,17 @@ export function useDetalleHabitacion() {
     }
   }
 
+  const cambiarHabitacion = async (nuevaHabitacionId) => {
+    if (!hospedaje || !hab) return false
+    try {
+      await hospedajesService.cambiarHabitacion(hospedaje.id, hab.id, nuevaHabitacionId)
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
   return {
     cargando,
     hab,
@@ -227,6 +238,7 @@ export function useDetalleHabitacion() {
     actualizarDatosHuesped,
     hacerCheckout,
     registrarCobroAdicional,
-    reabrirHospedaje
+    reabrirHospedaje,
+    cambiarHabitacion
   }
 }

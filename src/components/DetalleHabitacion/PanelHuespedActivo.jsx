@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import EditarHuespedModal from './EditarHuespedModal'
+import CambiarHabitacionActivaModal from './CambiarHabitacionActivaModal'
 
 export default function PanelHuespedActivo({
   hab,
@@ -14,11 +15,13 @@ export default function PanelHuespedActivo({
   extenderEstadia,
   hacerCheckout,
   actualizarTarifaHospedaje,
-  actualizarDatosHuesped
+  actualizarDatosHuesped,
+  cambiarHabitacion
 }) {
   const navigate = useNavigate()
 
   const [mostrarEditar, setMostrarEditar] = useState(false)
+  const [mostrarCambioHab, setMostrarCambioHab] = useState(false)
 
   const [mostrarPago, setMostrarPago] = useState(false)
   const [montoPago, setMontoPago] = useState('')
@@ -141,6 +144,13 @@ export default function PanelHuespedActivo({
                 title="Editar datos del huésped y tarifa"
               >
                 ✏️ Editar
+              </button>
+              <button
+                onClick={() => setMostrarCambioHab(true)}
+                className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg border border-blue-200 transition-colors"
+                title="Mover huésped a otra habitación"
+              >
+                🔀 Mover
               </button>
             </div>
           </div>
@@ -430,6 +440,15 @@ export default function PanelHuespedActivo({
           actualizarTarifaHospedaje={actualizarTarifaHospedaje}
           actualizarDatosHuesped={actualizarDatosHuesped}
           onClose={() => setMostrarEditar(false)}
+        />
+      )}
+
+      {mostrarCambioHab && (
+        <CambiarHabitacionActivaModal
+          hospedaje={hospedaje}
+          habActual={hab}
+          cambiarHabitacion={cambiarHabitacion}
+          onClose={() => setMostrarCambioHab(false)}
         />
       )}
     </div>
