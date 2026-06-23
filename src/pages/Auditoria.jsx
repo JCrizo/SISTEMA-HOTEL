@@ -64,6 +64,10 @@ export default function Auditoria() {
               <option value="Turnos">Turnos</option>
               <option value="Consumos">Consumos</option>
               <option value="Inventario">Inventario</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Cochera">Cochera</option>
+              <option value="Productos">Productos</option>
+              <option value="Clientes">Clientes</option>
             </select>
           </div>
           <div className="flex-1">

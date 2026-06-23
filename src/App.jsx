@@ -50,7 +50,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Routes>
-        <Route path="/registro-empleado" element={<MigrarUsuarios />} />
+        <Route path="/registro-empleado" element={<RutaProtegida roles={['administrador']}><MigrarUsuarios /></RutaProtegida>} />
         <Route path="/login" element={usuario ? <Navigate to="/" /> : <Login />} />
         <Route path="/" element={<RutaProtegida><Habitaciones /></RutaProtegida>} />
         <Route path="/habitacion/:id" element={<RutaProtegida><DetalleHabitacion /></RutaProtegida>} />

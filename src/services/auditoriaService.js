@@ -21,6 +21,7 @@ export const auditoriaService = {
         .insert({
           usuario_id: usuario.id,
           usuario_nombre: usuario.nombre || 'Desconocido',
+          usuario_rol: usuario.rol || 'desconocido',
           accion,
           modulo,
           detalles: typeof detalles === 'string' ? detalles : JSON.stringify(detalles)
