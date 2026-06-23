@@ -4,6 +4,8 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
   const [mostrarConfigHab, setMostrarConfigHab] = useState(false)
   const [nuevoTipo, setNuevoTipo] = useState('')
   const [nuevoPrecio, setNuevoPrecio] = useState('')
+  const [mostrarMotivoMant, setMostrarMotivoMant] = useState(false)
+  const [motivoMant, setMotivoMant] = useState('')
 
   async function handleActualizar() {
     const updates = {}
@@ -17,6 +19,16 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
     setMostrarConfigHab(false)
     setNuevoTipo('')
     setNuevoPrecio('')
+  }
+
+  async function handleMantenimiento() {
+    if (!motivoMant.trim()) return
+    await actualizarHabitacion({
+      estado: 'mantenimiento',
+      observaciones: `[Mantenimiento] ${motivoMant.trim()}`
+    })
+    setMotivoMant('')
+    setMostrarMotivoMant(false)
   }
 
   return (
@@ -73,22 +85,61 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
           <div className="border-t border-gray-100 pt-4">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">Acciones de Mantenimiento</p>
             {hab.estado !== 'mantenimiento' && (
-              <button
-                onClick={() => cambiarEstadoHab('mantenimiento')}
-                className="w-full py-3 bg-gray-800 text-white rounded-xl text-sm font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                Bloquear Habitación (Mantenimiento)
-              </button>
+              mostrarMotivoMant ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Motivo del mantenimiento</label>
+                    <input
+                      type="text"
+                      value={motivoMant}
+                      onChange={e => setMotivoMant(e.target.value)}
+                      placeholder="Ej: Fuga de agua, pintura, reparación A/C..."
+                      className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-gray-500 transition-colors bg-white"
+                      autoFocus
+                      onKeyDown={e => e.key === 'Enter' && handleMantenimiento()}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setMostrarMotivoMant(false); setMotivoMant('') }}
+                      className="flex-1 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 text-sm font-bold hover:bg-gray-50 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleMantenimiento}
+                      disabled={!motivoMant.trim()}
+                      className="flex-[2] py-2.5 bg-gray-800 text-white rounded-xl text-sm font-bold hover:bg-black transition-colors disabled:opacity-40"
+                    >
+                      🔧 Confirmar Bloqueo
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setMostrarMotivoMant(true)}
+                  className="w-full py-3 bg-gray-800 text-white rounded-xl text-sm font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  Bloquear Habitación (Mantenimiento)
+                </button>
+              )
             )}
             {hab.estado === 'mantenimiento' && (
-              <button
-                onClick={() => cambiarEstadoHab('disponible')}
-                className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Habilitar Habitación (Disponible)
-              </button>
+              <>
+                {hab.observaciones && hab.observaciones.startsWith('[Mantenimiento]') && (
+                  <p className="text-xs font-bold text-gray-500 bg-gray-50 px-3 py-2 rounded-lg mb-3">
+                    🔧 {hab.observaciones.replace('[Mantenimiento] ', '')}
+                  </p>
+                )}
+                <button
+                  onClick={() => cambiarEstadoHab('disponible')}
+                  className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Habilitar Habitación (Disponible)
+                </button>
+              </>
             )}
           </div>
         </div>
