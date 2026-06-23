@@ -9,16 +9,20 @@ export default function CerrarTurno({ cerrarTurno }) {
   const [cajaConsumosFinal, setCajaConsumosFinal] = useState('')
   const [observaciones, setObservaciones] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleCerrar() {
     if (!cajaPrincipalFinal) return
     if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente para entregar el turno.')) return
     
+    setError('')
     setGuardando(true)
     const exito = await cerrarTurno(cajaPrincipalFinal, cajaConsumosFinal, observaciones, usuario)
     if (exito) {
       logout()
       navigate('/login')
+    } else {
+      setError('Error al cerrar el turno. Es posible que no tengas permisos para cerrar el turno de otro usuario, o haya un problema de conexión.')
     }
     setGuardando(false)
   }
@@ -62,6 +66,12 @@ export default function CerrarTurno({ cerrarTurno }) {
           className="w-full border border-red-200 rounded-xl px-4 py-3 text-sm focus:border-red-500 outline-none min-h-[100px] resize-y bg-white"
         />
       </div>
+
+      {error && (
+        <div className="mb-6 bg-red-100 border-l-4 border-red-600 text-red-800 p-4 rounded text-sm font-bold shadow-sm">
+          {error}
+        </div>
+      )}
 
       <button
         onClick={handleCerrar}

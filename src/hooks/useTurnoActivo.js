@@ -35,13 +35,12 @@ export function useTurnoActivo() {
       if (activo) {
         const turno = data?.[0] || null
         setTurnoActivo(turno)
-        
-        if (turno && usuario && turno.usuario_id !== usuario.id && usuario.rol !== 'administrador') {
+        const userRole = (usuario?.rol || '').toLowerCase().trim()
+        if (turno && usuario && turno.usuario_id !== usuario.id && !['administrador', 'limpieza'].includes(userRole)) {
           setTurnoAjeno(true)
         } else {
           setTurnoAjeno(false)
         }
-        
         setCargandoTurno(false)
       }
     }

@@ -15,6 +15,7 @@ import Productos from './pages/Productos'
 import ReportesRecepcion from './pages/ReportesRecepcion'
 import FichaHospedaje from './pages/FichaHospedaje'
 import Auditoria from './pages/Auditoria'
+import MigrarUsuarios from './pages/MigrarUsuarios'
 
 // Cargadas bajo demanda: incluyen recharts, jspdf y xlsx, que pesan bastante
 // y solo se necesitan al entrar a reportes o exportar.
@@ -30,7 +31,14 @@ function CargandoPagina() {
 function RutaProtegida({ children, roles }) {
   const { usuario } = useAuth()
   if (!usuario) return <Navigate to="/login" />
-  if (roles && !roles.includes(usuario.rol)) return <Navigate to="/" />
+  
+  if (roles) {
+    const rolUsuario = (usuario.rol || '').toLowerCase().trim()
+    if (!roles.includes(rolUsuario)) {
+      return <Navigate to="/" />
+    }
+  }
+  
   return children
 }
 
@@ -42,6 +50,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Routes>
+        <Route path="/registro-empleado" element={<MigrarUsuarios />} />
         <Route path="/login" element={usuario ? <Navigate to="/" /> : <Login />} />
         <Route path="/" element={<RutaProtegida><Habitaciones /></RutaProtegida>} />
         <Route path="/habitacion/:id" element={<RutaProtegida><DetalleHabitacion /></RutaProtegida>} />

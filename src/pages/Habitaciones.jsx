@@ -124,8 +124,8 @@ function Habitaciones() {
             onClick={async () => {
               if (usuario?.rol !== 'administrador') {
                 const { data: turnos } = await supabase
-                  .from('turnos').select('id').is('cierre', null).limit(1)
-                if (turnos?.length > 0) {
+                  .from('turnos').select('id, usuario_id').is('cierre', null).limit(1)
+                if (turnos?.length > 0 && turnos[0].usuario_id === usuario.id) {
                   alert('Tienes un turno activo. Debes entregar el turno antes de salir.')
                   return
                 }
@@ -163,7 +163,10 @@ function Habitaciones() {
         <div className="mb-8">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Accesos Rápidos</p>
           <div className="flex gap-3 flex-nowrap overflow-x-auto pb-2 scrollbar-hide">
-            {navButtons.filter(btn => btn.roles.includes(usuario?.rol || 'limpieza')).map(btn => (
+            {navButtons.filter(btn => {
+              const userRole = (usuario?.rol || 'limpieza').toLowerCase().trim()
+              return btn.roles.includes(userRole)
+            }).map(btn => (
               <button
                 key={btn.path}
                 onClick={() => navigate(btn.path)}

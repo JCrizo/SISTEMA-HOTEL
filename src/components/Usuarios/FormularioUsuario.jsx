@@ -26,16 +26,12 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
   async function handleGuardar() {
     setError('')
     if (!nombre.trim() || !email.trim()) {
-      setError('Nombre y email son obligatorios')
-      return
-    }
-    if (!editando && !password.trim()) {
-      setError('La contraseña es obligatoria para nuevos usuarios')
+      setError('Nombre y usuario/email son obligatorios')
       return
     }
 
     setGuardando(true)
-    const { exito, error: errMsg } = await onGuardar({ nombre, email, password, rol }, editando)
+    const { exito, error: errMsg } = await onGuardar({ nombre, email, rol }, editando)
     if (!exito) {
       setError(errMsg || 'Error al guardar usuario')
     } else {
@@ -72,18 +68,6 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="correo@ejemplo.com"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
-              Contraseña {editando && <span className="text-gray-400 font-normal lowercase">(dejar vacío para no cambiar)</span>}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder={editando ? '••••••••' : 'Contraseña segura'}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
             />
           </div>

@@ -36,14 +36,14 @@ function Login() {
           <p className="text-sm text-gray-500 font-medium mt-1">Ingresa tus credenciales para continuar</p>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={e => { e.preventDefault(); handleLogin(); }} className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Correo Electrónico</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Usuario o Correo</label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="tu@correo.com"
+              placeholder="admin o tu@correo.com"
               className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors bg-gray-50 focus:bg-white"
             />
           </div>
@@ -56,7 +56,6 @@ function Login() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors bg-gray-50 focus:bg-white"
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
             />
           </div>
 
@@ -67,13 +66,23 @@ function Login() {
           )}
 
           <button
-            onClick={handleLogin}
+            type="submit"
             disabled={cargando}
             className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cargando ? 'Verificando...' : 'Acceder al Sistema'}
           </button>
-        </div>
+          
+          <div className="pt-4 mt-2 border-t border-gray-100 text-center">
+            <button
+              type="button"
+              onClick={() => navigate('/registro-empleado')}
+              className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              ¿Soy nuevo empleado? Crear contraseña
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
