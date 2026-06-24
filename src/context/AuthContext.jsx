@@ -55,9 +55,13 @@ export function AuthProvider({ children }) {
       
       if (match) {
         // Fusionamos AuthUser + CustomUser
+        // Normalizamos el rol a minúsculas para que las comparaciones
+        // (usuario?.rol === 'recepcionista') funcionen sin importar
+        // cómo esté guardado en la BD ('Recepcionista', 'RECEPCIONISTA', etc.)
         setUsuario({
-          ...match, // Trae id, nombre, email, rol de la BD
-          auth_id: authUser.id // Guardamos el ID de Supabase Auth
+          ...match,
+          rol: (match.rol || '').toLowerCase().trim(),
+          auth_id: authUser.id
         })
       } else {
         // Si no está en la tabla usuarios, solo seteamos el de auth (o lo deslogueamos)
