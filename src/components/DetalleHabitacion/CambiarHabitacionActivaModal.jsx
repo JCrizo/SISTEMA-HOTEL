@@ -31,15 +31,13 @@ export default function CambiarHabitacionActivaModal({ hospedaje, habActual, cam
     if (!confirm('¿Confirma que desea mover a este huésped a una nueva habitación? La cuenta y consumos se trasladarán.')) return
 
     setGuardando(true)
-    const exito = await cambiarHabitacion(nuevaHabitacionId, usuario)
+    const resultado = await cambiarHabitacion(nuevaHabitacionId, usuario)
     setGuardando(false)
-    
-    if (exito) {
-      // Reload the page or close modal, DetalleHabitacion needs to redirect or update
-      // Since the guest is moved to a new room, we should redirect to the home page or new room
-      window.location.href = `/checkin/${nuevaHabitacionId}`
+
+    if (resultado.exito) {
+      window.location.href = `/habitacion/${nuevaHabitacionId}`
     } else {
-      setError('Error al cambiar la habitación')
+      setError(resultado.error || 'Error al cambiar la habitación')
     }
   }
 

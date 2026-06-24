@@ -241,23 +241,29 @@ export function useDetalleHabitacion() {
   }
 
   const cambiarHabitacion = async (nuevaHabitacionId, usuario) => {
-    if (!hospedaje || !hab) return false
+    if (!hospedaje || !hab) return { exito: false, error: 'Datos incompletos' }
     try {
-      await hospedajesService.cambiarHabitacion(hospedaje.id, hab.id, nuevaHabitacionId)
-      
+      await hospedajesService.cambiarHabitacion(
+        hospedaje.id,
+        hab.id,
+        nuevaHabitacionId,
+        hospedaje.observaciones,
+        usuario?.nombre
+      )
+
       if (usuario) {
         await auditoriaService.registrarAccion(
           usuario,
           'CAMBIAR_HABITACION',
           'Habitaciones',
-          `Movió al huésped de la habitación ${hab.numero} a la habitación ID: ${nuevaHabitacionId}`
+          `Movió al huésped de Hab ${hab.numero} a habitación ID: ${nuevaHabitacionId}`
         )
       }
 
-      return true
+      return { exito: true, nuevaHabitacionId }
     } catch (error) {
       console.error(error)
-      return false
+      return { exito: false, error: error.message }
     }
   }
 

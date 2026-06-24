@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { supabase } from '../lib/supabase'
 import { reservasService } from '../services/reservasService'
 import { clientesService } from '../services/clientesService'
 import { auditoriaService } from '../services/auditoriaService'
@@ -39,10 +40,20 @@ export const useReservas = create((set, get) => ({
         clienteId = nuevoCliente.id
       }
 
-      // Crear la reserva con el clienteId
+      // Obtener turno activo para vincularlo a la reserva
+      const { data: turnoActivo } = await supabase
+        .from('turnos')
+        .select('id')
+        .is('cierre', null)
+        .order('apertura', { ascending: false })
+        .limit(1)
+        .single()
+
+      // Crear la reserva con el clienteId y turno_id
       const nuevaReserva = await reservasService.crearReserva({
         ...reservaData,
-        cliente_id: clienteId
+        cliente_id: clienteId,
+        turno_id: turnoActivo?.id || null
       })
 
       // Auditoría

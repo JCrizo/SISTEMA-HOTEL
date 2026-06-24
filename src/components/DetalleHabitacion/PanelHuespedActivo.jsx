@@ -58,6 +58,8 @@ export default function PanelHuespedActivo({
       setNroTicket('')
       setConceptoPago('hospedaje')
       setMostrarPago(false)
+    } else {
+      alert('No se pudo registrar el pago. Verifica la conexión e intenta nuevamente.')
     }
     setGuardandoPago(false)
   }
@@ -72,6 +74,8 @@ export default function PanelHuespedActivo({
       setMontoPenalidad('')
       setDescPenalidad('')
       setMostrarPenalidad(false)
+    } else {
+      alert('No se pudo registrar el cargo. Verifica la conexión e intenta nuevamente.')
     }
   }
 
@@ -107,6 +111,8 @@ export default function PanelHuespedActivo({
     if (exito) {
       setFechaExtension('')
       setMostrarExtension(false)
+    } else {
+      alert('No se pudo actualizar el checkout. Verifica la conexión e intenta nuevamente.')
     }
   }
 
@@ -120,6 +126,8 @@ export default function PanelHuespedActivo({
     const exito = await hacerCheckout(usuario)
     if (exito) {
       navigate('/')
+    } else {
+      alert('No se pudo completar el checkout. Verifica la conexión e intenta nuevamente.')
     }
   }
 

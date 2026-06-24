@@ -156,28 +156,46 @@ export const hospedajesService = {
     return data
   },
 
-  async cambiarHabitacion(hospedajeId, oldHabitacionId, newHabitacionId) {
-    // 1. Update hospedaje to point to new room
+  async cambiarHabitacion(hospedajeId, oldHabitacionId, newHabitacionId, observacionesActuales, usuarioNombre) {
+    // 0. Re-verificar en el momento exacto que la nueva habitación sigue disponible
+    // (protección contra condición de carrera si dos usuarios actúan al mismo tiempo)
+    const { data: nuevaHab, error: errVerif } = await supabase
+      .from('habitaciones')
+      .select('estado, numero')
+      .eq('id', newHabitacionId)
+      .single()
+    if (errVerif) throw new Error('No se pudo verificar el estado de la habitación')
+    if (nuevaHab.estado !== 'disponible') {
+      throw new Error(`La Hab ${nuevaHab.numero} ya no está disponible (estado actual: ${nuevaHab.estado}). Por favor elige otra.`)
+    }
+
+    // 1. Mover el hospedaje a la nueva habitación dejando registro del cambio
+    const fecha = new Date().toLocaleString('es-PE')
+    const nota = `[${fecha}] Cambio de habitación por ${usuarioNombre || 'usuario'}.`
+    const nuevasObservaciones = observacionesActuales
+      ? `${observacionesActuales}\n${nota}`
+      : nota
+
     const { error: errHosp } = await supabase
       .from('hospedajes')
-      .update({ habitacion_id: newHabitacionId })
+      .update({ habitacion_id: newHabitacionId, observaciones: nuevasObservaciones })
       .eq('id', hospedajeId)
     if (errHosp) throw new Error('Error actualizando hospedaje: ' + errHosp.message)
 
-    // 2. Mark old room as pendiente_limpieza
+    // 2. La habitación anterior pasa a pendiente de limpieza
     const { error: errOldHab } = await supabase
       .from('habitaciones')
       .update({ estado: 'pendiente_limpieza' })
       .eq('id', oldHabitacionId)
     if (errOldHab) throw new Error('Error actualizando habitación anterior: ' + errOldHab.message)
 
-    // 3. Mark new room as ocupada
+    // 3. La nueva habitación pasa a ocupada
     const { error: errNewHab } = await supabase
       .from('habitaciones')
       .update({ estado: 'ocupada' })
       .eq('id', newHabitacionId)
     if (errNewHab) throw new Error('Error ocupando nueva habitación: ' + errNewHab.message)
-    
+
     return true
   }
 
