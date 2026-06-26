@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import SeccionHuespedTitular from './SeccionHuespedTitular'
+import SeccionAcompanantes from './SeccionAcompanantes'
+import SeccionEstadia from './SeccionEstadia'
+import SeccionPago from './SeccionPago'
 
 export default function FormularioCheckIn({
   hab,
@@ -366,246 +370,34 @@ export default function FormularioCheckIn({
           </div>
           
           {/* SECCIÓN ACOMPAÑANTES */}
-          <div className="mt-6">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                Acompañantes ({acompanantes.length})
-              </h4>
-              <button 
-                onClick={agregarAcompanante}
-                className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-colors flex items-center gap-1"
-              >
-                + Agregar persona
-              </button>
-            </div>
-            
-            {acompanantes.length > 0 && (
-              <div className="space-y-4">
-                {acompanantes.map((ac, idx) => (
-                  <div key={idx} className="bg-white border-2 border-gray-100 p-4 rounded-2xl relative shadow-sm">
-                    <button 
-                      onClick={() => eliminarAcompanante(idx)}
-                      className="absolute -top-3 -right-3 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shadow-sm"
-                      title="Eliminar acompañante"
-                    >
-                      ✕
-                    </button>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Documento</label>
-                        <div className="flex gap-2">
-                          <select
-                            value={ac.tipoDoc}
-                            onChange={e => { actualizarAcompanante(idx, 'tipoDoc', e.target.value); actualizarAcompanante(idx, 'dni', '') }}
-                            className="w-1/3 border-2 border-gray-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
-                          >
-                            <option value="dni">DNI</option>
-                            <option value="pasaporte">Pasap</option>
-                            <option value="otro">Otro</option>
-                          </select>
-                          <input
-                            type="text"
-                            value={ac.dni}
-                            onChange={e => {
-                              const val = e.target.value.replace(/\D/g, '')
-                              if (ac.tipoDoc === 'dni') {
-                                if (val.length <= 8) actualizarAcompanante(idx, 'dni', val)
-                              } else actualizarAcompanante(idx, 'dni', e.target.value)
-                            }}
-                            onBlur={() => buscarAcompanante(idx)}
-                            placeholder={ac.tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-                            className="flex-1 border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
-                            maxLength={ac.tipoDoc === 'dni' ? 8 : 20}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Nombre Completo</label>
-                        <input
-                          type="text"
-                          value={ac.nombres}
-                          onChange={e => actualizarAcompanante(idx, 'nombres', e.target.value)}
-                          placeholder="Nombre del acompañante"
-                          className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <SeccionAcompanantes
+            acompanantes={acompanantes}
+            agregarAcompanante={agregarAcompanante}
+            eliminarAcompanante={eliminarAcompanante}
+            actualizarAcompanante={actualizarAcompanante}
+            buscarAcompanante={buscarAcompanante}
+          />
         </section>
 
         {/* SECCIÓN: ESTADÍA */}
-        <section>
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">2</span>
-            Datos de Estadía
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-              <label className="text-xs font-bold text-blue-800 uppercase tracking-wide block mb-2">Noches a hospedarse</label>
-              <input
-                type="number"
-                min="1"
-                value={noches}
-                onChange={e => actualizarNoches(e.target.value)}
-                className="w-full border-2 border-white rounded-xl px-4 py-3 text-lg font-black text-blue-900 bg-white outline-none focus:border-blue-500 shadow-sm text-center"
-              />
-            </div>
-            
-            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 md:col-span-2 flex items-center gap-4">
-              <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Fecha estimada de salida</label>
-                <input
-                  type="date"
-                  value={fechaSalida}
-                  onChange={e => actualizarFechaSalida(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
-                />
-              </div>
-              <div className="hidden md:block w-px h-12 bg-gray-200"></div>
-              <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Tarifa por Noche (S/)</label>
-                <input
-                  type="number"
-                  value={tarifaPorNoche}
-                  onChange={e => setTarifaPorNoche(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+        <SeccionEstadia
+          noches={noches} actualizarNoches={actualizarNoches}
+          fechaSalida={fechaSalida} actualizarFechaSalida={actualizarFechaSalida}
+          tarifaPorNoche={tarifaPorNoche} setTarifaPorNoche={setTarifaPorNoche}
+          tarifa={tarifa} montoEarly={montoEarly} setMontoEarly={setMontoEarly}
+        />
 
         {/* SECCIÓN: PAGO */}
-        <section>
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">3</span>
-            Facturación y Cobro
-          </h3>
-
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-gray-200 gap-4">
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Monto Total a Pagar</p>
-                <p className="text-4xl font-black text-gray-800 tracking-tighter">
-                  S/{parseFloat(tarifa || 0).toFixed(2)}
-                </p>
-                {noches > 1 && (
-                  <p className="text-xs font-bold text-blue-600 mt-1 bg-blue-50 px-2 py-0.5 rounded inline-block">
-                    S/{tarifaPorNoche || 0} × {noches} noches
-                  </p>
-                )}
-              </div>
-
-              <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
-                {[
-                  { value: 'al_salir', label: 'Al Salir' },
-                  { value: 'adelanto', label: 'Adelanto' },
-                  { value: 'completo', label: 'Completo' },
-                ].map(op => (
-                  <button
-                    key={op.value}
-                    onClick={() => setModalPago(op.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                      modalPago === op.value 
-                        ? 'bg-blue-600 text-white shadow-md' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    {op.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                {modalPago !== 'al_salir' && (
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Medio de Pago</label>
-                    <select
-                      value={metodoPago}
-                      onChange={e => setMetodoPago(e.target.value)}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
-                    >
-                      <option value="efectivo">💵 Efectivo</option>
-                      <option value="yape">📱 Yape / Plin</option>
-                      <option value="tarjeta">💳 Tarjeta (POS)</option>
-                      <option value="transferencia">🏦 Transferencia</option>
-                    </select>
-                    {metodoPago === 'tarjeta' && (
-                      <input
-                        type="text"
-                        value={nroTicket}
-                        onChange={e => setNroTicket(e.target.value)}
-                        placeholder="Nro de ticket (opcional)"
-                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
-                      />
-                    )}
-                  </div>
-                )}
-                
-                {modalPago === 'adelanto' && (
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2 text-blue-700">Monto del Adelanto (S/)</label>
-                    <input
-                      type="number"
-                      value={adelanto}
-                      onChange={e => setAdelanto(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full border-2 border-blue-200 rounded-xl px-4 py-2.5 text-lg font-bold text-blue-900 outline-none focus:border-blue-500 bg-blue-50 transition-colors"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Comprobante a emitir</label>
-                  <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
-                    {['ninguno', 'boleta', 'factura'].map(op => (
-                      <button
-                        key={op}
-                        onClick={() => setComprobante(op)}
-                        className={`flex-1 px-2 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
-                          comprobante === op 
-                            ? 'bg-gray-800 text-white shadow-md' 
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {op}
-                      </button>
-                    ))}
-                  </div>
-                  {comprobante === 'factura' && (
-                    <input
-                      type="text"
-                      value={ruc}
-                      onChange={e => setRuc(e.target.value)}
-                      placeholder="Ingrese RUC (11 dígitos)"
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Observaciones</label>
-                  <textarea
-                    value={observaciones}
-                    onChange={e => setObservaciones(e.target.value)}
-                    placeholder="Algún requerimiento especial..."
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors h-12 resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <SeccionPago
+          tarifa={tarifa} tarifaPorNoche={tarifaPorNoche} noches={noches}
+          modalPago={modalPago} setModalPago={setModalPago}
+          metodoPago={metodoPago} setMetodoPago={setMetodoPago}
+          nroTicket={nroTicket} setNroTicket={setNroTicket}
+          adelanto={adelanto} setAdelanto={setAdelanto}
+          comprobante={comprobante} setComprobante={setComprobante}
+          ruc={ruc} setRuc={setRuc}
+          observaciones={observaciones} setObservaciones={setObservaciones}
+        />
 
         {error && (
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
