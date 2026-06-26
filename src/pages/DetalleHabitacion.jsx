@@ -170,6 +170,22 @@ function DetalleHabitacion() {
           </div>
         )}
 
+        {hab.estado === 'ocupada' && !cargando && !hospedaje && (
+          <div className="bg-red-50 text-red-700 rounded-3xl p-8 border-2 border-red-200 shadow-sm text-center mb-8">
+            <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚠</div>
+            <h3 className="text-xl font-bold mb-2">Inconsistencia Detectada</h3>
+            <p className="text-red-600/80 mb-6 max-w-md mx-auto">
+              La habitación figura como ocupada en el sistema, pero no se encontró el registro del check-in (probablemente fue eliminado manualmente).
+            </p>
+            <button 
+              onClick={() => cambiarEstadoHab('disponible')}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-md transition-colors"
+            >
+              Forzar Cambio a Disponible
+            </button>
+          </div>
+        )}
+
         {['pendiente_limpieza', 'en_limpieza', 'limpieza_simple'].includes(hab.estado) && (
           <div className="mb-8">
             <PanelLimpieza 

@@ -8,18 +8,29 @@ export const hospedajesService = {
       monto_early, montoPagado, cajaTurnoActual, nroTicket
     } = datos
 
+    let nro_ficha = undefined
     if (reservaId) {
+      const { data: resData } = await supabase.from('reservas').select('nro_ficha').eq('id', reservaId).single()
+      if (resData && resData.nro_ficha) {
+        nro_ficha = resData.nro_ficha
+      }
+
       const { error: errRes } = await supabase.from('reservas').update({ estado: 'convertida' }).eq('id', reservaId)
       if (errRes) throw new Error('Error al actualizar reserva: ' + errRes.message)
     }
 
+    const insertData = {
+      habitacion_id: habitacionId, turno_id: turnoId, ingreso, salida_estimada, tarifa_pactada,
+      metodo_pago, estado_pago, comprobante, ruc, observaciones, estado: 'activo',
+      early_checkin: monto_early > 0, monto_early
+    }
+    if (nro_ficha) {
+      insertData.nro_ficha = nro_ficha
+    }
+
     const { data: hospedaje, error: errHosp } = await supabase
       .from('hospedajes')
-      .insert({
-        habitacion_id: habitacionId, turno_id: turnoId, ingreso, salida_estimada, tarifa_pactada,
-        metodo_pago, estado_pago, comprobante, ruc, observaciones, estado: 'activo',
-        early_checkin: monto_early > 0, monto_early
-      })
+      .insert(insertData)
       .select().single()
     if (errHosp) throw new Error('Error al crear hospedaje: ' + errHosp.message)
 
@@ -62,10 +73,11 @@ export const hospedajesService = {
       .select('*, huesped_hospedaje(*, clientes(*))')
       .eq('habitacion_id', habitacionId)
       .eq('estado', 'activo')
-      .single()
+      .order('ingreso', { ascending: false })
+      .limit(1)
     
-    if (error && error.code !== 'PGRST116') throw new Error(error.message)
-    return data || null
+    if (error) throw new Error(error.message)
+    return data && data.length > 0 ? data[0] : null
   },
 
   async obtenerUltimoFinalizadoPorHabitacion(habitacionId) {

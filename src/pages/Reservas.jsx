@@ -158,9 +158,16 @@ export default function Reservas() {
                         <p className="text-xs text-gray-500 font-medium mt-0.5">📞 {r.clientes.telefono}</p>
                       )}
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                      {r.estado}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {r.nro_ficha && (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                          N° {String(r.nro_ficha).padStart(6, '0')}
+                        </span>
+                      )}
+                      <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        {r.estado}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="bg-gray-50 rounded-2xl p-4 mb-4">
