@@ -16,6 +16,23 @@ export const reservasService = {
     return data || []
   },
 
+  async obtenerReservaPendientePorHabitacionParaHoy(habitacionId) {
+    const today = new Date().toISOString().split('T')[0]
+    const { data, error } = await supabase
+      .from('reservas')
+      .select('*')
+      .eq('habitacion_id', habitacionId)
+      .in('estado', ['pendiente', 'confirmada'])
+      .gte('fecha_llegada', `${today}T00:00:00`)
+      .lte('fecha_llegada', `${today}T23:59:59`)
+      .order('fecha_llegada', { ascending: true })
+      .limit(1)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') throw new Error(error.message)
+    return data || null
+  },
+
   async crearReserva(reservaData) {
     const { data, error } = await supabase
       .from('reservas')

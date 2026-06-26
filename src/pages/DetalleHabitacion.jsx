@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useDetalleHabitacion } from '../hooks/useDetalleHabitacion'
+import { useLimpieza } from '../hooks/useLimpieza'
 import { useAuth } from '../context/AuthContext'
 
 import PanelHuespedActivo from '../components/DetalleHabitacion/PanelHuespedActivo'
@@ -37,11 +38,17 @@ function DetalleHabitacion() {
   
   const {
     cargando, hab, hospedaje, huesped, pagos, consumos,
-    hospedajeFinalizado, cargarDatos, registrarPago, registrarPenalidad,
+    hospedajeFinalizado, reservaPendiente, cargarDatos, registrarPago, registrarPenalidad,
     extenderEstadia, actualizarHabitacion, actualizarTarifaHospedaje,
     actualizarDatosHuesped, hacerCheckout,
     registrarCobroAdicional, reabrirHospedaje, cambiarHabitacion
   } = useDetalleHabitacion()
+
+  const {
+    tiposLimpieza,
+    iniciarLimpieza,
+    habilitarHabitacion
+  } = useLimpieza()
 
   useEffect(() => {
     cargarDatos(id)
@@ -120,12 +127,25 @@ function DetalleHabitacion() {
             <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">✨</div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">Habitación Lista</h3>
             <p className="text-gray-500 mb-6">Esta habitación está limpia y lista para recibir nuevos huéspedes.</p>
+            {reservaPendiente && (
+              <div className="mb-6 p-4 bg-orange-50 border-2 border-orange-200 text-orange-800 rounded-xl text-sm font-bold animate-pulse flex items-center gap-2 justify-center">
+                <span>⚠</span> Hay una reserva pendiente programada para hoy.
+              </div>
+            )}
             <button 
-              onClick={() => navigate(`/checkin/${hab.id}`)}
+              onClick={() => {
+                if (reservaPendiente) {
+                  if (confirm(`Esta habitación tiene una reserva programada para hoy. ¿Deseas hacer el check-in utilizando los datos de esta reserva?`)) {
+                    navigate(`/checkin/${hab.id}?reserva=${reservaPendiente.id}`)
+                    return
+                  }
+                }
+                navigate(`/checkin/${hab.id}`)
+              }}
               className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-green-200 transition-transform active:scale-95 flex items-center justify-center gap-2 mx-auto"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
-              Iniciar Check-In
+              {reservaPendiente ? 'Check-In de Reserva' : 'Iniciar Check-In Directo'}
             </button>
           </div>
         )}
@@ -158,6 +178,9 @@ function DetalleHabitacion() {
               turnoActivo={turnoActivo}
               registrarCobroAdicional={registrarCobroAdicional}
               reabrirHospedaje={reabrirHospedaje}
+              tiposLimpieza={tiposLimpieza}
+              iniciarLimpieza={iniciarLimpieza}
+              habilitarHabitacion={habilitarHabitacion}
             />
           </div>
         )}

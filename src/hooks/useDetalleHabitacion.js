@@ -6,6 +6,7 @@ import { consumosService } from '../services/consumosService'
 import { turnosService } from '../services/turnosService'
 import { clientesService } from '../services/clientesService'
 import { auditoriaService } from '../services/auditoriaService'
+import { reservasService } from '../services/reservasService'
 
 export function useDetalleHabitacion() {
   const [cargando, setCargando] = useState(true)
@@ -14,6 +15,7 @@ export function useDetalleHabitacion() {
   const [huesped, setHuesped] = useState(null)
   const [pagos, setPagos] = useState([])
   const [consumos, setConsumos] = useState([])
+  const [reservaPendiente, setReservaPendiente] = useState(null)
 
   // Para estado "pendiente_limpieza"
   const [hospedajeFinalizado, setHospedajeFinalizado] = useState(null)
@@ -24,6 +26,10 @@ export function useDetalleHabitacion() {
     try {
       const habData = await habitacionesService.obtenerPorId(habitacionId)
       setHab(habData)
+
+      // Fetch pending reservations for this room today
+      const reservaData = await reservasService.obtenerReservaPendientePorHabitacionParaHoy(habitacionId)
+      setReservaPendiente(reservaData)
 
       if (habData?.estado === 'ocupada') {
         const hospData = await hospedajesService.obtenerActivoPorHabitacion(habitacionId)
@@ -276,6 +282,7 @@ export function useDetalleHabitacion() {
     consumos,
     hospedajeFinalizado,
     pagosFinalizado,
+    reservaPendiente,
     cargarDatos,
     registrarPago,
     registrarPenalidad,
