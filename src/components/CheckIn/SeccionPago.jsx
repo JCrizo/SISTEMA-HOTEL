@@ -38,7 +38,7 @@ export default function SeccionPago({
               <button
                 key={op.value}
                 onClick={() => setModalPago(op.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
                   modalPago === op.value
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-gray-500 hover:bg-gray-50'
@@ -130,3 +130,4 @@ export default function SeccionPago({
     </section>
   )
 }
+
