@@ -27,10 +27,9 @@ export const reservasService = {
       .lte('fecha_llegada', `${today}T23:59:59`)
       .order('fecha_llegada', { ascending: true })
       .limit(1)
-      .single()
     
-    if (error && error.code !== 'PGRST116') throw new Error(error.message)
-    return data || null
+    if (error) throw new Error(error.message)
+    return data && data.length > 0 ? data[0] : null
   },
 
   async crearReserva(reservaData) {
@@ -71,7 +70,6 @@ export const reservasService = {
       .eq('id', id)
       .single()
     
-    // Si no la encuentra, puede devolver nulo en vez de fallar dependiendo del error
     if (error && error.code !== 'PGRST116') throw new Error(error.message)
     return data || null
   }
