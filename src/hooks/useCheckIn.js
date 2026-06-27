@@ -8,8 +8,6 @@ export function useCheckIn() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState(null)
   const [hab, setHab] = useState(null)
-  
-  // Estados iniciales para el formulario extraídos de la BD
   const [datosIniciales, setDatosIniciales] = useState(null)
 
   const cargarDatosCheckIn = useCallback(async (habitacionId, reservaId) => {
@@ -17,11 +15,26 @@ export function useCheckIn() {
     setError(null)
     try {
       const habData = await habitacionesService.obtenerPorId(habitacionId)
+      
+      // BUG A FIX: bloquear acceso al formulario si la habitación ya no está disponible
+      if (habData && habData.estado !== 'disponible') {
+        setHab(habData)
+        setError(`La habitación ${habData.numero} no está disponible (estado actual: ${habData.estado}). No se puede realizar el check-in.`)
+        setCargando(false)
+        return
+      }
+
       setHab(habData)
 
       let reservaData = null
       if (reservaId) {
         reservaData = await reservasService.obtenerPorId(reservaId)
+        // BUG B FIX: verificar que la reserva sigue pendiente al cargar el formulario
+        if (reservaData && !['pendiente', 'confirmada'].includes(reservaData.estado)) {
+          setError(`Esta reserva ya fue procesada (estado: ${reservaData.estado}). Recarga la página.`)
+          setCargando(false)
+          return
+        }
       }
 
       setDatosIniciales({
@@ -50,7 +63,6 @@ export function useCheckIn() {
     try {
       let clienteId = clienteDatos.id
       
-      // Crear o actualizar cliente titular
       if (clienteId) {
         await clientesService.actualizarCliente(clienteId, {
           nombres: clienteDatos.nombres,
@@ -67,10 +79,9 @@ export function useCheckIn() {
         clienteId = nuevo.id
       }
 
-      // Crear o recuperar acompañantes
       const acompanantesIds = []
       for (const ac of acompanantes) {
-        if (!ac.dni.trim() || !ac.nombres.trim()) continue // Skip inestables
+        if (!ac.dni.trim() || !ac.nombres.trim()) continue
         
         let acId = ac.clienteId
         if (acId) {
@@ -91,7 +102,7 @@ export function useCheckIn() {
         }
       }
 
-      // Ejecutar la transacción de hospedaje
+      // crearCheckIn ahora hace la doble verificación interna (hab disponible + reserva pendiente)
       await hospedajesService.crearCheckIn({
         ...datosTransaccion,
         clienteId,
