@@ -282,7 +282,7 @@ function ReportesAdmin() {
 
     // Hospedajes que se originaron en este turno (check-in hecho durante el turno)
     const { data: nuevos } = await supabase.from('hospedajes')
-      .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))`)
+      .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono)), pagos(monto, concepto, turno_id)`)
       .eq('turno_id', turno.id).order('ingreso')
     setHospedajesTurno(nuevos || [])
 
@@ -292,7 +292,7 @@ function ReportesAdmin() {
     // fue posterior a la apertura de este turno (salieron después de que
     // este turno ya había comenzado).
     const { data: arrastrados } = await supabase.from('hospedajes')
-      .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono))`)
+      .select(`*, habitaciones(numero, tipo_actual), huesped_hospedaje(clientes(nombres, dni_pasaporte, telefono)), pagos(monto, concepto, turno_id)`)
       .lt('ingreso', turno.apertura)
       .or(`salida_real.is.null,salida_real.gt.${turno.apertura}`)
       .order('ingreso')
@@ -823,7 +823,7 @@ function ReportesAdmin() {
                           <p className="text-[10px] font-bold text-gray-400 mb-3">Check-in hecho en un turno anterior</p>
                           <div className="flex flex-col gap-3">
                             {[...arrastradosActivos, ...arrastradosFinalizados].map(h => (
-                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} arrastrada />
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} arrastrada turnoId={turnoSeleccionado.id} />
                             ))}
                           </div>
                         </div>
@@ -834,7 +834,7 @@ function ReportesAdmin() {
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Habitaciones Ocupadas ({activos.length})</p>
                           <div className="flex flex-col gap-3">
                             {activos.map(h => (
-                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} />
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} turnoId={turnoSeleccionado.id} />
                             ))}
                           </div>
                         </div>
@@ -845,7 +845,7 @@ function ReportesAdmin() {
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Ya hicieron checkout ({finalizados.length})</p>
                           <div className="flex flex-col gap-3">
                             {finalizados.map(h => (
-                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} />
+                              <TarjetaHospedajeTurno key={h.id} h={h} navigate={navigate} turnoId={turnoSeleccionado.id} />
                             ))}
                           </div>
                         </div>
@@ -982,8 +982,22 @@ function ReportesAdmin() {
   )
 }
 
-function TarjetaHospedajeTurno({ h, navigate, arrastrada }) {
+function TarjetaHospedajeTurno({ h, navigate, arrastrada, turnoId }) {
   const esActivo = h.estado === 'activo'
+  const pagos = h.pagos || []
+
+  // Total cobrado en ESTE turno específico
+  const cobradoEsteTurno = pagos
+    .filter(p => p.turno_id === turnoId && p.concepto !== 'penalidad')
+    .reduce((s, p) => s + parseFloat(p.monto), 0)
+
+  // Total cobrado en toda la estadía
+  const cobradoTotal = pagos
+    .filter(p => p.concepto !== 'penalidad')
+    .reduce((s, p) => s + parseFloat(p.monto), 0)
+
+  const saldoPendiente = Math.max(0, parseFloat(h.tarifa_pactada) - cobradoTotal)
+
   return (
     <div
       onClick={() => navigate(`/ficha/${h.id}`)}
@@ -995,32 +1009,53 @@ function TarjetaHospedajeTurno({ h, navigate, arrastrada }) {
             : 'border-gray-100 hover:border-gray-300'
       }`}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <p className={`font-black text-gray-800 ${!esActivo ? 'uppercase' : ''}`}>
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="font-black text-gray-800 truncate">
             {h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}
           </p>
           <p className="text-xs font-bold text-gray-400">{h.huesped_hospedaje?.[0]?.clientes?.telefono}</p>
-          <p className="text-xs font-bold text-gray-500 mt-1">Hab {h.habitaciones?.numero} - {h.habitaciones?.tipo_actual}</p>
+          <p className="text-xs font-bold text-gray-500 mt-1">Hab {h.habitaciones?.numero} · {h.habitaciones?.tipo_actual}</p>
           <p className="text-[10px] font-bold text-gray-400 mt-1">
-            Ingreso: {new Date(h.ingreso).toLocaleString('es-PE')}
+            Ingreso: {new Date(h.ingreso).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}
           </p>
           {!esActivo && h.salida_real && (
             <p className="text-[10px] font-bold text-gray-400">
-              Salida: {new Date(h.salida_real).toLocaleString('es-PE')}
+              Salida: {new Date(h.salida_real).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}
             </p>
           )}
         </div>
-        <div className="text-right flex flex-col items-end">
-          <p className="text-base font-black text-gray-800">S/{h.tarifa_pactada}</p>
-          <p className="text-[10px] font-black text-indigo-500 mt-1 mb-2">N° {String(h.nro_ficha).padStart(6, '0')}</p>
-          {esActivo ? (
-            <span className="text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">Ocupada</span>
+
+        <div className="text-right flex flex-col items-end flex-shrink-0">
+          <p className="text-[10px] font-black text-indigo-500 mb-1">N° {String(h.nro_ficha ?? 0).padStart(6, '0')}</p>
+
+          {/* Tarifa total de la estadía */}
+          <div className="bg-gray-50 rounded-xl px-3 py-2 mb-2 text-right">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Tarifa total estadía</p>
+            <p className="text-base font-black text-gray-800">S/{parseFloat(h.tarifa_pactada).toFixed(2)}</p>
+          </div>
+
+          {/* Cobrado en este turno (solo si es arrastrada o tiene pagos del turno) */}
+          {cobradoEsteTurno > 0 && (
+            <div className="bg-blue-50 rounded-xl px-3 py-1.5 mb-2 text-right border border-blue-100">
+              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">Cobrado este turno</p>
+              <p className="text-sm font-black text-blue-700">S/{cobradoEsteTurno.toFixed(2)}</p>
+            </div>
+          )}
+          {cobradoEsteTurno === 0 && arrastrada && (
+            <div className="bg-amber-50 rounded-xl px-3 py-1.5 mb-2 text-right border border-amber-100">
+              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Sin cobros este turno</p>
+            </div>
+          )}
+
+          {/* Saldo */}
+          {saldoPendiente > 0 ? (
+            <span className="text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100">
+              Debe S/{saldoPendiente.toFixed(2)}
+            </span>
           ) : (
-            <span className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${
-              h.estado_pago === 'pagado' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
-            }`}>
-              {h.estado_pago === 'pagado' ? 'Pagado' : 'Pendiente'}
+            <span className="text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider bg-green-50 text-green-700 border border-green-100">
+              ✓ Saldado
             </span>
           )}
         </div>
