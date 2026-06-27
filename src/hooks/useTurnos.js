@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { turnosService } from '../services/turnosService'
 import { movimientosService } from '../services/movimientosService'
-import { pagosService } from '../services/pagosService'
 import { auditoriaService } from '../services/auditoriaService'
 
 export function useTurnos() {
@@ -30,7 +29,8 @@ export function useTurnos() {
         const movs = await movimientosService.obtenerPorTurno(activo.id)
         setMovimientos(movs)
 
-        const pagos = await pagosService.obtenerDesdeFecha(activo.apertura)
+        // FIX T3: filtrar pagos por turno_id, no por fecha
+        const pagos = await turnosService.obtenerPagosPorTurno(activo.id)
         setPagosTurno(pagos)
       }
     } catch (error) {
@@ -43,16 +43,12 @@ export function useTurnos() {
   const abrirTurno = async (datos, usuario) => {
     try {
       await turnosService.abrirTurno(datos)
-      
       if (usuario) {
         await auditoriaService.registrarAccion(
-          usuario,
-          'ABRIR_CAJA',
-          'Turnos',
+          usuario, 'ABRIR_CAJA', 'Turnos',
           `Abrió caja con inicial de S/${datos.caja_principal_anterior || 0}`
         )
       }
-
       await cargarDatos()
       return true
     } catch (error) {
@@ -69,32 +65,34 @@ export function useTurnos() {
         turnoId: turnoActivo.id
       })
 
-      // Update turnos cache locally and in DB
+      // FIX T2: re-consultar caja actual desde BD antes de calcular el update
+      // para evitar usar un valor stale del estado React
+      const turnoFresh = await turnosService.obtenerTurnoActivo()
+      if (!turnoFresh) return false
+
       let updates = {}
       if (datos.tipo === 'salida') {
         if (datos.cajaOrigen === 'principal') {
-          updates.caja_principal_actual = turnoActivo.caja_principal_actual - parseFloat(datos.monto)
+          updates.caja_principal_actual = turnoFresh.caja_principal_actual - parseFloat(datos.monto)
         } else {
-          updates.caja_consumos_actual = turnoActivo.caja_consumos_actual - parseFloat(datos.monto)
+          updates.caja_consumos_actual = turnoFresh.caja_consumos_actual - parseFloat(datos.monto)
         }
       } else if (datos.tipo === 'prestamo_entre_cajas') {
         if (datos.cajaOrigen === 'principal') {
-          updates.caja_principal_actual = turnoActivo.caja_principal_actual - parseFloat(datos.monto)
-          updates.caja_consumos_actual = turnoActivo.caja_consumos_actual + parseFloat(datos.monto)
+          updates.caja_principal_actual = turnoFresh.caja_principal_actual - parseFloat(datos.monto)
+          updates.caja_consumos_actual = turnoFresh.caja_consumos_actual + parseFloat(datos.monto)
         } else {
-          updates.caja_consumos_actual = turnoActivo.caja_consumos_actual - parseFloat(datos.monto)
-          updates.caja_principal_actual = turnoActivo.caja_principal_actual + parseFloat(datos.monto)
+          updates.caja_consumos_actual = turnoFresh.caja_consumos_actual - parseFloat(datos.monto)
+          updates.caja_principal_actual = turnoFresh.caja_principal_actual + parseFloat(datos.monto)
         }
       }
 
       await turnosService.actualizarCajas(turnoActivo.id, updates)
-      
+
       if (usuario) {
         const tipoLog = datos.tipo === 'salida' ? 'SALIDA_DINERO' : 'PRESTAMO_CAJAS'
         await auditoriaService.registrarAccion(
-          usuario,
-          tipoLog,
-          'Turnos',
+          usuario, tipoLog, 'Turnos',
           `Registró ${datos.tipo} por S/${datos.monto}. Motivo: ${datos.concepto}`
         )
       }
@@ -110,6 +108,7 @@ export function useTurnos() {
   const cerrarTurno = async (cajaPrincipalFinal, cajaConsumosFinal, observaciones, usuario) => {
     if (!turnoActivo) return false
     try {
+      // pagosTurno ya está filtrado por turno_id (FIX T3)
       const efectivo = pagosTurno.filter(p => p.metodo === 'efectivo').reduce((s, p) => s + parseFloat(p.monto), 0)
       const yape = pagosTurno.filter(p => p.metodo === 'yape').reduce((s, p) => s + parseFloat(p.monto), 0)
       const tarjeta = pagosTurno.filter(p => p.metodo === 'tarjeta').reduce((s, p) => s + parseFloat(p.monto), 0)
@@ -124,12 +123,10 @@ export function useTurnos() {
         desglose_tarjeta: tarjeta,
         desglose_transferencia: transferencia,
       })
-      
+
       if (usuario) {
         await auditoriaService.registrarAccion(
-          usuario,
-          'CERRAR_CAJA',
-          'Turnos',
+          usuario, 'CERRAR_CAJA', 'Turnos',
           `Cerró caja declarando S/${cajaPrincipalFinal} en principal y S/${cajaConsumosFinal} en consumos`
         )
       }
