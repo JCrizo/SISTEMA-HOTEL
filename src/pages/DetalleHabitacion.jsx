@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useDetalleHabitacion } from '../hooks/useDetalleHabitacion'
@@ -54,6 +54,11 @@ function DetalleHabitacion() {
     cargarDatos(id)
   }, [id, cargarDatos])
 
+  // Callback estable para que PanelLimpieza/TarjetaLimpieza recarguen esta página
+  const handleRefresh = useCallback(() => {
+    cargarDatos(id)
+  }, [id, cargarDatos])
+
   async function cambiarEstadoHab(estado) {
     if (!confirm(`¿Cambiar estado a "${estado}"?`)) return
     await actualizarHabitacion({ estado })
@@ -96,7 +101,7 @@ function DetalleHabitacion() {
 
       <main className="max-w-4xl mx-auto px-4">
         
-        {/* CABECERA DE HABITACIÓN MODERNA */}
+        {/* CABECERA DE HABITACIÓN */}
         <div className={`bg-gradient-to-r ${colores[hab.estado]} rounded-3xl p-8 mb-8 shadow-lg relative overflow-hidden`}>
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 2h8v8h-8V5zm-6 0h4v14H5V5zm6 14v-4h8v4h-8z"/></svg>
@@ -121,7 +126,7 @@ function DetalleHabitacion() {
           </div>
         </div>
 
-        {/* ACCIONES Y PANELES */}
+        {/* DISPONIBLE */}
         {hab.estado === 'disponible' && (
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center mb-8">
             <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">✨</div>
@@ -150,6 +155,7 @@ function DetalleHabitacion() {
           </div>
         )}
 
+        {/* OCUPADA con hospedaje */}
         {hab.estado === 'ocupada' && hospedaje && (
           <div className="mb-8">
             <PanelHuespedActivo 
@@ -170,6 +176,7 @@ function DetalleHabitacion() {
           </div>
         )}
 
+        {/* OCUPADA sin hospedaje = inconsistencia */}
         {hab.estado === 'ocupada' && !cargando && !hospedaje && (
           <div className="bg-red-50 text-red-700 rounded-3xl p-8 border-2 border-red-200 shadow-sm text-center mb-8">
             <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚠</div>
@@ -186,6 +193,7 @@ function DetalleHabitacion() {
           </div>
         )}
 
+        {/* LIMPIEZA */}
         {['pendiente_limpieza', 'en_limpieza', 'limpieza_simple'].includes(hab.estado) && (
           <div className="mb-8">
             <PanelLimpieza 
@@ -197,10 +205,12 @@ function DetalleHabitacion() {
               tiposLimpieza={tiposLimpieza}
               iniciarLimpieza={iniciarLimpieza}
               habilitarHabitacion={habilitarHabitacion}
+              onRefresh={handleRefresh}
             />
           </div>
         )}
 
+        {/* MANTENIMIENTO */}
         {hab.estado === 'mantenimiento' && (
           <div className="bg-gray-800 text-white rounded-3xl p-8 shadow-lg text-center mb-8">
             <div className="text-4xl mb-4">🔧</div>
