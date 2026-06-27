@@ -21,7 +21,7 @@ export default function SeccionEstadia({
           />
         </div>
 
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 md:col-span-2 flex items-center gap-4">
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 md:col-span-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="flex-1">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Fecha de salida</label>
             <input
@@ -31,7 +31,7 @@ export default function SeccionEstadia({
               className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
             />
           </div>
-          <div className="hidden md:block w-px h-12 bg-gray-200"></div>
+          <div className="hidden sm:block w-px h-12 bg-gray-200"></div>
           <div className="flex-1">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Tarifa por Noche (S/)</label>
             <input
@@ -71,3 +71,4 @@ export default function SeccionEstadia({
     </section>
   )
 }
+
