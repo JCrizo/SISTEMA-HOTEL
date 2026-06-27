@@ -144,24 +144,26 @@ export default function PanelHuespedActivo({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               Datos del Huésped
             </h3>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
-                Ficha N° {String(hospedaje.nro_ficha).padStart(6, '0')}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 text-center">
+                Ficha N° {String(hospedaje.nro_ficha ?? 0).padStart(6, '0')}
               </span>
-              <button
-                onClick={() => setMostrarEditar(true)}
-                className="text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-lg border border-gray-200 transition-colors"
-                title="Editar datos del huésped y tarifa"
-              >
-                ✏️ Editar
-              </button>
-              <button
-                onClick={() => setMostrarCambioHab(true)}
-                className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg border border-blue-200 transition-colors"
-                title="Mover huésped a otra habitación"
-              >
-                🔀 Mover
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMostrarEditar(true)}
+                  className="flex-1 sm:flex-none text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-200 transition-colors"
+                  title="Editar datos del huésped y tarifa"
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  onClick={() => setMostrarCambioHab(true)}
+                  className="flex-1 sm:flex-none text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 transition-colors"
+                  title="Mover huésped a otra habitación"
+                >
+                  🔀 Mover
+                </button>
+              </div>
             </div>
           </div>
           
@@ -353,7 +355,7 @@ export default function PanelHuespedActivo({
                   placeholder="0.00" className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors" />
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Concepto</label>
                   <select value={conceptoPago} onChange={e => setConceptoPago(e.target.value)}
@@ -489,3 +491,4 @@ export default function PanelHuespedActivo({
     </div>
   )
 }
+
