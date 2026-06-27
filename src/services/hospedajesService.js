@@ -8,17 +8,35 @@ export const hospedajesService = {
       monto_early, montoPagado, cajaTurnoActual, nroTicket
     } = datos
 
-    let nro_ficha = undefined
-    if (reservaId) {
-      const { data: resData } = await supabase.from('reservas').select('nro_ficha').eq('id', reservaId).single()
-      if (resData && resData.nro_ficha) {
-        nro_ficha = resData.nro_ficha
-      }
-
-      const { error: errRes } = await supabase.from('reservas').update({ estado: 'convertida' }).eq('id', reservaId)
-      if (errRes) throw new Error('Error al actualizar reserva: ' + errRes.message)
+    // ── GUARD 1: verificar que la habitación sigue disponible ──────────────
+    const { data: habActual, error: errHabCheck } = await supabase
+      .from('habitaciones')
+      .select('estado, numero')
+      .eq('id', habitacionId)
+      .single()
+    if (errHabCheck) throw new Error('No se pudo verificar el estado de la habitación')
+    if (habActual.estado !== 'disponible') {
+      throw new Error(`La habitación ${habActual.numero} ya no está disponible (estado: ${habActual.estado}). Recarga la página e intenta de nuevo.`)
     }
 
+    // ── GUARD 2: verificar que la reserva sigue pendiente (si aplica) ──────
+    let nro_ficha = undefined
+    if (reservaId) {
+      const { data: resActual, error: errResCheck } = await supabase
+        .from('reservas')
+        .select('estado, nro_ficha')
+        .eq('id', reservaId)
+        .single()
+      if (errResCheck) throw new Error('No se pudo verificar el estado de la reserva')
+      if (!['pendiente', 'confirmada'].includes(resActual.estado)) {
+        throw new Error(`Esta reserva ya fue procesada (estado: ${resActual.estado}). Recarga la página.`)
+      }
+      if (resActual.nro_ficha) {
+        nro_ficha = resActual.nro_ficha
+      }
+    }
+
+    // ── Crear hospedaje ────────────────────────────────────────────────────
     const insertData = {
       habitacion_id: habitacionId, turno_id: turnoId, ingreso, salida_estimada, tarifa_pactada,
       metodo_pago, estado_pago, comprobante, ruc, observaciones, estado: 'activo',
@@ -34,13 +52,13 @@ export const hospedajesService = {
       .select().single()
     if (errHosp) throw new Error('Error al crear hospedaje: ' + errHosp.message)
 
-    // Insertar titular
+    // ── Vincular titular ───────────────────────────────────────────────────
     const { error: errVinc } = await supabase.from('huesped_hospedaje').insert({
       hospedaje_id: hospedaje.id, cliente_id: clienteId, es_titular: true
     })
     if (errVinc) throw new Error('Error al vincular huésped titular: ' + errVinc.message)
 
-    // Insertar acompañantes
+    // ── Vincular acompañantes ──────────────────────────────────────────────
     if (datos.acompanantesIds && datos.acompanantesIds.length > 0) {
       const inserts = datos.acompanantesIds.map(acId => ({
         hospedaje_id: hospedaje.id, cliente_id: acId, es_titular: false
@@ -49,9 +67,11 @@ export const hospedajesService = {
       if (errAcomp) throw new Error('Error al vincular acompañantes: ' + errAcomp.message)
     }
 
+    // ── Registrar pago inicial ─────────────────────────────────────────────
     if (montoPagado > 0) {
       const { error: errPago } = await supabase.from('pagos').insert({
-        hospedaje_id: hospedaje.id, monto: montoPagado, metodo: metodo_pago, concepto: 'hospedaje', observaciones: nroTicket
+        hospedaje_id: hospedaje.id, monto: montoPagado, metodo: metodo_pago,
+        concepto: 'hospedaje', observaciones: nroTicket
       })
       if (errPago) throw new Error('Error al registrar pago: ' + errPago.message)
 
@@ -61,8 +81,19 @@ export const hospedajesService = {
       if (errTurno) throw new Error('Error al actualizar caja: ' + errTurno.message)
     }
 
-    const { error: errHab } = await supabase.from('habitaciones').update({ estado: 'ocupada' }).eq('id', habitacionId)
+    // ── Marcar habitación como ocupada ─────────────────────────────────────
+    const { error: errHab } = await supabase
+      .from('habitaciones').update({ estado: 'ocupada' }).eq('id', habitacionId)
     if (errHab) throw new Error('Error al actualizar habitación: ' + errHab.message)
+
+    // ── Marcar reserva como convertida AL FINAL (después de todo lo anterior) ──
+    // Hacerlo al final evita que una falla intermedia deje la reserva en estado
+    // 'convertida' sin que el hospedaje exista realmente.
+    if (reservaId) {
+      const { error: errRes } = await supabase
+        .from('reservas').update({ estado: 'convertida' }).eq('id', reservaId)
+      if (errRes) throw new Error('Error al actualizar reserva: ' + errRes.message)
+    }
 
     return hospedaje
   },
@@ -137,7 +168,6 @@ export const hospedajesService = {
       .eq('id', habitacionId)
     if (errHab) throw new Error(errHab.message)
 
-    // Actualizar cochera si aplica (ignorar si no encuentra)
     await supabase.from('cochera')
       .update({ hora_salida: new Date().toISOString() })
       .eq('hospedaje_id', hospedajeId)
@@ -169,8 +199,6 @@ export const hospedajesService = {
   },
 
   async cambiarHabitacion(hospedajeId, oldHabitacionId, newHabitacionId, observacionesActuales, usuarioNombre) {
-    // 0. Re-verificar en el momento exacto que la nueva habitación sigue disponible
-    // (protección contra condición de carrera si dos usuarios actúan al mismo tiempo)
     const { data: nuevaHab, error: errVerif } = await supabase
       .from('habitaciones')
       .select('estado, numero')
@@ -181,7 +209,6 @@ export const hospedajesService = {
       throw new Error(`La Hab ${nuevaHab.numero} ya no está disponible (estado actual: ${nuevaHab.estado}). Por favor elige otra.`)
     }
 
-    // 1. Mover el hospedaje a la nueva habitación dejando registro del cambio
     const fecha = new Date().toLocaleString('es-PE')
     const nota = `[${fecha}] Cambio de habitación por ${usuarioNombre || 'usuario'}.`
     const nuevasObservaciones = observacionesActuales
@@ -194,14 +221,12 @@ export const hospedajesService = {
       .eq('id', hospedajeId)
     if (errHosp) throw new Error('Error actualizando hospedaje: ' + errHosp.message)
 
-    // 2. La habitación anterior pasa a pendiente de limpieza
     const { error: errOldHab } = await supabase
       .from('habitaciones')
       .update({ estado: 'pendiente_limpieza' })
       .eq('id', oldHabitacionId)
     if (errOldHab) throw new Error('Error actualizando habitación anterior: ' + errOldHab.message)
 
-    // 3. La nueva habitación pasa a ocupada
     const { error: errNewHab } = await supabase
       .from('habitaciones')
       .update({ estado: 'ocupada' })
@@ -210,5 +235,4 @@ export const hospedajesService = {
 
     return true
   }
-
 }
