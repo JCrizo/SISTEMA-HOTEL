@@ -8,7 +8,6 @@ export const turnosService = {
       .is('cierre', null)
       .order('apertura', { ascending: false })
       .limit(1)
-    
     if (error) throw new Error(error.message)
     return data?.[0] || null
   },
@@ -20,23 +19,33 @@ export const turnosService = {
       .not('cierre', 'is', null)
       .order('cierre', { ascending: false })
       .limit(1)
-    
     if (error) throw new Error(error.message)
     return data?.[0] || null
   },
 
-  async sumarACaja(monto, tipoCaja = 'principal') {
+  // FIX T1: recibe turnoId y valorActual para evitar race condition.
+  // Si no se pasan, hace la consulta clásica como fallback (compatibilidad).
+  async sumarACaja(monto, tipoCaja = 'principal', turnoId = null, valorActual = null) {
+    const campo = tipoCaja === 'consumos' ? 'caja_consumos_actual' : 'caja_principal_actual'
+
+    if (turnoId !== null && valorActual !== null) {
+      // Camino óptimo: usa los valores ya conocidos, sin re-consultar
+      const { error } = await supabase
+        .from('turnos')
+        .update({ [campo]: valorActual + monto })
+        .eq('id', turnoId)
+      if (error) throw new Error(error.message)
+      return
+    }
+
+    // Fallback: re-consulta (comportamiento anterior, para llamadas que no pasen los params)
     const turnoActivo = await this.obtenerTurnoActivo()
     if (!turnoActivo) return
-
-    const campo = tipoCaja === 'consumos' ? 'caja_consumos_actual' : 'caja_principal_actual'
-    const valorActual = turnoActivo[campo] || 0
-    
+    const actual = turnoActivo[campo] || 0
     const { error } = await supabase
       .from('turnos')
-      .update({ [campo]: valorActual + monto })
+      .update({ [campo]: actual + monto })
       .eq('id', turnoActivo.id)
-    
     if (error) throw new Error(error.message)
   },
 
@@ -70,12 +79,18 @@ export const turnosService = {
   async cerrarTurno(turnoId, datos) {
     const { error } = await supabase
       .from('turnos')
-      .update({
-        cierre: new Date().toISOString(),
-        ...datos
-      })
+      .update({ cierre: new Date().toISOString(), ...datos })
       .eq('id', turnoId)
-    
     if (error) throw new Error(error.message)
+  },
+
+  // FIX T3: obtener pagos filtrados por turno_id, no por fecha
+  async obtenerPagosPorTurno(turnoId) {
+    const { data, error } = await supabase
+      .from('pagos')
+      .select('monto, metodo, concepto, created_at')
+      .eq('turno_id', turnoId)
+    if (error) throw new Error(error.message)
+    return data || []
   }
 }
