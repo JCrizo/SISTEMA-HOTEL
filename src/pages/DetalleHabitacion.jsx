@@ -140,10 +140,9 @@ function DetalleHabitacion() {
             <button 
               onClick={() => {
                 if (reservaPendiente) {
-                  if (confirm(`Esta habitación tiene una reserva programada para hoy. ¿Deseas hacer el check-in utilizando los datos de esta reserva?`)) {
-                    navigate(`/checkin/${hab.id}?reserva=${reservaPendiente.id}`)
-                    return
-                  }
+                  alert('Esta habitación tiene una reserva programada para hoy. El sistema cargará los datos de la reserva automáticamente para mantener el mismo Número de Ficha.')
+                  navigate(`/checkin/${hab.id}?reserva=${reservaPendiente.id}`)
+                  return
                 }
                 navigate(`/checkin/${hab.id}`)
               }}
