@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useAuth } from '../context/AuthContext'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
+import { turnosService } from '../services/turnosService'
 
 function Cochera() {
   const navigate = useNavigate()
@@ -55,10 +56,12 @@ function Cochera() {
 
   async function registrarExtension(vehiculo) {
     if (!montoExtension) return
+    if (!turnoActivo) { alert('No hay un turno activo.'); return }
 
     await supabase.from('cochera')
       .update({
         monto: parseFloat(vehiculo.monto) + parseFloat(montoExtension),
+        // FIX C2: siempre marcar pendiente al agregar cargo, sin importar estado previo
         estado_pago: 'pendiente'
       })
       .eq('id', vehiculo.id)
@@ -111,6 +114,11 @@ function Cochera() {
   }
 
   async function registrarSalida(vehiculo) {
+    // FIX C3: bloquear salida si hay pago pendiente
+    if (vehiculo.estado_pago === 'pendiente' && parseFloat(vehiculo.monto || 0) > 0) {
+      alert(`⚠ El vehículo ${vehiculo.placa} tiene un pago pendiente de S/${vehiculo.monto}. Registra el pago antes de registrar la salida.`)
+      return
+    }
     if (!confirm(`¿Registrar salida de ${vehiculo.placa}?`)) return
 
     await supabase
@@ -122,6 +130,8 @@ function Cochera() {
   }
 
   async function registrarPago(vehiculo) {
+    // FIX C1: usar turnoActivo del hook en lugar de re-consultar
+    if (!turnoActivo) { alert('No hay un turno activo.'); return }
     const metodo = metodoPagoVehiculo[vehiculo.id] || 'efectivo'
 
     await supabase
@@ -129,16 +139,14 @@ function Cochera() {
       .update({ estado_pago: 'pagado', metodo_pago: metodo })
       .eq('id', vehiculo.id)
 
+    // FIX C1: sumar a caja usando turnoActivo del hook (sin re-consultar BD)
     if (metodo === 'efectivo') {
-      const { data: turnos } = await supabase
-        .from('turnos').select('*').is('cierre', null)
-        .order('apertura', { ascending: false }).limit(1)
-      const turnoActivo = turnos?.[0]
-      if (turnoActivo) {
-        await supabase.from('turnos')
-          .update({ caja_principal_actual: turnoActivo.caja_principal_actual + parseFloat(vehiculo.monto) })
-          .eq('id', turnoActivo.id)
-      }
+      await turnosService.sumarACaja(
+        parseFloat(vehiculo.monto),
+        'principal',
+        turnoActivo.id,
+        turnoActivo.caja_principal_actual
+      )
     }
 
     cargarDatos()
