@@ -38,20 +38,16 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      // Intentamos buscar por el email completo (@mihotel.com) o por el nombre de usuario (sin el @mihotel.com)
+      // FIX R2: buscar usuario directamente por email, sin descargar toda la tabla
       const usernameBase = authUser.email.replace('@mihotel.com', '')
-      
-      const { data: allUsers, error } = await supabase
+
+      const { data: byEmail } = await supabase
         .from('usuarios')
         .select('*')
+        .or(`email.eq.${authUser.email},email.eq.${usernameBase}`)
+        .limit(1)
 
-      let match = null
-      if (!error && allUsers) {
-        match = allUsers.find(u => {
-          const uEmail = (u.email || '').toLowerCase().trim()
-          return uEmail === authUser.email || uEmail === usernameBase
-        })
-      }
+      let match = byEmail?.[0] || null
       
       if (match) {
         // Fusionamos AuthUser + CustomUser
@@ -112,3 +108,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext)
 }
+
