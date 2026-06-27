@@ -53,6 +53,9 @@ export function useConsumos(habitacionId, turnoActivo, usuario) {
   }
 
   const eliminarConsumo = async (consumo) => {
+    // FIX CO2: confirmar antes de eliminar para evitar borrados accidentales
+    const nombreProducto = consumo.productos?.nombre || 'este producto'
+    if (!confirm(`¿Eliminar consumo de ${nombreProducto} (S/${consumo.precio_unitario})? Se repondrá el stock.`)) return
     try {
       await consumosService.eliminarConsumo(consumo, turnoActivo?.id, usuario?.id)
       
@@ -82,3 +85,4 @@ export function useConsumos(habitacionId, turnoActivo, usuario) {
     eliminarConsumo
   }
 }
+
