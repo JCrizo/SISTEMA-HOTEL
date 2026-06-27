@@ -27,9 +27,13 @@ export function useDetalleHabitacion() {
       const habData = await habitacionesService.obtenerPorId(habitacionId)
       setHab(habData)
 
-      // Fetch pending reservations for this room today
-      const reservaData = await reservasService.obtenerReservaPendientePorHabitacionParaHoy(habitacionId)
-      setReservaPendiente(reservaData)
+      // Reserva pendiente solo aplica cuando la habitación está disponible
+      if (habData?.estado === 'disponible') {
+        const reservaData = await reservasService.obtenerReservaPendientePorHabitacionParaHoy(habitacionId)
+        setReservaPendiente(reservaData)
+      } else {
+        setReservaPendiente(null)
+      }
 
       if (habData?.estado === 'ocupada') {
         const hospData = await hospedajesService.obtenerActivoPorHabitacion(habitacionId)
@@ -193,7 +197,6 @@ export function useDetalleHabitacion() {
     }
   }
 
-  // Lógica para hospedaje finalizado
   const registrarCobroAdicional = async (monto, metodo, concepto, descripcion, usuario) => {
     if (!hospedajeFinalizado) return false
     try {
