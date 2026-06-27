@@ -199,13 +199,13 @@ function Habitaciones() {
               <div
                 key={hab.id}
                 onClick={() => navigate(`/habitacion/${hab.id}`)}
-                className={`group relative border-2 rounded-2xl p-5 cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-1 ${estilosHabitacion[estiloClave]}`}
+                className={`group relative border-2 rounded-2xl p-3 md:p-5 cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-1 active:scale-95 ${estilosHabitacion[estiloClave]}`}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <span className="text-3xl font-black tracking-tighter">
+                  <span className="text-2xl md:text-3xl font-black tracking-tighter">
                     {hab.numero}
                   </span>
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white/60`}>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/60 max-w-[80px] truncate leading-tight">
                     {etiquetas[hab.estado]}
                   </span>
                 </div>
