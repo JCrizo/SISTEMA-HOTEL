@@ -11,7 +11,8 @@ export default function PanelLimpieza({
   reabrirHospedaje,
   tiposLimpieza,
   iniciarLimpieza,
-  habilitarHabitacion
+  habilitarHabitacion,
+  onRefresh
 }) {
   const navigate = useNavigate()
   const { usuario } = useAuth()
@@ -96,7 +97,11 @@ export default function PanelLimpieza({
               <div className="bg-white rounded-xl p-3 border border-amber-200 mt-4 space-y-1">
                 <div className="flex justify-between items-center text-xs font-bold text-gray-500">
                   <span>Nro Ficha</span>
-                  <span className="text-gray-800">{String(hospedajeFinalizado.nro_ficha).padStart(6, '0')}</span>
+                  <span className="text-gray-800">
+                    {hospedajeFinalizado.nro_ficha != null
+                      ? String(hospedajeFinalizado.nro_ficha).padStart(6, '0')
+                      : '-'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-bold text-gray-500">
                   <span>Checkout Realizado</span>
@@ -198,10 +203,12 @@ export default function PanelLimpieza({
         <div className="max-w-2xl mx-auto">
           <TarjetaLimpieza 
             habitacion={hab}
+            hab={hab}
             tiposLimpieza={tiposLimpieza}
             onIniciarLimpieza={iniciarLimpieza}
             onHabilitar={habilitarHabitacion}
             esVistaIntegrada={true}
+            onSuccess={onRefresh}
           />
         </div>
       </div>
