@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, habilitarHabitacion }) {
+export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza, onHabilitar, esVistaIntegrada, onSuccess }) {
   const { usuario } = useAuth()
   const [personal, setPersonal] = useState('')
   const [tipoSeleccionado, setTipoSeleccionado] = useState('total')
@@ -18,8 +18,12 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
   async function handleIniciar() {
     if (!tipoLimpiezaId) { alert('Selecciona un tipo de limpieza'); return }
     setGuardando(true)
-    const exito = await iniciarLimpieza(hab, usuario?.id, personal, tipoSeleccionado, tipoLimpiezaId, horaInicio)
+    const exito = await onIniciarLimpieza(hab, usuario?.id, personal, tipoSeleccionado, tipoLimpiezaId, horaInicio)
     setGuardando(false)
+    if (exito) {
+      setLimpiezaIniciada(true)
+      if (onSuccess) onSuccess()
+    }
   }
 
   async function handleHabilitar() {
@@ -28,9 +32,10 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
       : `¿Marcar la limpieza de mantenimiento de Hab ${hab.numero} como finalizada?`
     if (!confirm(mensaje)) return
     setGuardando(true)
-    await habilitarHabitacion(hab, horaFin)
+    const exito = await onHabilitar(hab, horaFin)
     setMostrarForm(false)
     setGuardando(false)
+    if (exito && onSuccess) onSuccess()
   }
 
   const badgeColors = {
@@ -51,28 +56,29 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
     mantenimiento: 'Mantenimiento'
   }
 
-  // If there's an active cleaning on an occupied/available room, it's a maintenance cleaning
   const esLimpiezaMantenimiento = limpiezaActiva && (hab.estado === 'ocupada' || hab.estado === 'disponible')
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-2xl text-gray-800">Hab {hab.numero}</h3>
+      {!esVistaIntegrada && (
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-2xl text-gray-800">Hab {hab.numero}</h3>
+            </div>
+            <p className="text-sm text-gray-500 font-medium">{hab.tipo_actual}</p>
+            {hab.hospedajeActivo?.huesped_hospedaje?.[0]?.clientes?.nombres && (
+              <p className="text-xs text-gray-400 mt-0.5">👤 {hab.hospedajeActivo.huesped_hospedaje[0].clientes.nombres}</p>
+            )}
           </div>
-          <p className="text-sm text-gray-500 font-medium">{hab.tipo_actual}</p>
-          {hab.hospedajeActivo?.huesped_hospedaje?.[0]?.clientes?.nombres && (
-            <p className="text-xs text-gray-400 mt-0.5">👤 {hab.hospedajeActivo.huesped_hospedaje[0].clientes.nombres}</p>
-          )}
+          <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${badgeColors[hab.estado] || badgeColors.disponible}`}>
+            {badgeLabels[hab.estado] || hab.estado}
+          </span>
         </div>
-        <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${badgeColors[hab.estado] || badgeColors.disponible}`}>
-          {badgeLabels[hab.estado] || hab.estado}
-        </span>
-      </div>
+      )}
 
       {/* Flujo post-checkout: pendiente_limpieza / limpieza_simple */}
-      {esPostCheckout && (
+      {esPostCheckout && !limpiezaIniciada && (
         <FormularioLimpieza
           tiposLimpieza={tiposLimpieza}
           personal={personal} setPersonal={setPersonal}
@@ -85,7 +91,16 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, iniciarLimpieza, h
         />
       )}
 
-      {/* En proceso de limpieza (post-checkout o mantenimiento) */}
+      {/* Feedback tras iniciar limpieza en vista integrada (antes de que onSuccess recargue) */}
+      {limpiezaIniciada && !limpiezaActiva && (
+        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+          <p className="text-sm text-blue-800 font-bold flex items-center justify-center gap-2">
+            <span className="animate-pulse">⏳</span> Limpieza registrada. Recargando...
+          </p>
+        </div>
+      )}
+
+      {/* En proceso de limpieza */}
       {limpiezaActiva && (
         <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={esLimpiezaMantenimiento} />
       )}
