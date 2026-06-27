@@ -46,14 +46,27 @@ export const reportesService = {
       .select(`
         id, tarifa_pactada, estado_pago, ingreso, salida_estimada,
         habitaciones(numero, tipo_actual),
-        huesped_hospedaje(clientes(nombres))
+        huesped_hospedaje(clientes(nombres)),
+        pagos(monto, concepto)
       `)
       .eq('estado', 'activo')
       .order('ingreso', { ascending: false })
 
     const hospedajesActivos = hospActivos || []
-    const deudas = hospedajesActivos.filter(h => h.estado_pago !== 'pagado')
-    const totalDeudas = deudas.reduce((s, h) => s + parseFloat(h.tarifa_pactada), 0)
+
+    // FIX R1: calcular saldo real = tarifa - total_pagado (excluyendo penalidades)
+    const deudas = hospedajesActivos
+      .filter(h => h.estado_pago !== 'pagado')
+      .map(h => {
+        const totalPagado = (h.pagos || [])
+          .filter(p => p.concepto !== 'penalidad')
+          .reduce((s, p) => s + parseFloat(p.monto), 0)
+        const saldoPendiente = Math.max(0, parseFloat(h.tarifa_pactada) - totalPagado)
+        return { ...h, saldo_pendiente: saldoPendiente }
+      })
+      .filter(h => h.saldo_pendiente > 0)
+
+    const totalDeudas = deudas.reduce((s, h) => s + h.saldo_pendiente, 0)
 
     return {
       stats: {
