@@ -77,7 +77,8 @@ export function useLimpieza() {
       // Solo liberar la habitación (ponerla disponible) si estaba en el flujo
       // post-checkout. Si era limpieza de mantenimiento en una habitación
       // ocupada, su estado no cambió y no hace falta tocarlo.
-      if (hab.estado === 'en_limpieza') {
+      // FIX L1: también liberar si estaba en limpieza_simple (antes solo liberaba 'en_limpieza')
+      if (['en_limpieza', 'limpieza_simple'].includes(hab.estado)) {
         await habitacionesService.actualizar(hab.id, { estado: 'disponible' })
       }
 
@@ -101,3 +102,4 @@ export function useLimpieza() {
     habilitarHabitacion
   }
 }
+
