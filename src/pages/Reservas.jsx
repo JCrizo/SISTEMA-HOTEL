@@ -7,6 +7,7 @@ import FormularioReserva from '../components/Reservas/FormularioReserva'
 import CambiarHabitacionReservaModal from '../components/Reservas/CambiarHabitacionReservaModal'
 import CalendarioReservas from '../components/Reservas/CalendarioReservas'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
+import { supabase } from '../lib/supabase'
 
 export default function Reservas() {
   const navigate = useNavigate()
@@ -33,7 +34,22 @@ export default function Reservas() {
     await anularReserva(reserva, null) // Si hay contexto de usuario, pasarlo
   }
 
-  function convertirAHospedaje(reserva) {
+  async function convertirAHospedaje(reserva) {
+    try {
+      const { data: hab } = await supabase
+        .from('habitaciones')
+        .select('estado, numero')
+        .eq('id', reserva.habitacion_id)
+        .single()
+      
+      if (!hab || hab.estado !== 'disponible') {
+        alert(`La habitación ${hab?.numero || ''} ya no está disponible (estado: ${hab?.estado || 'desconocido'}). Recarga la página.`)
+        await cargarReservas()
+        return
+      }
+    } catch (e) {
+      console.error('Error verificando habitación:', e)
+    }
     navigate(`/checkin/${reserva.habitacion_id}?reserva=${reserva.id}`)
   }
 
