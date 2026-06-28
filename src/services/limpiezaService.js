@@ -52,6 +52,8 @@ export const limpiezaService = {
   },
 
   async finalizarLimpieza(habitacionId, observaciones) {
+    // Si no existe un registro en_proceso (bypass directo), no lanza error
+    // — el UPDATE actualiza 0 filas y continúa normalmente
     const { data, error } = await supabase
       .from('limpieza')
       .update({ estado: 'completada', observaciones })
@@ -81,3 +83,4 @@ export const limpiezaService = {
     return data || []
   }
 }
+
