@@ -71,7 +71,8 @@ export const hospedajesService = {
     if (montoPagado > 0) {
       const { error: errPago } = await supabase.from('pagos').insert({
         hospedaje_id: hospedaje.id, monto: montoPagado, metodo: metodo_pago,
-        concepto: 'hospedaje', observaciones: nroTicket
+        concepto: 'hospedaje', observaciones: nroTicket,
+        turno_id: turnoId   // FIX: vincular pago al turno para que aparezca en detalle de caja
       })
       if (errPago) throw new Error('Error al registrar pago: ' + errPago.message)
 
@@ -236,3 +237,4 @@ export const hospedajesService = {
     return true
   }
 }
+
