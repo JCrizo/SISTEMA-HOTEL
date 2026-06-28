@@ -77,21 +77,36 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
         </div>
       )}
 
-      {/* Flujo post-checkout: pendiente_limpieza / limpieza_simple → mostrar formulario de inicio */}
-      {esPostCheckout && !limpiezaIniciada && (
-        <FormularioLimpieza
-          tiposLimpieza={tiposLimpieza}
-          personal={personal} setPersonal={setPersonal}
-          tipoSeleccionado={tipoSeleccionado} setTipoSeleccionado={setTipoSeleccionado}
-          tipoLimpiezaId={tipoLimpiezaId} setTipoLimpiezaId={setTipoLimpiezaId}
-          horaInicio={horaInicio} setHoraInicio={setHoraInicio}
-          guardando={guardando}
-          onIniciar={handleIniciar}
-          mostrarTipoSimpleTotal={hab.estado === 'pendiente_limpieza'}
-        />
+      {/* Flujo post-checkout con limpieza activa: mostrar panel finalizar */}
+      {esPostCheckout && limpiezaActiva && !limpiezaIniciada && (
+        <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={false} />
       )}
 
-      {/* Feedback tras iniciar limpieza en vista integrada (antes de que onSuccess recargue) */}
+      {/* Flujo post-checkout sin limpieza activa: formulario para iniciarla O bypass directo */}
+      {esPostCheckout && !limpiezaActiva && !limpiezaIniciada && (
+        <div className="space-y-3">
+          <FormularioLimpieza
+            tiposLimpieza={tiposLimpieza}
+            personal={personal} setPersonal={setPersonal}
+            tipoSeleccionado={tipoSeleccionado} setTipoSeleccionado={setTipoSeleccionado}
+            tipoLimpiezaId={tipoLimpiezaId} setTipoLimpiezaId={setTipoLimpiezaId}
+            horaInicio={horaInicio} setHoraInicio={setHoraInicio}
+            guardando={guardando}
+            onIniciar={handleIniciar}
+            mostrarTipoSimpleTotal={hab.estado === 'pendiente_limpieza'}
+          />
+          {/* Bypass: marcar disponible directamente sin registrar limpieza */}
+          <button
+            onClick={handleHabilitar}
+            disabled={guardando}
+            className="w-full py-2.5 border-2 border-dashed border-green-300 text-green-700 rounded-xl text-sm font-semibold hover:bg-green-50 transition-colors disabled:opacity-50"
+          >
+            {guardando ? 'Guardando...' : '✓ Marcar como Disponible (sin registrar limpieza)'}
+          </button>
+        </div>
+      )}
+
+      {/* Feedback tras iniciar limpieza (antes de que onSuccess recargue) */}
       {limpiezaIniciada && hab.estado !== 'en_limpieza' && (
         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
           <p className="text-sm text-blue-800 font-bold flex items-center justify-center gap-2">
@@ -100,12 +115,12 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
         </div>
       )}
 
-      {/* En proceso de limpieza: mostrar si hay limpiezaActiva (panel general) O si el estado ya es en_limpieza (vista integrada) */}
+      {/* En proceso de limpieza (panel general o vista integrada) */}
       {(limpiezaActiva || hab.estado === 'en_limpieza') && !esPostCheckout && !limpiezaIniciada && (
         <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={esLimpiezaMantenimiento} />
       )}
 
-      {/* Cuando limpiezaIniciada=true y el estado ya es en_limpieza (acaba de iniciar en esta sesión) */}
+      {/* Acaba de iniciar limpieza en esta sesión */}
       {limpiezaIniciada && hab.estado === 'en_limpieza' && (
         <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={false} />
       )}
@@ -254,3 +269,4 @@ function PanelFinalizar({ horaFin, setHoraFin, guardando, onHabilitar, mantenimi
     </div>
   )
 }
+
