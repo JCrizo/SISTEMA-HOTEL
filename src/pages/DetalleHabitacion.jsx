@@ -138,10 +138,24 @@ function DetalleHabitacion() {
               </div>
             )}
             <button 
-              onClick={() => {
+            onClick={async () => {
                 if (reservaPendiente) {
-                  alert('Esta habitación tiene una reserva programada para hoy. El sistema cargará los datos de la reserva automáticamente para mantener el mismo Número de Ficha.')
-                  navigate(`/checkin/${hab.id}?reserva=${reservaPendiente.id}`)
+                  const usarReserva = window.confirm(
+                    `Esta habitación tiene una reserva para hoy (Cliente: ${reservaPendiente.clientes?.nombres || 'N/A'}).\n\nOK → Check-in con datos de la reserva\nCancelar → Ver opciones`
+                  )
+                  if (usarReserva) {
+                    navigate(`/checkin/${hab.id}?reserva=${reservaPendiente.id}`)
+                    return
+                  }
+                  // Bug 1+3 FIX: no silenciar la reserva — forzar anularla o cancelar
+                  const anularYContinuar = window.confirm(
+                    `¿Anular esa reserva y hacer check-in directo?\n\nOK → Anular y continuar\nCancelar → Volver sin hacer nada`
+                  )
+                  if (anularYContinuar) {
+                    const { supabase: _sb } = await import('../lib/supabase')
+                    await _sb.from('reservas').update({ estado: 'anulada' }).eq('id', reservaPendiente.id)
+                    navigate(`/checkin/${hab.id}`)
+                  }
                   return
                 }
                 navigate(`/checkin/${hab.id}`)
