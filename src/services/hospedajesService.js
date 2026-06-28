@@ -88,12 +88,21 @@ export const hospedajesService = {
     if (errHab) throw new Error('Error al actualizar habitación: ' + errHab.message)
 
     // ── Marcar reserva como convertida AL FINAL (después de todo lo anterior) ──
-    // Hacerlo al final evita que una falla intermedia deje la reserva en estado
-    // 'convertida' sin que el hospedaje exista realmente.
     if (reservaId) {
       const { error: errRes } = await supabase
         .from('reservas').update({ estado: 'convertida' }).eq('id', reservaId)
       if (errRes) throw new Error('Error al actualizar reserva: ' + errRes.message)
+    } else {
+      // Bug 3 FIX: check-in directo sin reservaId — limpiar reservas huérfanas
+      // Si hay una reserva pendiente/confirmada para esta habitación hoy, marcarla convertida
+      const today = new Date().toISOString().split('T')[0]
+      await supabase
+        .from('reservas')
+        .update({ estado: 'convertida' })
+        .eq('habitacion_id', habitacionId)
+        .in('estado', ['pendiente', 'confirmada'])
+        .gte('fecha_llegada', today + 'T00:00:00')
+        .lte('fecha_llegada', today + 'T23:59:59')
     }
 
     return hospedaje
@@ -237,4 +246,5 @@ export const hospedajesService = {
     return true
   }
 }
+
 
