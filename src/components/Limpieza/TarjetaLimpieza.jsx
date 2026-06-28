@@ -77,7 +77,7 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
         </div>
       )}
 
-      {/* Flujo post-checkout: pendiente_limpieza / limpieza_simple */}
+      {/* Flujo post-checkout: pendiente_limpieza / limpieza_simple → mostrar formulario de inicio */}
       {esPostCheckout && !limpiezaIniciada && (
         <FormularioLimpieza
           tiposLimpieza={tiposLimpieza}
@@ -92,7 +92,7 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
       )}
 
       {/* Feedback tras iniciar limpieza en vista integrada (antes de que onSuccess recargue) */}
-      {limpiezaIniciada && !limpiezaActiva && (
+      {limpiezaIniciada && hab.estado !== 'en_limpieza' && (
         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
           <p className="text-sm text-blue-800 font-bold flex items-center justify-center gap-2">
             <span className="animate-pulse">⏳</span> Limpieza registrada. Recargando...
@@ -100,9 +100,14 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
         </div>
       )}
 
-      {/* En proceso de limpieza */}
-      {limpiezaActiva && (
+      {/* En proceso de limpieza: mostrar si hay limpiezaActiva (panel general) O si el estado ya es en_limpieza (vista integrada) */}
+      {(limpiezaActiva || hab.estado === 'en_limpieza') && !esPostCheckout && !limpiezaIniciada && (
         <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={esLimpiezaMantenimiento} />
+      )}
+
+      {/* Cuando limpiezaIniciada=true y el estado ya es en_limpieza (acaba de iniciar en esta sesión) */}
+      {limpiezaIniciada && hab.estado === 'en_limpieza' && (
+        <PanelFinalizar horaFin={horaFin} setHoraFin={setHoraFin} guardando={guardando} onHabilitar={handleHabilitar} mantenimiento={false} />
       )}
 
       {/* Habitaciones ocupadas o disponibles: limpieza de mantenimiento opcional */}
