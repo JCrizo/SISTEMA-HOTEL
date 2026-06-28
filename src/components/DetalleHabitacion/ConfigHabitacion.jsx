@@ -69,6 +69,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                 type="number"
                 value={nuevoPrecio}
                 onChange={e => setNuevoPrecio(e.target.value)}
+                onWheel={e => e.target.blur()}
                 placeholder={`Actual: S/${hab.precio_actual}`}
                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 transition-colors bg-white"
               />

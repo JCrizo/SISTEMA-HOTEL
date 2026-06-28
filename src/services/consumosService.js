@@ -11,21 +11,21 @@ export const consumosService = {
     return data || []
   },
 
-  async agregarConsumo(hospedajeId, producto, turnoId, usuarioId) {
-    if (producto.stock <= 0) {
-      throw new Error(`No hay stock disponible de "${producto.nombre}"`)
+  async agregarConsumo(hospedajeId, producto, cantidad, turnoId, usuarioId) {
+    if (producto.stock < cantidad) {
+      throw new Error(`No hay stock suficiente de "${producto.nombre}". Stock actual: ${producto.stock}`)
     }
 
     const { error: errorConsumo } = await supabase.from('consumos').insert({
       hospedaje_id: hospedajeId,
       producto_id: producto.id,
-      cantidad: 1,
+      cantidad: cantidad,
       precio_unitario: producto.precio,
       usuario_id: usuarioId || null
     })
     if (errorConsumo) throw new Error(errorConsumo.message)
 
-    const nuevoStock = Math.max(0, producto.stock - 1)
+    const nuevoStock = Math.max(0, producto.stock - cantidad)
     
     const { error: errorProd } = await supabase.from('productos')
       .update({ stock: nuevoStock })
@@ -36,7 +36,7 @@ export const consumosService = {
       producto_id: producto.id,
       turno_id: turnoId || null,
       tipo: 'consumo',
-      cantidad: -1,
+      cantidad: -cantidad,
       stock_resultante: nuevoStock,
       usuario_id: usuarioId || null
     })

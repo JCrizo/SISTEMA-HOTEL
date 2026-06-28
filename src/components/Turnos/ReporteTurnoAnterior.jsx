@@ -33,11 +33,11 @@ export default function ReporteTurnoAnterior({ turno, movimientos }) {
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-50 shadow-sm">
-          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1">Caja Principal</p>
+          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1" title="Lo que el recepcionista declaró dejar en billetes/monedas">Físico Entregado (Principal)</p>
           <p className="text-lg font-black text-blue-900">S/{turno.caja_principal_actual}</p>
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-50 shadow-sm">
-          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1">Caja Consumos</p>
+          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1">Físico Entregado (Consumos)</p>
           <p className="text-lg font-black text-blue-900">S/{turno.caja_consumos_actual}</p>
         </div>
       </div>

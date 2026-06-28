@@ -66,7 +66,10 @@ export const reservasService = {
   async obtenerPorId(id) {
     const { data, error } = await supabase
       .from('reservas')
-      .select('*, clientes(*)')
+      .select(`
+        *,
+        clientes(id, nombres, dni_pasaporte, telefono, nacionalidad, tarifa_habitual, lista_negra, deuda_pendiente)
+      `)
       .eq('id', id)
       .single()
     

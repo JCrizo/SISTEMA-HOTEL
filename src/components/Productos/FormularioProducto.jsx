@@ -78,8 +78,11 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Precio (S/)</label>
           <input
             type="number"
+            inputMode="decimal"
             value={precio}
             onChange={e => setPrecio(e.target.value)}
+            onFocus={e => e.target.select()}
+            onWheel={e => e.target.blur()}
             placeholder="0.00"
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors font-semibold text-blue-700"
           />
@@ -88,8 +91,11 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Stock Inicial</label>
           <input
             type="number"
+            inputMode="numeric"
             value={stock}
             onChange={e => setStock(e.target.value)}
+            onFocus={e => e.target.select()}
+            onWheel={e => e.target.blur()}
             placeholder="Cantidad"
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
           />

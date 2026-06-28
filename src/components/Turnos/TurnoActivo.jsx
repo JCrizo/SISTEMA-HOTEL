@@ -18,6 +18,13 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
   const transferencia = pagosTurno.filter(p => p.metodo === 'transferencia').reduce((s, p) => s + parseFloat(p.monto), 0)
   const otros = pagosTurno.filter(p => !['efectivo','yape','tarjeta','transferencia'].includes(p.metodo)).reduce((s, p) => s + parseFloat(p.monto), 0)
 
+  // Cálculo del Efectivo Físico Real en la caja principal
+  const salidasPrincipal = movimientos.filter(m => m.tipo === 'salida' && m.caja_origen === 'principal').reduce((s, m) => s + parseFloat(m.monto), 0)
+  const prestamosSalida = movimientos.filter(m => m.tipo === 'prestamo_entre_cajas' && m.caja_origen === 'principal').reduce((s, m) => s + parseFloat(m.monto), 0)
+  const prestamosEntrada = movimientos.filter(m => m.tipo === 'prestamo_entre_cajas' && m.caja_destino === 'principal').reduce((s, m) => s + parseFloat(m.monto), 0)
+  
+  const efectivoEnCaja = parseFloat(turno.caja_principal_anterior || 0) + efectivo - salidasPrincipal - prestamosSalida + prestamosEntrada
+
   async function handleRegistrarMovimiento() {
     if (!montoMov || !conceptoMov) return
     setGuardando(true)
@@ -53,54 +60,50 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-500 font-bold uppercase mb-1">Caja Inicial</p>
+            <p className="text-xs text-gray-500 font-bold uppercase mb-1">Caja Inicial (Físico)</p>
             <p className="text-lg font-black text-gray-800">S/{turno.caja_principal_anterior}</p>
           </div>
           <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <p className="text-xs text-blue-600 font-bold uppercase mb-1">Caja Principal</p>
+            <p className="text-xs text-blue-600 font-bold uppercase mb-1" title="Incluye efectivo inicial + pagos efectivo + yape/tarjeta">Total Acumulado</p>
             <p className="text-xl font-black text-blue-900">S/{turno.caja_principal_actual}</p>
+          </div>
+          <div className="bg-green-50 rounded-xl p-4 border border-green-200 shadow-inner">
+            <p className="text-xs text-green-700 font-bold uppercase mb-1">Efectivo en Caja</p>
+            <p className="text-xl font-black text-green-900">S/{efectivoEnCaja.toFixed(2)}</p>
           </div>
           <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
             <p className="text-xs text-orange-600 font-bold uppercase mb-1">Caja Consumos</p>
             <p className="text-xl font-black text-orange-900">S/{turno.caja_consumos_actual}</p>
           </div>
-          <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-            <p className="text-xs text-green-600 font-bold uppercase mb-1">Ingresos Efectivo</p>
-            <p className="text-lg font-black text-green-900">S/{efectivo.toFixed(2)}</p>
-          </div>
         </div>
 
-        {pagosTurno.length > 0 && (
-          <div className="border-t border-gray-100 pt-5">
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3">Medios de pago (solo ingresos)</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {yape > 0 && (
-                <div className="flex justify-between text-sm items-center bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-600 flex items-center gap-2">📱 Yape</span>
-                  <span className="font-bold text-gray-800">S/{yape.toFixed(2)}</span>
-                </div>
-              )}
-              {tarjeta > 0 && (
-                <div className="flex justify-between text-sm items-center bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-600 flex items-center gap-2">💳 Tarjeta</span>
-                  <span className="font-bold text-gray-800">S/{tarjeta.toFixed(2)}</span>
-                </div>
-              )}
-              {transferencia > 0 && (
-                <div className="flex justify-between text-sm items-center bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-600 flex items-center gap-2">🏦 Transf.</span>
-                  <span className="font-bold text-gray-800">S/{transferencia.toFixed(2)}</span>
-                </div>
-              )}
-              {otros > 0 && (
-                <div className="flex justify-between text-sm items-center bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-600 flex items-center gap-2">Otros</span>
-                  <span className="font-bold text-gray-800">S/{otros.toFixed(2)}</span>
-                </div>
-              )}
+        <div className="border-t border-gray-100 pt-5">
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3">Detalle de Ingresos (Este Turno)</p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="flex flex-col text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <span className="text-gray-500 font-medium text-xs mb-1">💵 Efectivo</span>
+              <span className="font-bold text-gray-800 text-lg">S/{efectivo.toFixed(2)}</span>
             </div>
+            <div className={`flex flex-col text-sm bg-purple-50 p-3 rounded-lg border ${yape > 0 ? 'border-purple-200' : 'border-purple-50'}`}>
+              <span className="text-purple-600 font-medium text-xs mb-1">📱 Yape/Plin</span>
+              <span className="font-bold text-purple-900 text-lg">S/{yape.toFixed(2)}</span>
+            </div>
+            <div className={`flex flex-col text-sm bg-blue-50 p-3 rounded-lg border ${tarjeta > 0 ? 'border-blue-200' : 'border-blue-50'}`}>
+              <span className="text-blue-600 font-medium text-xs mb-1">💳 Tarjeta</span>
+              <span className="font-bold text-blue-900 text-lg">S/{tarjeta.toFixed(2)}</span>
+            </div>
+            <div className={`flex flex-col text-sm bg-teal-50 p-3 rounded-lg border ${transferencia > 0 ? 'border-teal-200' : 'border-teal-50'}`}>
+              <span className="text-teal-600 font-medium text-xs mb-1">🏦 Transf.</span>
+              <span className="font-bold text-teal-900 text-lg">S/{transferencia.toFixed(2)}</span>
+            </div>
+            {otros > 0 && (
+              <div className="flex flex-col text-sm bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <span className="text-gray-600 font-medium text-xs mb-1">Otros</span>
+                <span className="font-bold text-gray-800 text-lg">S/{otros.toFixed(2)}</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

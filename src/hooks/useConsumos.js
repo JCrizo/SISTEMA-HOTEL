@@ -37,11 +37,11 @@ export function useConsumos(habitacionId, turnoActivo, usuario) {
     }
   }, [habitacionId])
 
-  const agregarConsumo = async (producto) => {
+  const agregarConsumo = async (producto, cantidad = 1) => {
     if (!hospedaje || !turnoActivo) return { exito: false, error: 'No hay turno activo' }
     setGuardando(true)
     try {
-      await consumosService.agregarConsumo(hospedaje.id, producto, turnoActivo.id, usuario?.id)
+      await consumosService.agregarConsumo(hospedaje.id, producto, cantidad, turnoActivo.id, usuario?.id)
       await cargarDatos()
       return { exito: true }
     } catch (error) {

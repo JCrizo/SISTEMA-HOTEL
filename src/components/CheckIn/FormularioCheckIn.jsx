@@ -230,6 +230,17 @@ export default function FormularioCheckIn({
       </div>
 
       <div className="p-8 space-y-8">
+
+        {/* BANNER: Check-in viene de una reserva */}
+        {datosIniciales?.reserva && (
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl px-6 py-4 flex items-center gap-3">
+            <span className="text-2xl">📋</span>
+            <div>
+              <p className="text-sm font-black text-blue-900">Datos cargados desde Reserva N° {String(datosIniciales.reserva.nro_ficha || '').padStart(6, '0')}</p>
+              <p className="text-xs text-blue-700 font-medium">El número de ficha y los datos del huésped fueron pre-llenados automáticamente. Verifica antes de confirmar.</p>
+            </div>
+          </div>
+        )}
         
         {/* SECCIÓN: HUÉSPED TITULAR */}
         <section>

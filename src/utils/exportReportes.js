@@ -173,10 +173,10 @@ export function exportarCierreTurnoPDF(turno, movimientosCaja, movimientosStock,
 
   autoTable(doc, {
     startY: 37,
-    head: [['Caja', 'Monto inicial', 'Monto final']],
+    head: [['Caja (Físico)', 'Físico Inicial', 'Físico al Cierre']],
     body: [
-      ['Principal', `S/${parseFloat(turno.caja_principal_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_principal_actual || 0).toFixed(2)}`],
-      ['Consumos', `S/${parseFloat(turno.caja_consumos_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_consumos_actual || 0).toFixed(2)}`],
+      ['Efectivo Principal', `S/${parseFloat(turno.caja_principal_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_principal_actual || 0).toFixed(2)}`],
+      ['Efectivo Consumos', `S/${parseFloat(turno.caja_consumos_anterior || 0).toFixed(2)}`, `S/${parseFloat(turno.caja_consumos_actual || 0).toFixed(2)}`],
     ],
     theme: 'grid',
     headStyles: { fillColor: [37, 99, 235] },
@@ -242,9 +242,9 @@ export function exportarCierreTurnoExcel(turno, movimientosCaja, movimientosStoc
     [`Apertura: ${new Date(turno.apertura).toLocaleString('es-PE')}`],
     [turno.cierre ? `Cierre: ${new Date(turno.cierre).toLocaleString('es-PE')}` : 'Turno aún abierto'],
     [],
-    ['Caja', 'Monto inicial (S/)', 'Monto final (S/)'],
-    ['Principal', parseFloat(turno.caja_principal_anterior || 0), parseFloat(turno.caja_principal_actual || 0)],
-    ['Consumos', parseFloat(turno.caja_consumos_anterior || 0), parseFloat(turno.caja_consumos_actual || 0)],
+    ['Caja (Físico)', 'Físico inicial (S/)', 'Físico declarado al cierre (S/)'],
+    ['Efectivo Principal', parseFloat(turno.caja_principal_anterior || 0), parseFloat(turno.caja_principal_actual || 0)],
+    ['Efectivo Consumos', parseFloat(turno.caja_consumos_anterior || 0), parseFloat(turno.caja_consumos_actual || 0)],
   ]
   const wsResumen = XLSX.utils.aoa_to_sheet(resumenData)
   XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen')
