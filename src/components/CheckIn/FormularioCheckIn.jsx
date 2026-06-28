@@ -65,8 +65,13 @@ export default function FormularioCheckIn({
       }
       
       if (parseFloat(res.adelanto) > 0) {
+        // Bug 4 FIX: el adelanto de la reserva YA fue cobrado cuando se creó la reserva.
+        // Lo mostramos como referencia pero NO se vuelve a cobrar en el check-in.
+        // setAdelanto carga el monto para que el recepcionista lo vea,
+        // pero en confirmar() si viene de reserva con adelanto, montoPagado = 0
+        // (el cobro ya ocurrió en el turno donde se registró la reserva).
         setAdelanto(res.adelanto.toString())
-        setModalPago('adelanto')
+        setModalPago('adelanto_ya_cobrado')
       }
       if (parseFloat(res.monto_early) > 0) {
         setMontoEarly(res.monto_early.toString())
@@ -143,6 +148,8 @@ export default function FormularioCheckIn({
     let montoPagado = 0
     if (modalPago === 'completo') montoPagado = parseFloat(tarifa)
     else if (modalPago === 'adelanto' && parseFloat(adelanto) > 0) montoPagado = parseFloat(adelanto)
+    // Bug 4 FIX: adelanto ya cobrado en la reserva — no cobrar de nuevo
+    else if (modalPago === 'adelanto_ya_cobrado') montoPagado = 0
 
     const exito = await realizarCheckIn(
       {
@@ -153,7 +160,7 @@ export default function FormularioCheckIn({
         salida_estimada: salidaEstimada.toISOString(),
         tarifa_pactada: parseFloat(tarifa),
         metodo_pago: metodoPago,
-        estado_pago: modalPago === 'completo' ? 'pagado' : modalPago === 'adelanto' ? 'parcial' : 'pendiente',
+        estado_pago: modalPago === 'completo' ? 'pagado' : (modalPago === 'adelanto' || modalPago === 'adelanto_ya_cobrado') ? 'parcial' : 'pendiente',
         comprobante,
         ruc: comprobante === 'factura' ? ruc : null,
         observaciones,
@@ -449,3 +456,4 @@ export default function FormularioCheckIn({
     </div>
   )
 }
+
