@@ -142,7 +142,7 @@ function Limpieza() {
         <SeccionHabitaciones titulo={`Pendientes de limpieza (${pendientes.length})`}>
           {pendientes.map(hab => (
             <TarjetaLimpieza key={hab.id} hab={hab} tiposLimpieza={tiposLimpieza}
-              iniciarLimpieza={iniciarLimpieza} habilitarHabitacion={habilitarHabitacion} />
+              onIniciarLimpieza={iniciarLimpieza} onHabilitar={habilitarHabitacion} onSuccess={cargarHabitaciones} />
           ))}
         </SeccionHabitaciones>
       )}
@@ -151,7 +151,7 @@ function Limpieza() {
         <SeccionHabitaciones titulo={`Ocupadas (${ocupadas.length})`}>
           {ocupadas.map(hab => (
             <TarjetaLimpieza key={hab.id} hab={hab} tiposLimpieza={tiposLimpieza}
-              iniciarLimpieza={iniciarLimpieza} habilitarHabitacion={habilitarHabitacion} />
+              onIniciarLimpieza={iniciarLimpieza} onHabilitar={habilitarHabitacion} onSuccess={cargarHabitaciones} />
           ))}
         </SeccionHabitaciones>
       )}
@@ -160,7 +160,7 @@ function Limpieza() {
         <SeccionHabitaciones titulo={`Disponibles (${disponibles.length})`}>
           {disponibles.map(hab => (
             <TarjetaLimpieza key={hab.id} hab={hab} tiposLimpieza={tiposLimpieza}
-              iniciarLimpieza={iniciarLimpieza} habilitarHabitacion={habilitarHabitacion} />
+              onIniciarLimpieza={iniciarLimpieza} onHabilitar={habilitarHabitacion} onSuccess={cargarHabitaciones} />
           ))}
         </SeccionHabitaciones>
       )}
@@ -169,7 +169,7 @@ function Limpieza() {
         <SeccionHabitaciones titulo={`Otras (${otras.length})`}>
           {otras.map(hab => (
             <TarjetaLimpieza key={hab.id} hab={hab} tiposLimpieza={tiposLimpieza}
-              iniciarLimpieza={iniciarLimpieza} habilitarHabitacion={habilitarHabitacion} />
+              onIniciarLimpieza={iniciarLimpieza} onHabilitar={habilitarHabitacion} onSuccess={cargarHabitaciones} />
           ))}
         </SeccionHabitaciones>
       )}

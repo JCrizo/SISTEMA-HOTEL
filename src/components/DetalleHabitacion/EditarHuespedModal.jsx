@@ -5,6 +5,7 @@ export default function EditarHuespedModal({
   hospedaje,
   actualizarTarifaHospedaje,
   actualizarDatosHuesped,
+  actualizarFechaIngreso,
   onClose
 }) {
   const ingreso = new Date(hospedaje.ingreso)
@@ -12,10 +13,18 @@ export default function EditarHuespedModal({
   const nochesTotales = Math.max(1, Math.round((salida - ingreso) / (1000 * 60 * 60 * 24)))
   const tarifaPorNocheActual = (parseFloat(hospedaje.tarifa_pactada) / nochesTotales).toFixed(2)
 
+  // fecha-hora local en formato datetime-local (YYYY-MM-DDTHH:mm)
+  const toLocalDatetimeValue = (isoStr) => {
+    const d = new Date(isoStr)
+    const pad = n => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
   const [nombres, setNombres] = useState(huesped?.nombres || '')
   const [dni, setDni] = useState(huesped?.dni_pasaporte || '')
   const [telefono, setTelefono] = useState(huesped?.telefono || '')
   const [tarifaPorNoche, setTarifaPorNoche] = useState(tarifaPorNocheActual)
+  const [fechaIngreso, setFechaIngreso] = useState(toLocalDatetimeValue(hospedaje.ingreso))
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
 
@@ -47,6 +56,17 @@ export default function EditarHuespedModal({
       const exito = await actualizarTarifaHospedaje(parseFloat(tarifaPorNoche))
       if (!exito) {
         setError('No se pudo actualizar la tarifa')
+        setGuardando(false)
+        return
+      }
+    }
+
+    const ingresoOriginal = toLocalDatetimeValue(hospedaje.ingreso)
+    if (fechaIngreso !== ingresoOriginal && actualizarFechaIngreso) {
+      const nuevaFechaIso = new Date(fechaIngreso).toISOString()
+      const exito = await actualizarFechaIngreso(nuevaFechaIso)
+      if (!exito) {
+        setError('No se pudo actualizar la fecha de ingreso')
         setGuardando(false)
         return
       }
@@ -105,14 +125,28 @@ export default function EditarHuespedModal({
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Tarifa por noche (S/)</label>
             <input
               type="number"
+              inputMode="decimal"
               value={tarifaPorNoche}
               onChange={e => setTarifaPorNoche(e.target.value)}
+              onFocus={e => e.target.select()}
+              onWheel={e => e.target.blur()}
               className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-400"
             />
             <p className="text-xs text-gray-400 mt-1">
               {nochesTotales} noche(s) · Total pactado: <span className="font-bold text-gray-600">S/{nuevaTarifaPactada}</span>
               {tarifaCambio && <span className="text-orange-500"> (antes S/{hospedaje.tarifa_pactada})</span>}
             </p>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100">
+            <label className="text-xs font-bold text-orange-600 uppercase tracking-wide block mb-1">⚠ Fecha y Hora de Ingreso Real</label>
+            <input
+              type="datetime-local"
+              value={fechaIngreso}
+              onChange={e => setFechaIngreso(e.target.value)}
+              className="w-full border-2 border-orange-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-orange-400"
+            />
+            <p className="text-xs text-orange-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
           </div>
         </div>
 

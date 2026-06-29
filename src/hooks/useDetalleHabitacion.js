@@ -176,6 +176,18 @@ export function useDetalleHabitacion() {
     }
   }
 
+  const actualizarFechaIngreso = async (nuevaFechaIso) => {
+    if (!hospedaje) return false
+    try {
+      await hospedajesService.actualizarFechaIngreso(hospedaje.id, nuevaFechaIso)
+      await cargarDatos(hab.id)
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
   const hacerCheckout = async (usuario) => {
     if (!hospedaje) return false
     try {
@@ -293,6 +305,7 @@ export function useDetalleHabitacion() {
     actualizarHabitacion,
     actualizarTarifaHospedaje,
     actualizarDatosHuesped,
+    actualizarFechaIngreso,
     hacerCheckout,
     registrarCobroAdicional,
     reabrirHospedaje,

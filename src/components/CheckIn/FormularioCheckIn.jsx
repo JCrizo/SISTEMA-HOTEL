@@ -28,6 +28,11 @@ export default function FormularioCheckIn({
   const [tarifa, setTarifa] = useState('')
   const [noches, setNoches] = useState(1)
   const [fechaSalida, setFechaSalida] = useState('')
+  const [fechaIngreso, setFechaIngreso] = useState(() => {
+    const ahora = new Date()
+    const pad = n => String(n).padStart(2, '0')
+    return `${ahora.getFullYear()}-${pad(ahora.getMonth()+1)}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`
+  })
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [nroTicket, setNroTicket] = useState('')
   const [modalPago, setModalPago] = useState('al_salir')
@@ -134,10 +139,11 @@ export default function FormularioCheckIn({
     if (!turnoActivo) { setError('Debes iniciar turno antes de continuar.'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
+    if (!fechaIngreso) { setError('La fecha y hora de ingreso es obligatoria'); return }
     if (!tarifaPorNoche) { setError('La tarifa por noche es obligatoria'); return }
     if (!fechaSalida) { setError('La fecha de salida es obligatoria'); return }
 
-    const ahora = new Date()
+    const ingresoReal = new Date(fechaIngreso)
     const salidaEstimada = new Date(fechaSalida + 'T12:00:00')
 
     let montoPagado = 0
@@ -149,7 +155,7 @@ export default function FormularioCheckIn({
         habitacionId: hab.id,
         turnoId: turnoActivo.id,
         reservaId: datosIniciales?.reserva?.id || null,
-        ingreso: ahora.toISOString(),
+        ingreso: ingresoReal.toISOString(),
         salida_estimada: salidaEstimada.toISOString(),
         tarifa_pactada: parseFloat(tarifa),
         metodo_pago: metodoPago,
@@ -396,6 +402,7 @@ export default function FormularioCheckIn({
           fechaSalida={fechaSalida} actualizarFechaSalida={actualizarFechaSalida}
           tarifaPorNoche={tarifaPorNoche} setTarifaPorNoche={setTarifaPorNoche}
           tarifa={tarifa} montoEarly={montoEarly} setMontoEarly={setMontoEarly}
+          fechaIngreso={fechaIngreso} setFechaIngreso={setFechaIngreso}
         />
 
         {/* SECCIÓN: PAGO */}

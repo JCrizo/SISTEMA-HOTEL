@@ -40,7 +40,7 @@ function DetalleHabitacion() {
     cargando, hab, hospedaje, huesped, pagos, consumos,
     hospedajeFinalizado, reservaPendiente, cargarDatos, registrarPago, registrarPenalidad,
     extenderEstadia, actualizarHabitacion, actualizarTarifaHospedaje,
-    actualizarDatosHuesped, hacerCheckout,
+    actualizarDatosHuesped, actualizarFechaIngreso, hacerCheckout,
     registrarCobroAdicional, reabrirHospedaje, cambiarHabitacion
   } = useDetalleHabitacion()
 
@@ -170,6 +170,7 @@ function DetalleHabitacion() {
               hacerCheckout={hacerCheckout}
               actualizarTarifaHospedaje={(nuevaTarifa) => actualizarTarifaHospedaje(nuevaTarifa, usuario?.nombre)}
               actualizarDatosHuesped={actualizarDatosHuesped}
+              actualizarFechaIngreso={actualizarFechaIngreso}
               cambiarHabitacion={cambiarHabitacion}
             />
           </div>

@@ -17,6 +17,7 @@ export default function PanelHuespedActivo({
   hacerCheckout,
   actualizarTarifaHospedaje,
   actualizarDatosHuesped,
+  actualizarFechaIngreso,
   cambiarHabitacion
 }) {
   const navigate = useNavigate()
@@ -476,6 +477,7 @@ export default function PanelHuespedActivo({
           hospedaje={hospedaje}
           actualizarTarifaHospedaje={actualizarTarifaHospedaje}
           actualizarDatosHuesped={actualizarDatosHuesped}
+          actualizarFechaIngreso={actualizarFechaIngreso}
           onClose={() => setMostrarEditar(false)}
         />
       )}

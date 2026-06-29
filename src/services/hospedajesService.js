@@ -155,6 +155,14 @@ export const hospedajesService = {
     if (error) throw new Error(error.message)
   },
 
+  async actualizarFechaIngreso(hospedajeId, nuevaFechaIso) {
+    const { error } = await supabase
+      .from('hospedajes')
+      .update({ ingreso: nuevaFechaIso })
+      .eq('id', hospedajeId)
+    if (error) throw new Error(error.message)
+  },
+
   async hacerCheckout(hospedajeId, habitacionId) {
     const { error: errHosp } = await supabase
       .from('hospedajes')
