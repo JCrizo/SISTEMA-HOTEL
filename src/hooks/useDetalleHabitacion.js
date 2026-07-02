@@ -81,8 +81,12 @@ export function useDetalleHabitacion() {
       const nuevoEstadoPago = totalPagado >= parseFloat(hospedaje.tarifa_pactada) ? 'pagado' : 'parcial'
       await hospedajesService.actualizarEstadoPago(hospedaje.id, nuevoEstadoPago)
       
-      const tipoCaja = concepto === 'consumo' ? 'consumos' : 'principal'
-      await turnosService.sumarACaja(parseFloat(monto), tipoCaja)
+      // FIX: solo sumar a la caja física si el pago fue en efectivo.
+      // Pagos con tarjeta/yape/transferencia no ingresan dinero físico a la caja.
+      if (metodo === 'efectivo') {
+        const tipoCaja = concepto === 'consumo' ? 'consumos' : 'principal'
+        await turnosService.sumarACaja(parseFloat(monto), tipoCaja)
+      }
       
       await cargarDatos(hab.id)
       return true
@@ -219,8 +223,12 @@ export function useDetalleHabitacion() {
         concepto,
         observaciones: descripcion
       })
-      const tipoCaja = concepto === 'consumo' ? 'consumos' : 'principal'
-      await turnosService.sumarACaja(parseFloat(monto), tipoCaja)
+      // FIX: solo sumar a la caja física si el pago fue en efectivo.
+      // Pagos con tarjeta/yape/transferencia no ingresan dinero físico a la caja.
+      if (metodo === 'efectivo') {
+        const tipoCaja = concepto === 'consumo' ? 'consumos' : 'principal'
+        await turnosService.sumarACaja(parseFloat(monto), tipoCaja)
+      }
       
       if (usuario) {
         await auditoriaService.registrarAccion(

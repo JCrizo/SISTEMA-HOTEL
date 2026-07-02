@@ -76,10 +76,14 @@ export const hospedajesService = {
       })
       if (errPago) throw new Error('Error al registrar pago: ' + errPago.message)
 
-      const { error: errTurno } = await supabase.from('turnos')
-        .update({ caja_principal_actual: cajaTurnoActual + montoPagado })
-        .eq('id', turnoId)
-      if (errTurno) throw new Error('Error al actualizar caja: ' + errTurno.message)
+      // FIX: solo sumar a la caja física si el pago fue en efectivo.
+      // Pagos con tarjeta/yape/transferencia no ingresan dinero físico a la caja.
+      if (metodo_pago === 'efectivo') {
+        const { error: errTurno } = await supabase.from('turnos')
+          .update({ caja_principal_actual: cajaTurnoActual + montoPagado })
+          .eq('id', turnoId)
+        if (errTurno) throw new Error('Error al actualizar caja: ' + errTurno.message)
+      }
     }
 
     // ── Marcar habitación como ocupada ─────────────────────────────────────
