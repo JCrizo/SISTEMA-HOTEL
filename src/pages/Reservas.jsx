@@ -208,6 +208,12 @@ export default function Reservas() {
                   </div>
 
                   <div className="space-y-1 mb-4">
+                    {r.tarifa_pactada > 0 && (
+                      <p className="text-xs font-bold text-indigo-700 flex justify-between bg-indigo-50 px-3 py-2 rounded-lg">
+                        <span>Tarifa pactada:</span>
+                        <span>S/{r.tarifa_pactada}</span>
+                      </p>
+                    )}
                     {r.adelanto > 0 && (
                       <p className="text-xs font-bold text-green-700 flex justify-between bg-green-50 px-3 py-2 rounded-lg">
                         <span>Adelanto pagado:</span>

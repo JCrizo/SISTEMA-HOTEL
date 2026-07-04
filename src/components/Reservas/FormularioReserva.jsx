@@ -15,6 +15,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const [nombres, setNombres] = useState('')
   const [telefono, setTelefono] = useState('')
   const [habitacionId, setHabitacionId] = useState('')
+  const [tarifaPactada, setTarifaPactada] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
   const [fechaSalida, setFechaSalida] = useState('')
   const [adelanto, setAdelanto] = useState('')
@@ -27,6 +28,13 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   useEffect(() => {
     cargarTodas()
   }, [cargarTodas])
+
+  // Al seleccionar habitación, precargamos su tarifa base (editable después)
+  useEffect(() => {
+    if (!habitacionId) return
+    const hab = habitaciones.find(h => h.id === habitacionId)
+    if (hab?.precio_actual) setTarifaPactada(hab.precio_actual.toString())
+  }, [habitacionId, habitaciones])
 
   async function buscarCliente() {
     if (!dni.trim()) return
@@ -59,6 +67,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
     const exito = await crearReserva(
       {
         habitacion_id: habitacionId,
+        tarifa_pactada: tarifaPactada ? parseFloat(tarifaPactada) : null,
         fecha_llegada: new Date(fechaLlegada).toISOString(),
         fecha_salida: fechaSalida ? new Date(fechaSalida).toISOString() : null,
         adelanto: parseFloat(adelanto || 0),
@@ -225,6 +234,21 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Tarifa por Noche (S/)</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={tarifaPactada}
+              onChange={e => setTarifaPactada(e.target.value)}
+              onFocus={e => e.target.select()}
+              onWheel={e => e.target.blur()}
+              placeholder="Se llena con el precio de la habitación"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors font-bold text-gray-700"
+            />
+            <p className="text-[11px] text-gray-400 mt-1">Se precarga con el precio actual de la habitación, pero puedes negociar otra tarifa aquí mismo.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

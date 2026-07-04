@@ -68,6 +68,10 @@ export default function FormularioCheckIn({
         setCliente(cli)
         if (cli.tarifa_habitual) setTarifaPorNoche(cli.tarifa_habitual)
       }
+
+      // La tarifa acordada al momento de reservar tiene prioridad: fue negociada
+      // explícitamente y debe ganarle tanto al precio base como a la tarifa habitual del cliente.
+      if (res.tarifa_pactada) setTarifaPorNoche(res.tarifa_pactada.toString())
       
       if (parseFloat(res.adelanto) > 0) {
         // Bug 4 FIX: el adelanto de la reserva YA fue cobrado cuando se creó la reserva.
