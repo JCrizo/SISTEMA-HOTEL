@@ -192,7 +192,20 @@ export function useDetalleHabitacion() {
     }
   }
 
-  const hacerCheckout = async (usuario) => {
+  const actualizarComprobante = async (comprobante, ruc) => {
+    if (!hospedaje) return false
+    try {
+      const { error } = await hospedajesService.actualizarComprobante(hospedaje.id, comprobante, ruc)
+      if (error) throw error
+      await cargarDatos(hab.id)
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
+    const hacerCheckout = async (usuario) => {
     if (!hospedaje) return false
     try {
       await hospedajesService.hacerCheckout(hospedaje.id, hab.id)
@@ -314,6 +327,7 @@ export function useDetalleHabitacion() {
     actualizarTarifaHospedaje,
     actualizarDatosHuesped,
     actualizarFechaIngreso,
+    actualizarComprobante,
     hacerCheckout,
     registrarCobroAdicional,
     reabrirHospedaje,
