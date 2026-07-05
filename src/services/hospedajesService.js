@@ -169,6 +169,16 @@ export const hospedajesService = {
     if (error) throw new Error(error.message)
   },
 
+
+  async actualizarComprobante(hospedajeId, comprobante, ruc) {
+    const { error } = await supabase
+      .from('hospedajes')
+      .update({ comprobante, ruc: ruc || null })
+      .eq('id', hospedajeId)
+    if (error) throw new Error(error.message)
+    return { error: null }
+  },
+
   async actualizarFechaIngreso(hospedajeId, nuevaFechaIso) {
     const { error } = await supabase
       .from('hospedajes')
