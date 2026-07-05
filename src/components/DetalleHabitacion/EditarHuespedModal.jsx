@@ -6,6 +6,7 @@ export default function EditarHuespedModal({
   actualizarTarifaHospedaje,
   actualizarDatosHuesped,
   actualizarFechaIngreso,
+  actualizarComprobante,
   onClose
 }) {
   const ingreso = new Date(hospedaje.ingreso)
@@ -25,6 +26,8 @@ export default function EditarHuespedModal({
   const [telefono, setTelefono] = useState(huesped?.telefono || '')
   const [tarifaPorNoche, setTarifaPorNoche] = useState(tarifaPorNocheActual)
   const [fechaIngreso, setFechaIngreso] = useState(toLocalDatetimeValue(hospedaje.ingreso))
+  const [comprobante, setComprobante] = useState(hospedaje?.comprobante || 'ninguno')
+  const [ruc, setRuc] = useState(hospedaje?.ruc || '')
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
 
@@ -35,6 +38,7 @@ export default function EditarHuespedModal({
     setError('')
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (!tarifaPorNoche || parseFloat(tarifaPorNoche) <= 0) { setError('La tarifa por noche debe ser mayor a 0'); return }
+    if (comprobante === 'factura' && (!ruc || ruc.trim().length < 8)) { setError('El RUC es obligatorio para factura (mínimo 8 dígitos)'); return }
 
     setGuardando(true)
 
@@ -67,6 +71,17 @@ export default function EditarHuespedModal({
       const exito = await actualizarFechaIngreso(nuevaFechaIso)
       if (!exito) {
         setError('No se pudo actualizar la fecha de ingreso')
+        setGuardando(false)
+        return
+      }
+    }
+
+    // Guardar comprobante/ruc si cambió
+    const comprobanteCambio = comprobante !== (hospedaje?.comprobante || 'ninguno') || ruc !== (hospedaje?.ruc || '')
+    if (comprobanteCambio && actualizarComprobante) {
+      const exito = await actualizarComprobante(comprobante, comprobante === 'factura' ? ruc.trim() : null)
+      if (!exito) {
+        setError('No se pudo actualizar el comprobante')
         setGuardando(false)
         return
       }
@@ -149,6 +164,40 @@ export default function EditarHuespedModal({
             <p className="text-xs text-orange-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
           </div>
         </div>
+
+        <div className="pt-2 border-t border-gray-100">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Comprobante de pago</label>
+            <div className="flex gap-2 mb-2">
+              {['ninguno', 'boleta', 'factura'].map(op => (
+                <button
+                  key={op}
+                  onClick={() => setComprobante(op)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                    comprobante === op
+                      ? op === 'factura' ? 'bg-purple-50 text-purple-700 border-purple-400'
+                        : op === 'boleta' ? 'bg-blue-50 text-blue-700 border-blue-400'
+                        : 'bg-gray-100 text-gray-600 border-gray-300'
+                      : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'
+                  }`}
+                >
+                  {op === 'ninguno' ? 'Ninguno' : op === 'boleta' ? '🧾 Boleta' : '📄 Factura'}
+                </button>
+              ))}
+            </div>
+            {comprobante === 'factura' && (
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">RUC</label>
+                <input
+                  type="text"
+                  value={ruc}
+                  onChange={e => setRuc(e.target.value.replace(/[^0-9]/g, ''))}
+                  maxLength={11}
+                  placeholder="Ej: 20123456789"
+                  className="w-full border-2 border-purple-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-purple-400"
+                />
+              </div>
+            )}
+          </div>
 
         <div className="flex gap-3 mt-6">
           <button onClick={onClose}
