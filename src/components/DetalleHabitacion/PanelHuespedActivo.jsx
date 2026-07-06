@@ -40,6 +40,7 @@ export default function PanelHuespedActivo({
 
   const [mostrarExtension, setMostrarExtension] = useState(false)
   const [fechaExtension, setFechaExtension] = useState('')
+  const [metodoPagoExtension, setMetodoPagoExtension] = useState('efectivo')
 
   const totalConsumos = consumos.reduce((s, c) => s + parseFloat(c.precio_unitario) * c.cantidad, 0)
   const totalPenalidades = pagos.filter(p => p.concepto === 'penalidad').reduce((s, p) => s + parseFloat(p.monto), 0)
@@ -102,14 +103,17 @@ export default function PanelHuespedActivo({
       return
     }
 
-    const costoExtension = noches * parseFloat(hospedaje.tarifa_pactada)
+    // Tarifa por noche = tarifa total / noches originales
+    const nochesOriginales = Math.max(1, Math.round((checkoutActual - ingreso) / (1000 * 60 * 60 * 24)))
+    const tarifaPorNoche = parseFloat(hospedaje.tarifa_pactada) / nochesOriginales
+    const costoExtension = noches * tarifaPorNoche
     const mensaje = noches > 0
       ? `Se agregarán ${noches} noche(s) por S/${Math.abs(costoExtension).toFixed(2)}. ¿Confirmar?`
       : `Se reducirá la estadía en ${Math.abs(noches)} noche(s). ¿Confirmar?`
 
     if (!confirm(mensaje)) return
 
-    const exito = await extenderEstadia(nuevaFecha.toISOString(), costoExtension, noches)
+    const exito = await extenderEstadia(nuevaFecha.toISOString(), costoExtension, noches, metodoPagoExtension)
     if (exito) {
       setFechaExtension('')
       setMostrarExtension(false)
@@ -450,6 +454,17 @@ export default function PanelHuespedActivo({
                   min={new Date(hospedaje.ingreso).toISOString().split('T')[0]}
                   className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-gray-50 focus:bg-white transition-colors"
                 />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método de Pago de la Extensión</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[['efectivo','💵 Efectivo'],['yape','📱 Yape/Plin'],['tarjeta','💳 Tarjeta'],['transferencia','🏦 Transf.']].map(([val, label]) => (
+                    <button key={val} onClick={() => setMetodoPagoExtension(val)}
+                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                        metodoPagoExtension === val ? 'bg-green-50 border-green-400 text-green-700' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                      }`}>{label}</button>
+                  ))}
+                </div>
               </div>
             </div>
 

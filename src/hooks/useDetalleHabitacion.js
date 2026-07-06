@@ -114,18 +114,22 @@ export function useDetalleHabitacion() {
     }
   }
 
-  const extenderEstadia = async (nuevaFechaIso, costoExtra, noches) => {
+  const extenderEstadia = async (nuevaFechaIso, costoExtra, noches, metodo = 'efectivo') => {
     if (!hospedaje) return false
     try {
       await hospedajesService.actualizarSalidaEstimada(hospedaje.id, nuevaFechaIso)
-      if (noches > 0) {
+      if (noches > 0 && costoExtra > 0) {
         await pagosService.registrarPago({
           hospedajeId: hospedaje.id,
           monto: costoExtra,
-          metodo: 'efectivo',
-          concepto: 'penalidad',
+          metodo,
+          concepto: 'hospedaje',
           observaciones: `Extensión de estadía: ${noches} noche(s) adicional(es)`
         })
+        // Solo sumar a caja física si el pago fue en efectivo
+        if (metodo === 'efectivo') {
+          await turnosService.sumarACaja(parseFloat(costoExtra), 'principal')
+        }
       }
       await cargarDatos(hab.id)
       return true
