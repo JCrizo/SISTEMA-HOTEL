@@ -58,13 +58,16 @@ function Habitaciones() {
         // Cargar huéspedes activos
         const { data: hospedajesActivos } = await supabase
           .from('hospedajes')
-          .select('habitacion_id, ingreso, salida_estimada, nro_ficha, tarifa_pactada, estado_pago, metodo_pago, clientes(nombres)')
+          .select('habitacion_id, ingreso, salida_estimada, nro_ficha, tarifa_pactada, estado_pago, metodo_pago, huesped_hospedaje(clientes(nombres))')
           .eq('estado', 'activo')
 
         const mapHospedajes = {}
         hospedajesActivos?.forEach(h => {
+          // Extraer el nombre del primer huésped (titular)
+          const nombreHuesped = h.huesped_hospedaje?.[0]?.clientes?.nombres;
+          
           mapHospedajes[h.habitacion_id] = {
-            nombre: h.clientes?.nombres,
+            nombre: nombreHuesped,
             salida_estimada: h.salida_estimada,
             ingreso: h.ingreso,
             nro_ficha: h.nro_ficha,
