@@ -32,7 +32,7 @@ function Habitaciones() {
   const [vista, setVista] = useState('tarjetas') // 'tarjetas' o 'tabla'
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
-  const { turnoAjeno } = useTurnoActivo()
+  const { turnoAjeno, turnoActivo } = useTurnoActivo()
 
   useEffect(() => {
     async function cargar() {
@@ -216,7 +216,7 @@ function Habitaciones() {
         </div>
 
         {vista === 'tabla' ? (
-          <ControlDiario habitaciones={habitaciones} turnoActivo={turnoAjeno ? null : (usuario ? { ...useTurnoActivo()?.turnoActivo, usuario_nombre: usuario.nombre } : null)} />
+          <ControlDiario habitaciones={habitaciones} turnoActivo={turnoAjeno ? null : (usuario && turnoActivo ? { ...turnoActivo, usuario_nombre: usuario.nombre } : null)} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {habitaciones.map(hab => {
