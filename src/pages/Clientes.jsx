@@ -75,9 +75,10 @@ export default function Clientes() {
     
     setGuardando(true);
     try {
+      const { tipo_documento, ...datosParaGuardar } = formData;
       await clientesService.crearCliente({
-        ...formData,
-        tarifa_habitual: formData.tarifa_habitual ? parseFloat(formData.tarifa_habitual) : null
+        ...datosParaGuardar,
+        tarifa_habitual: datosParaGuardar.tarifa_habitual ? parseFloat(datosParaGuardar.tarifa_habitual) : null
       });
       setMostrarFormNuevo(false);
       setFormData(initialFormState);
@@ -95,9 +96,10 @@ export default function Clientes() {
     e.preventDefault();
     setGuardando(true);
     try {
+      const { tipo_documento, ...datosParaActualizar } = formData;
       await clientesService.actualizarCliente(id, {
-        ...formData,
-        tarifa_habitual: formData.tarifa_habitual ? parseFloat(formData.tarifa_habitual) : null
+        ...datosParaActualizar,
+        tarifa_habitual: datosParaActualizar.tarifa_habitual ? parseFloat(datosParaActualizar.tarifa_habitual) : null
       });
       setEditandoId(null);
       setFormData(initialFormState);
