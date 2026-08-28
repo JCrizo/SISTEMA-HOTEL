@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 export const hospedajesService = {
   async crearCheckIn(datos) {
     const { 
-      clienteId, habitacionId, turnoId, reservaId, ingreso, salida_estimada, 
+      clienteId, habitacionId, turnoId, reservaId, nroFicha, ingreso, salida_estimada, 
       tarifa_pactada, metodo_pago, estado_pago, comprobante, ruc, observaciones, 
       monto_early, montoPagado, cajaTurnoActual, nroTicket
     } = datos
@@ -20,30 +20,32 @@ export const hospedajesService = {
     }
 
     // ── GUARD 2: verificar que la reserva sigue pendiente (si aplica) ──────
-    let nro_ficha = undefined
     if (reservaId) {
       const { data: resActual, error: errResCheck } = await supabase
         .from('reservas')
-        .select('estado, nro_ficha')
+        .select('estado')
         .eq('id', reservaId)
         .single()
       if (errResCheck) throw new Error('No se pudo verificar el estado de la reserva')
       if (!['pendiente', 'confirmada'].includes(resActual.estado)) {
         throw new Error(`Esta reserva ya fue procesada (estado: ${resActual.estado}). Recarga la página.`)
       }
-      if (resActual.nro_ficha) {
-        nro_ficha = resActual.nro_ficha
-      }
+      // NOTA: antes se tomaba el nro_ficha de la reserva automáticamente.
+      // Ahora el número de ficha es manual y se ingresa en el formulario.
+      // Para reactivar la asignación automática desde reserva, descomentar:
+      // if (resActual.nro_ficha) nro_ficha = resActual.nro_ficha
     }
 
     // ── Crear hospedaje ────────────────────────────────────────────────────
+    // NOTA: nro_ficha ahora se ingresa manualmente desde el formulario.
+    // La generación automática via secuencia (seq_fichas_compartida) queda
+    // deshabilitada. Para reactivarla, eliminar nro_ficha del insertData
+    // y dejar que Supabase lo genere con el DEFAULT de la columna.
     const insertData = {
       habitacion_id: habitacionId, turno_id: turnoId, ingreso, salida_estimada, tarifa_pactada,
       metodo_pago, estado_pago, comprobante, ruc, observaciones, estado: 'activo',
-      early_checkin: monto_early > 0, monto_early
-    }
-    if (nro_ficha) {
-      insertData.nro_ficha = nro_ficha
+      early_checkin: monto_early > 0, monto_early,
+      nro_ficha: nroFicha || null
     }
 
     const { data: hospedaje, error: errHosp } = await supabase

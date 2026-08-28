@@ -86,7 +86,8 @@ export default function PanelHuespedActivo({
     if (!fechaExtension) return
 
     const nuevaFecha = new Date(fechaExtension)
-    nuevaFecha.setHours(12, 0, 0, 0)
+    // Checkout a las 10:00 AM (horario del establecimiento)
+    nuevaFecha.setHours(10, 0, 0, 0)
 
     const ingreso = new Date(hospedaje.ingreso)
     if (nuevaFecha < ingreso) {

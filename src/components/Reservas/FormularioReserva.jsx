@@ -21,6 +21,8 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const [adelanto, setAdelanto] = useState('')
   const [montoEarly, setMontoEarly] = useState('')
   const [observaciones, setObservaciones] = useState('')
+  // Número de ficha manual
+  const [nroFicha, setNroFicha] = useState('')
   
   const [guardando, setGuardando] = useState(false)
   const [errorValidacion, setErrorValidacion] = useState('')
@@ -57,6 +59,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   async function handleCrearReserva() {
     setErrorValidacion('')
     if (!turnoActivo) { setErrorValidacion('Debes iniciar turno antes de crear una reserva.'); return }
+    if (!nroFicha.trim()) { setErrorValidacion('El número de ficha es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setErrorValidacion('El DNI debe tener 8 dígitos'); return }
     if (!nombres.trim()) { setErrorValidacion('El nombre es obligatorio'); return }
     if (!habitacionId) { setErrorValidacion('Selecciona una habitación'); return }
@@ -67,6 +70,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
     const exito = await crearReserva(
       {
         habitacion_id: habitacionId,
+        nro_ficha: parseInt(nroFicha),
         tarifa_pactada: tarifaPactada ? parseFloat(tarifaPactada) : null,
         fecha_llegada: new Date(fechaLlegada).toISOString(),
         fecha_salida: fechaSalida ? new Date(fechaSalida).toISOString() : null,
@@ -99,6 +103,25 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
       <div className="mb-6">
         <h3 className="text-2xl font-black text-gray-800">Nueva Reserva</h3>
         <p className="text-sm text-gray-500">Programa la llegada de un futuro huésped</p>
+      </div>
+
+      {/* N° DE FICHA MANUAL */}
+      <div className="bg-indigo-50 border-2 border-indigo-300 rounded-2xl px-6 py-4 mb-6 flex items-center gap-4">
+        <div className="flex-1">
+          <label className="text-xs font-black text-indigo-800 uppercase tracking-widest block mb-1.5">
+            📋 Número de Ficha <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={nroFicha}
+            onChange={e => setNroFicha(e.target.value)}
+            onFocus={e => e.target.select()}
+            onWheel={e => e.target.blur()}
+            placeholder="Ej: 4425"
+            className="w-full border-2 border-indigo-200 rounded-xl px-4 py-3 text-2xl font-black text-indigo-900 outline-none focus:border-indigo-500 bg-white transition-colors tracking-widest"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">

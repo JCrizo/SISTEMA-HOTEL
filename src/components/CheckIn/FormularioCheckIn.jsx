@@ -33,6 +33,8 @@ export default function FormularioCheckIn({
     const pad = n => String(n).padStart(2, '0')
     return `${ahora.getFullYear()}-${pad(ahora.getMonth()+1)}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`
   })
+  // Número de ficha manual (la generación automática queda comentada en hospedajesService)
+  const [nroFicha, setNroFicha] = useState('')
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [nroTicket, setNroTicket] = useState('')
   const [modalPago, setModalPago] = useState('al_salir')
@@ -48,11 +50,12 @@ export default function FormularioCheckIn({
 
     setTarifaPorNoche(datosIniciales.habitacion?.precio_actual || '')
     
-    // Fecha de salida por defecto
+    // Fecha de salida por defecto (checkout a las 10:00 AM)
     const ahora = new Date()
     const hora = ahora.getHours()
     const salidaPorDefecto = new Date(ahora)
-    if (hora >= 5) salidaPorDefecto.setDate(salidaPorDefecto.getDate() + 1)
+    // Si ya pasaron las 10 AM, la salida estimada es mañana
+    if (hora >= 10) salidaPorDefecto.setDate(salidaPorDefecto.getDate() + 1)
     setFechaSalida(salidaPorDefecto.toISOString().split('T')[0])
 
     // Si viene de una reserva
@@ -146,6 +149,7 @@ export default function FormularioCheckIn({
   async function confirmar() {
     setError(null)
     if (!turnoActivo) { setError('Debes iniciar turno antes de continuar.'); return }
+    if (!nroFicha.trim()) { setError('El número de ficha es obligatorio'); return }
     if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
     if (!fechaIngreso) { setError('La fecha y hora de ingreso es obligatoria'); return }
@@ -153,7 +157,8 @@ export default function FormularioCheckIn({
     if (!fechaSalida) { setError('La fecha de salida es obligatoria'); return }
 
     const ingresoReal = new Date(fechaIngreso)
-    const salidaEstimada = new Date(fechaSalida + 'T12:00:00')
+    // Checkout a las 10:00 AM (horario del establecimiento)
+    const salidaEstimada = new Date(fechaSalida + 'T10:00:00')
 
     let montoPagado = 0
     if (modalPago === 'completo') montoPagado = parseFloat(tarifa)
@@ -166,6 +171,7 @@ export default function FormularioCheckIn({
         habitacionId: hab.id,
         turnoId: turnoActivo.id,
         reservaId: datosIniciales?.reserva?.id || null,
+        nroFicha: parseInt(nroFicha),
         ingreso: ingresoReal.toISOString(),
         salida_estimada: salidaEstimada.toISOString(),
         tarifa_pactada: parseFloat(tarifa),
@@ -258,6 +264,26 @@ export default function FormularioCheckIn({
             </div>
           </div>
         )}
+
+        {/* N° DE FICHA MANUAL */}
+        <div className="bg-indigo-50 border-2 border-indigo-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <label className="text-xs font-black text-indigo-800 uppercase tracking-widest block mb-1.5">
+              📋 Número de Ficha <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={nroFicha}
+              onChange={e => setNroFicha(e.target.value)}
+              onFocus={e => e.target.select()}
+              onWheel={e => e.target.blur()}
+              placeholder="Ej: 4425"
+              className="w-full border-2 border-indigo-200 rounded-xl px-4 py-3 text-2xl font-black text-indigo-900 outline-none focus:border-indigo-500 bg-white transition-colors tracking-widest"
+            />
+            <p className="text-xs text-indigo-600 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
+          </div>
+        </div>
         
         {/* SECCIÓN: HUÉSPED TITULAR */}
         <section>
