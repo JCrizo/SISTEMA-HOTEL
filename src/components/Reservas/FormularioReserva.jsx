@@ -132,35 +132,37 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
           
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Documento de Identidad</label>
-            <div className="flex gap-2">
-              <select
-                value={tipoDoc}
-                onChange={e => { setTipoDoc(e.target.value); setDni('') }}
-                className="w-1/3 border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
-              >
-                <option value="dni">DNI</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="otro">Otro</option>
-              </select>
-              <input
-                type="text"
-                value={dni}
-                onChange={e => {
-                  const val = e.target.value.replace(/\D/g, '')
-                  if (tipoDoc === 'dni') {
-                    if (val.length <= 8) setDni(val)
-                  } else {
-                    setDni(e.target.value)
-                  }
-                }}
-                onBlur={buscarCliente}
-                placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-                className="flex-1 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
-                maxLength={tipoDoc === 'dni' ? 8 : 20}
-              />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-2">
+                <select
+                  value={tipoDoc}
+                  onChange={e => { setTipoDoc(e.target.value); setDni('') }}
+                  className="w-24 sm:w-1/3 shrink-0 border-2 border-gray-100 rounded-xl px-2 sm:px-3 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                >
+                  <option value="dni">DNI</option>
+                  <option value="pasaporte">Pasaporte</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <input
+                  type="text"
+                  value={dni}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '')
+                    if (tipoDoc === 'dni') {
+                      if (val.length <= 8) setDni(val)
+                    } else {
+                      setDni(e.target.value)
+                    }
+                  }}
+                  onBlur={buscarCliente}
+                  placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
+                  className="flex-1 min-w-0 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                  maxLength={tipoDoc === 'dni' ? 8 : 20}
+                />
+              </div>
               <button
                 onClick={buscarCliente}
-                className="px-4 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-xl text-sm font-bold transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-xl text-sm font-bold transition-colors"
               >
                 Buscar
               </button>
