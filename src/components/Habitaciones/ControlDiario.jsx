@@ -34,124 +34,124 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
   }
 
   return (
-    <div className="w-full overflow-x-auto pb-4">
-      <div className="bg-white p-4 sm:p-8 rounded-none border border-gray-300 shadow-sm min-w-[800px] mx-auto font-sans" style={{ maxWidth: '210mm' }}>
-      
-      {/* Cabecera Tipo Papel */}
-      <div className="flex justify-between items-center mb-6 border-b-2 border-blue-900 pb-4">
-        <div className="flex items-center gap-4">
-          <div className="text-blue-900 font-black text-4xl tracking-tighter">
-            O T I <br/>
-            <span className="text-sm font-bold tracking-widest uppercase">Hotel</span>
-          </div>
-        </div>
-        
-        <div className="text-center">
-          <h1 className="text-blue-900 font-black text-2xl tracking-widest uppercase">Control Diario</h1>
-          <p className="text-xs text-blue-900 font-medium">Email: hoteloticajamarca@gmail.com</p>
-        </div>
-
-        <div className="text-right text-xs text-blue-900 font-medium">
-          <p>Av. Miguel Grau N° 307</p>
-          <p>Cel: (+51) 994 611 683</p>
-          <p>Telf: (+51) 076-603 808</p>
+    <div className="w-full">
+      {/* Opcional: Info de fecha y turno */}
+      <div className="flex justify-between items-center mb-4 px-2">
+        <h3 className="text-lg font-bold text-gray-800">Control de Habitaciones</h3>
+        <div className="flex gap-4 text-sm font-semibold text-gray-500">
+          <span>{fechaStr}</span>
+          <span>•</span>
+          <span>Turno {nombreTurno}</span>
         </div>
       </div>
 
-      <div className="flex justify-between mb-4 text-sm font-bold text-blue-900 px-2">
-        <p>FECHA: <span className="font-normal underline decoration-dashed underline-offset-4">{fechaStr}</span></p>
-        <p>TURNO: <span className="font-normal underline decoration-dashed underline-offset-4">{nombreTurno}</span></p>
-      </div>
-
-      {/* Tabla */}
-      <table className="w-full border-collapse border border-gray-800 text-xs mb-8">
-        <thead>
-          <tr className="bg-blue-50 text-blue-900">
-            <th className="border border-gray-800 p-2 text-center w-28">Tipo Habit.</th>
-            <th className="border border-gray-800 p-2 text-center w-20">N° Habit.</th>
-            <th className="border border-gray-800 p-2 text-center min-w-[300px] w-1/3">Descripción</th>
-            <th className="border border-gray-800 p-2 text-center w-28">N° Ficha</th>
-            <th className="border border-gray-800 p-2 text-center w-28">Monto</th>
-            <th className="border border-gray-800 p-2 text-center w-28">Tipo de Pag</th>
-            <th className="border border-gray-800 p-2 text-center w-28">F. Ingreso</th>
-            <th className="border border-gray-800 p-2 text-center w-28">F. Salida</th>
-          </tr>
-        </thead>
-        <tbody>
-          {habitaciones.map((hab) => {
-            let descripcion = '';
-            if (hab.estado === 'ocupada' && hab.datosHospedaje) {
-              descripcion = `Ocupado / ${hab.datosHospedaje.nombre || ''}`;
-            } else if (hab.estado === 'en_limpieza' || hab.estado === 'pendiente_limpieza' || hab.estado === 'limpieza_simple') {
-              descripcion = 'Limpieza';
-            } else if (hab.estado === 'mantenimiento') {
-              descripcion = 'Mantenimiento';
-            }
-
-            const h = hab.datosHospedaje || {};
-            
-            let tipoPagoText = '';
-            let tipoPagoColor = 'text-gray-800';
-            
-            if (hab.estado === 'ocupada' && h.estado_pago) {
-              if (h.estado_pago === 'pendiente') {
-                tipoPagoText = 'Debe';
-                tipoPagoColor = 'text-red-600 font-bold';
-              } else if (h.estado_pago === 'parcial') {
-                tipoPagoText = 'A cuenta';
-                tipoPagoColor = 'text-orange-600 font-bold';
-              } else {
-                tipoPagoText = h.metodo_pago ? h.metodo_pago.charAt(0).toUpperCase() + h.metodo_pago.slice(1) : 'Pagado';
-                tipoPagoColor = 'text-gray-800';
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto w-full">
+        <table className="w-full text-sm text-left whitespace-nowrap">
+          <thead className="bg-gray-50/80 text-gray-500 font-semibold uppercase text-[10px] tracking-wider">
+            <tr>
+              <th className="px-4 py-4 min-w-[120px]">Tipo Habit.</th>
+              <th className="px-4 py-4 text-center">N° Habit.</th>
+              <th className="px-4 py-4 min-w-[300px] w-full">Descripción / Huésped</th>
+              <th className="px-4 py-4 text-center min-w-[120px]">N° Ficha</th>
+              <th className="px-4 py-4 text-right min-w-[100px]">Monto</th>
+              <th className="px-4 py-4 text-center min-w-[120px]">Estado de Pago</th>
+              <th className="px-4 py-4 text-center min-w-[120px]">Ingreso</th>
+              <th className="px-4 py-4 text-center min-w-[120px]">Salida</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {habitaciones.map((hab) => {
+              let descripcion = '';
+              let badgeStatus = null;
+              
+              if (hab.estado === 'ocupada' && hab.datosHospedaje) {
+                descripcion = hab.datosHospedaje.nombre || '';
+              } else if (hab.estado === 'en_limpieza' || hab.estado === 'pendiente_limpieza' || hab.estado === 'limpieza_simple') {
+                badgeStatus = 'Limpieza';
+              } else if (hab.estado === 'mantenimiento') {
+                badgeStatus = 'Mantenimiento';
               }
-            }
 
-            return (
-              <tr key={hab.id} className="hover:bg-gray-50 h-8">
-                <td className="border border-gray-800 px-2 py-1 text-center font-medium">{hab.tipo_actual}</td>
-                <td className="border border-gray-800 px-2 py-1 text-center font-bold bg-gray-50">{hab.numero}</td>
-                <td className="border border-gray-800 px-2 py-1 font-medium">{descripcion}</td>
-                <td className="border border-gray-800 px-2 py-1 text-center font-medium">{h.nro_ficha || ''}</td>
-                <td className="border border-gray-800 px-2 py-1 text-right font-medium">{hab.estado === 'ocupada' ? formatearMonto(h.tarifa_pactada) : ''}</td>
-                <td className={`border border-gray-800 px-2 py-1 text-center ${tipoPagoColor}`}>{tipoPagoText}</td>
-                <td className="border border-gray-800 px-2 py-1 text-center whitespace-nowrap">{formatoFecha(h.ingreso)}</td>
-                <td className="border border-gray-800 px-2 py-1 text-center whitespace-nowrap">{formatoFecha(h.salida_estimada)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              const h = hab.datosHospedaje || {};
+              
+              let tipoPagoText = '';
+              let badgePagoColor = '';
+              
+              if (hab.estado === 'ocupada' && h.estado_pago) {
+                if (h.estado_pago === 'pendiente') {
+                  tipoPagoText = 'Debe';
+                  badgePagoColor = 'bg-red-50 text-red-600 border border-red-100';
+                } else if (h.estado_pago === 'parcial') {
+                  tipoPagoText = 'A cuenta';
+                  badgePagoColor = 'bg-orange-50 text-orange-600 border border-orange-100';
+                } else {
+                  tipoPagoText = h.metodo_pago ? h.metodo_pago.charAt(0).toUpperCase() + h.metodo_pago.slice(1) : 'Pagado';
+                  badgePagoColor = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                }
+              }
 
-      {/* Pie de página (Caja y Firmas) */}
-      <div className="text-sm font-medium text-blue-900 mt-8 px-4">
-        <div className="flex flex-wrap gap-x-8 gap-y-4 items-end justify-between mb-8">
-          <div>
-            <span className="font-bold">Caja Anterior: </span>
-            <span className="underline decoration-dashed underline-offset-4 inline-block w-24 text-center text-gray-800">
-              {formatearMonto(turnoActivo?.caja_inicial)}
-            </span>
-          </div>
-          <div>
-            <span className="font-bold">Caja Actual: </span>
-            <span className="underline decoration-dashed underline-offset-4 inline-block w-24 text-center text-gray-800">
-              {formatearMonto(turnoActivo?.caja_principal_actual)}
-            </span>
-          </div>
-          <div>
-            <span className="font-bold">Responsable: </span>
-            <span className="underline decoration-dashed underline-offset-4 inline-block w-48 text-center text-gray-800 capitalize">
-              {turnoActivo?.usuario_nombre || ''}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <p className="font-bold">Notas:</p>
-          <div className="w-full border-b border-gray-400 border-dashed h-6"></div>
-          <div className="w-full border-b border-gray-400 border-dashed h-6"></div>
-          <div className="w-full border-b border-gray-400 border-dashed h-6"></div>
-        </div>
+              return (
+                <tr key={hab.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-gray-700">{hab.tipo_actual}</td>
+                  <td className="px-4 py-3 text-center font-bold text-gray-900">{hab.numero}</td>
+                  <td className="px-4 py-3">
+                    {hab.estado === 'ocupada' ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                          {descripcion.charAt(0)}
+                        </div>
+                        <span className="font-semibold text-gray-800">{descripcion}</span>
+                      </div>
+                    ) : badgeStatus ? (
+                      <span className="inline-block px-2.5 py-1 text-xs font-bold rounded-lg bg-gray-100 text-gray-600">
+                        {badgeStatus}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 italic text-xs">Disponible</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center text-gray-600 font-medium">
+                    {h.nro_ficha ? `#${h.nro_ficha}` : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-gray-700">
+                    {hab.estado === 'ocupada' ? formatearMonto(h.tarifa_pactada) : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {tipoPagoText ? (
+                      <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold tracking-wide ${badgePagoColor}`}>
+                        {tipoPagoText}
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center text-gray-500 text-xs font-medium">
+                    {formatoFecha(h.ingreso) || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center text-gray-500 text-xs font-medium">
+                    {formatoFecha(h.salida_estimada) || '-'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+
+      {/* Resumen de Caja */}
+      <div className="mt-6 flex flex-wrap gap-4 items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex gap-8">
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase">Caja Anterior</p>
+            <p className="text-lg font-black text-gray-800">{formatearMonto(turnoActivo?.caja_inicial)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase">Caja Actual</p>
+            <p className="text-lg font-black text-blue-600">{formatearMonto(turnoActivo?.caja_principal_actual)}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-bold text-gray-400 uppercase">Responsable de Turno</p>
+          <p className="text-sm font-bold text-gray-700 capitalize">{turnoActivo?.usuario_nombre || 'Sin usuario'}</p>
+        </div>
       </div>
     </div>
   );
