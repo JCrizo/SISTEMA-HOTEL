@@ -6,14 +6,14 @@ import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import ControlDiario from '../components/Habitaciones/ControlDiario'
 
 const estilosHabitacion = {
-  disponible:         'bg-green-100 border-green-300 hover:bg-green-200 hover:border-green-400 hover:shadow-green-200 text-green-900',
-  disponible_reserva: 'bg-indigo-100 border-indigo-300 hover:bg-indigo-200 hover:border-indigo-400 hover:shadow-indigo-200 text-indigo-900',
-  ocupada:            'bg-red-100 border-red-300 hover:bg-red-200 hover:border-red-400 hover:shadow-red-200 text-red-900',
-  pendiente_limpieza: 'bg-yellow-100 border-yellow-300 hover:bg-yellow-200 hover:border-yellow-500 hover:shadow-yellow-200 text-yellow-900',
-  en_limpieza:        'bg-yellow-200 border-yellow-400 hover:bg-yellow-300 hover:border-yellow-600 hover:shadow-yellow-300 text-yellow-900',
-  limpieza_simple:    'bg-amber-100 border-amber-300 hover:bg-amber-200 hover:border-amber-500 hover:shadow-amber-200 text-amber-900',
-  habilitada:         'bg-emerald-100 border-emerald-300 hover:bg-emerald-200 hover:border-emerald-400 hover:shadow-emerald-200 text-emerald-900',
-  mantenimiento:      'bg-gray-200 border-gray-400 hover:bg-gray-300 hover:border-gray-500 hover:shadow-gray-300 text-gray-900 opacity-90',
+  disponible:         'bg-blue-50 border-blue-100 hover:bg-blue-100 hover:border-blue-200 text-blue-700',
+  disponible_reserva: 'bg-purple-50 border-purple-100 hover:bg-purple-100 hover:border-purple-200 text-purple-700',
+  ocupada:            'bg-blue-900 border-blue-900 hover:bg-blue-800 text-white shadow-md',
+  pendiente_limpieza: 'bg-orange-50 border-orange-100 hover:bg-orange-100 hover:border-orange-200 text-orange-700',
+  en_limpieza:        'bg-yellow-50 border-yellow-100 hover:bg-yellow-100 hover:border-yellow-200 text-yellow-700',
+  limpieza_simple:    'bg-teal-50 border-teal-100 hover:bg-teal-100 hover:border-teal-200 text-teal-700',
+  habilitada:         'bg-emerald-50 border-emerald-100 hover:bg-emerald-100 hover:border-emerald-200 text-emerald-700',
+  mantenimiento:      'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-500 opacity-90',
 }
 
 const etiquetas = {
@@ -111,49 +111,9 @@ function Habitaciones() {
     </div>
   )
 
-  const navButtons = [
-    { label: 'Turnos', icon: '🏪', path: '/turnos', roles: ['recepcionista', 'administrador'], color: 'bg-blue-600 hover:bg-blue-700' },
-    { label: 'Cochera', icon: '🚗', path: '/cochera', roles: ['recepcionista', 'administrador'], color: 'bg-gray-700 hover:bg-gray-800' },
-    { label: 'Reservas', icon: '📅', path: '/reservas', roles: ['recepcionista', 'administrador'], color: 'bg-indigo-600 hover:bg-indigo-700' },
-    { label: 'Clientes', icon: '👤', path: '/clientes', roles: ['recepcionista', 'administrador'], color: 'bg-emerald-600 hover:bg-emerald-700' },
-    { label: 'Limpieza', icon: '🧹', path: '/limpieza', roles: ['recepcionista', 'administrador', 'limpieza'], color: 'bg-yellow-500 hover:bg-yellow-600' },
-    { label: 'Productos', icon: '🏷️', path: '/productos', roles: ['recepcionista', 'administrador'], color: 'bg-teal-600 hover:bg-teal-700' },
-    { label: 'Reportes', icon: '📈', path: '/reportes-recepcion', roles: ['recepcionista'], color: 'bg-cyan-600 hover:bg-cyan-700' },
-    { label: 'Reportes Admin', icon: '📊', path: '/reportes-admin', roles: ['administrador'], color: 'bg-purple-600 hover:bg-purple-700' },
-    { label: 'Usuarios', icon: '👥', path: '/usuarios', roles: ['administrador'], color: 'bg-gray-800 hover:bg-black' },
-    { label: 'Auditoría', icon: '🛡️', path: '/auditoria', roles: ['administrador'], color: 'bg-red-800 hover:bg-red-900' },
-  ]
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-black text-gray-800 tracking-tight">Panel Principal</h1>
-            <p className="text-sm text-gray-500 font-medium">¡Hola, {usuario?.nombre?.split(' ')[0] || 'Usuario'}!</p>
-          </div>
-          <button
-            onClick={async () => {
-              if (usuario?.rol !== 'administrador') {
-                const { data: turnos } = await supabase
-                  .from('turnos').select('id, usuario_id').is('cierre', null).limit(1)
-                if (turnos?.length > 0 && turnos[0].usuario_id === usuario.id) {
-                  alert('Tienes un turno activo. Debes entregar el turno antes de salir.')
-                  return
-                }
-              }
-              logout()
-              navigate('/login')
-            }}
-            className="flex items-center gap-2 text-sm px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition-colors"
-          >
-            <span>Salir</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 mt-6">
+    <div className="pb-12">
+      <main className="w-full">
         {turnoAjeno && (
           <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
             <div className="flex items-center gap-3">
@@ -172,25 +132,6 @@ function Habitaciones() {
           </div>
         )}
 
-        <div className="mb-8">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Accesos Rápidos</p>
-          <div className="flex gap-3 flex-nowrap overflow-x-auto pb-2 scrollbar-hide">
-            {navButtons.filter(btn => {
-              const userRole = (usuario?.rol || 'limpieza').toLowerCase().trim()
-              return btn.roles.includes(userRole)
-            }).map(btn => (
-              <button
-                key={btn.path}
-                onClick={() => navigate(btn.path)}
-                className={`flex items-center gap-2 px-5 py-3 ${btn.color} text-white rounded-2xl shadow-sm transition-transform active:scale-95 whitespace-nowrap font-bold`}
-              >
-                <span className="text-lg">{btn.icon}</span>
-                <span>{btn.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        
         <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Estado de Habitaciones</h2>
@@ -237,7 +178,7 @@ function Habitaciones() {
                   <span className="text-2xl md:text-3xl font-black tracking-tighter">
                     {hab.numero}
                   </span>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/60 max-w-[80px] truncate leading-tight">
+                  <span className="text-[10px] font-black text-gray-800 uppercase tracking-wider px-2 py-1 rounded-lg bg-white/60 max-w-[80px] truncate leading-tight">
                     {etiquetas[hab.estado]}
                   </span>
                 </div>
@@ -247,7 +188,7 @@ function Habitaciones() {
                   <div className="flex justify-between items-end">
                     <p className="text-lg font-black">S/{hab.precio_actual}</p>
                     {hab.estado === 'ocupada' && hab.huespedActivo && (
-                      <p className="text-xs font-bold truncate max-w-[100px] bg-red-800/10 px-2 py-0.5 rounded-md" title={hab.huespedActivo}>
+                      <p className="text-xs font-bold truncate max-w-[100px] bg-black/20 px-2 py-0.5 rounded-md" title={hab.huespedActivo}>
                         👤 {hab.huespedActivo.split(' ')[0]}
                       </p>
                     )}

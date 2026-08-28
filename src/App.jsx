@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import MainLayout from './components/Layout/MainLayout'
 import Login from './pages/Login'
 import Habitaciones from './pages/Habitaciones'
 
@@ -32,8 +33,6 @@ function L({ children }) {
   return <Suspense fallback={<CargandoPagina />}>{children}</Suspense>
 }
 
-
-
 function RutaProtegida({ children, roles }) {
   const { usuario } = useAuth()
   if (!usuario) return <Navigate to="/login" />
@@ -45,7 +44,7 @@ function RutaProtegida({ children, roles }) {
     }
   }
   
-  return children
+  return <MainLayout>{children}</MainLayout>
 }
 
 function App() {
@@ -54,28 +53,26 @@ function App() {
   if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Routes>
-        <Route path="/registro-empleado" element={<RutaProtegida roles={['administrador']}><L><MigrarUsuarios /></L></RutaProtegida>} />
-        <Route path="/login" element={usuario ? <Navigate to="/" /> : <Login />} />
-        <Route path="/" element={<RutaProtegida><Habitaciones /></RutaProtegida>} />
-        <Route path="/habitacion/:id" element={<RutaProtegida><L><DetalleHabitacion /></L></RutaProtegida>} />
-        <Route path="/checkin/:id" element={<RutaProtegida roles={['recepcionista','administrador']}><L><CheckIn /></L></RutaProtegida>} />
-        <Route path="/consumos/:id" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Consumos /></L></RutaProtegida>} />
-        <Route path="/limpieza" element={<RutaProtegida><L><Limpieza /></L></RutaProtegida>} />
-        <Route path="/turnos" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Turnos /></L></RutaProtegida>} />
-        <Route path="/cochera" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Cochera /></L></RutaProtegida>} />
-        <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><L><Reportes /></L></RutaProtegida>} />
-        <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><L><Usuarios /></L></RutaProtegida>} />
-        <Route path="/reservas" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Reservas /></L></RutaProtegida>} />
-        <Route path="/productos" element={<RutaProtegida roles={['administrador', 'recepcionista']}><L><Productos /></L></RutaProtegida>} />
-        <Route path="/reportes-recepcion" element={<RutaProtegida roles={['recepcionista','administrador']}><L><ReportesRecepcion /></L></RutaProtegida>} />
-        <Route path="/ficha/:id" element={<RutaProtegida><L><FichaHospedaje /></L></RutaProtegida>} />
-        <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><L><ReportesAdmin /></L></RutaProtegida>} />
-        <Route path="/auditoria" element={<RutaProtegida roles={['administrador']}><L><Auditoria /></L></RutaProtegida>} />
-        <Route path="/clientes" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Clientes /></L></RutaProtegida>} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/registro-empleado" element={<RutaProtegida roles={['administrador']}><L><MigrarUsuarios /></L></RutaProtegida>} />
+      <Route path="/login" element={usuario ? <Navigate to="/" /> : <Login />} />
+      <Route path="/" element={<RutaProtegida><Habitaciones /></RutaProtegida>} />
+      <Route path="/habitacion/:id" element={<RutaProtegida><L><DetalleHabitacion /></L></RutaProtegida>} />
+      <Route path="/checkin/:id" element={<RutaProtegida roles={['recepcionista','administrador']}><L><CheckIn /></L></RutaProtegida>} />
+      <Route path="/consumos/:id" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Consumos /></L></RutaProtegida>} />
+      <Route path="/limpieza" element={<RutaProtegida><L><Limpieza /></L></RutaProtegida>} />
+      <Route path="/turnos" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Turnos /></L></RutaProtegida>} />
+      <Route path="/cochera" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Cochera /></L></RutaProtegida>} />
+      <Route path="/reportes" element={<RutaProtegida roles={['administrador']}><L><Reportes /></L></RutaProtegida>} />
+      <Route path="/usuarios" element={<RutaProtegida roles={['administrador']}><L><Usuarios /></L></RutaProtegida>} />
+      <Route path="/reservas" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Reservas /></L></RutaProtegida>} />
+      <Route path="/productos" element={<RutaProtegida roles={['administrador', 'recepcionista']}><L><Productos /></L></RutaProtegida>} />
+      <Route path="/reportes-recepcion" element={<RutaProtegida roles={['recepcionista','administrador']}><L><ReportesRecepcion /></L></RutaProtegida>} />
+      <Route path="/ficha/:id" element={<RutaProtegida><L><FichaHospedaje /></L></RutaProtegida>} />
+      <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><L><ReportesAdmin /></L></RutaProtegida>} />
+      <Route path="/auditoria" element={<RutaProtegida roles={['administrador']}><L><Auditoria /></L></RutaProtegida>} />
+      <Route path="/clientes" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Clientes /></L></RutaProtegida>} />
+    </Routes>
   )
 }
 

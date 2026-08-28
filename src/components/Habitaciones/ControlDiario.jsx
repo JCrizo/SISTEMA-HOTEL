@@ -67,14 +67,14 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
       <table className="w-full border-collapse border border-gray-800 text-xs mb-8">
         <thead>
           <tr className="bg-blue-50 text-blue-900">
-            <th className="border border-gray-800 p-2 text-center w-24">Tipo Habit.</th>
-            <th className="border border-gray-800 p-2 text-center w-16">N° Habit.</th>
-            <th className="border border-gray-800 p-2 text-left">Descripción</th>
-            <th className="border border-gray-800 p-2 text-center w-20">N° Ficha</th>
-            <th className="border border-gray-800 p-2 text-right w-24">Monto</th>
-            <th className="border border-gray-800 p-2 text-center w-24">Tipo de Pag</th>
-            <th className="border border-gray-800 p-2 text-center w-24">F. Ingreso</th>
-            <th className="border border-gray-800 p-2 text-center w-24">F. Salida</th>
+            <th className="border border-gray-800 p-2 text-center w-28">Tipo Habit.</th>
+            <th className="border border-gray-800 p-2 text-center w-20">N° Habit.</th>
+            <th className="border border-gray-800 p-2 text-center min-w-[300px] w-1/3">Descripción</th>
+            <th className="border border-gray-800 p-2 text-center w-28">N° Ficha</th>
+            <th className="border border-gray-800 p-2 text-center w-28">Monto</th>
+            <th className="border border-gray-800 p-2 text-center w-28">Tipo de Pag</th>
+            <th className="border border-gray-800 p-2 text-center w-28">F. Ingreso</th>
+            <th className="border border-gray-800 p-2 text-center w-28">F. Salida</th>
           </tr>
         </thead>
         <tbody>
@@ -142,10 +142,6 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
             <span className="underline decoration-dashed underline-offset-4 inline-block w-48 text-center text-gray-800 capitalize">
               {turnoActivo?.usuario_nombre || ''}
             </span>
-          </div>
-          <div className="flex gap-2 items-end">
-            <span className="font-bold">Firma: </span>
-            <div className="border-b-2 border-blue-900 border-dashed w-48 h-8"></div>
           </div>
         </div>
 
