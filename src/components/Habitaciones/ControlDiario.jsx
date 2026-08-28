@@ -34,7 +34,8 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-none border border-gray-300 shadow-sm overflow-x-auto min-w-max mx-auto font-sans" style={{ maxWidth: '210mm' }}>
+    <div className="w-full overflow-x-auto pb-4">
+      <div className="bg-white p-4 sm:p-8 rounded-none border border-gray-300 shadow-sm min-w-[800px] mx-auto font-sans" style={{ maxWidth: '210mm' }}>
       
       {/* Cabecera Tipo Papel */}
       <div className="flex justify-between items-center mb-6 border-b-2 border-blue-900 pb-4">
@@ -154,6 +155,7 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
           <div className="w-full border-b border-gray-400 border-dashed h-6"></div>
           <div className="w-full border-b border-gray-400 border-dashed h-6"></div>
         </div>
+      </div>
       </div>
     </div>
   );
