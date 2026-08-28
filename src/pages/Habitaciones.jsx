@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
+import ControlDiario from '../components/Habitaciones/ControlDiario'
 
 const estilosHabitacion = {
   disponible:         'bg-green-100 border-green-300 hover:bg-green-200 hover:border-green-400 hover:shadow-green-200 text-green-900',
@@ -28,6 +29,7 @@ const etiquetas = {
 function Habitaciones() {
   const [habitaciones, setHabitaciones] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [vista, setVista] = useState('tarjetas') // 'tarjetas' o 'tabla'
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
   const { turnoAjeno } = useTurnoActivo()
@@ -56,14 +58,19 @@ function Habitaciones() {
         // Cargar huéspedes activos
         const { data: hospedajesActivos } = await supabase
           .from('hospedajes')
-          .select('habitacion_id, salida_estimada, clientes(nombres)')
+          .select('habitacion_id, ingreso, salida_estimada, nro_ficha, tarifa_pactada, estado_pago, metodo_pago, clientes(nombres)')
           .eq('estado', 'activo')
 
         const mapHospedajes = {}
         hospedajesActivos?.forEach(h => {
           mapHospedajes[h.habitacion_id] = {
             nombre: h.clientes?.nombres,
-            salida_estimada: h.salida_estimada
+            salida_estimada: h.salida_estimada,
+            ingreso: h.ingreso,
+            nro_ficha: h.nro_ficha,
+            tarifa_pactada: h.tarifa_pactada,
+            estado_pago: h.estado_pago,
+            metodo_pago: h.metodo_pago
           }
         })
 
@@ -73,7 +80,8 @@ function Habitaciones() {
           huespedActivo: mapHospedajes[h.id]?.nombre || null,
           checkoutVencido: mapHospedajes[h.id]?.salida_estimada
             ? new Date(mapHospedajes[h.id].salida_estimada) < new Date()
-            : false
+            : false,
+          datosHospedaje: mapHospedajes[h.id] || null
         })))
       }
       setCargando(false)
@@ -180,18 +188,38 @@ function Habitaciones() {
           </div>
         </div>
         
-        <div className="mb-4 flex justify-between items-end">
+        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Estado de Habitaciones</h2>
             <p className="text-sm text-gray-500">Selecciona una habitación para gestionarla</p>
           </div>
-          <div className="text-sm font-bold text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-200">
-            {habitaciones.length} Total
+          
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-200 p-1 rounded-xl shadow-inner">
+              <button
+                onClick={() => setVista('tarjetas')}
+                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${vista === 'tarjetas' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Tarjetas
+              </button>
+              <button
+                onClick={() => setVista('tabla')}
+                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${vista === 'tabla' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Control Diario
+              </button>
+            </div>
+            <div className="text-sm font-bold text-gray-400 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
+              {habitaciones.length} Total
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {habitaciones.map(hab => {
+        {vista === 'tabla' ? (
+          <ControlDiario habitaciones={habitaciones} turnoActivo={turnoAjeno ? null : (usuario ? { ...useTurnoActivo()?.turnoActivo, usuario_nombre: usuario.nombre } : null)} />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {habitaciones.map(hab => {
             const estiloClave = hab.tieneReservaProxima && hab.estado === 'disponible' 
               ? 'disponible_reserva' 
               : hab.estado
@@ -237,6 +265,7 @@ function Habitaciones() {
             )
           })}
         </div>
+        )}
       </main>
     </div>
   )
