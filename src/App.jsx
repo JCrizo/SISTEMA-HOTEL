@@ -22,6 +22,7 @@ const Productos          = lazy(() => import('./pages/Productos'))
 const FichaHospedaje     = lazy(() => import('./pages/FichaHospedaje'))
 const Auditoria          = lazy(() => import('./pages/Auditoria'))
 const MigrarUsuarios     = lazy(() => import('./pages/MigrarUsuarios'))
+const Clientes           = lazy(() => import('./pages/Clientes'))
 
 function CargandoPagina() {
   return <div className="p-4 text-gray-500">Cargando...</div>
@@ -72,6 +73,7 @@ function App() {
         <Route path="/ficha/:id" element={<RutaProtegida><L><FichaHospedaje /></L></RutaProtegida>} />
         <Route path="/reportes-admin" element={<RutaProtegida roles={['administrador']}><L><ReportesAdmin /></L></RutaProtegida>} />
         <Route path="/auditoria" element={<RutaProtegida roles={['administrador']}><L><Auditoria /></L></RutaProtegida>} />
+        <Route path="/clientes" element={<RutaProtegida roles={['recepcionista','administrador']}><L><Clientes /></L></RutaProtegida>} />
       </Routes>
     </div>
   )

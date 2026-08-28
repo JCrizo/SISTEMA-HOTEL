@@ -24,6 +24,24 @@ export const clientesService = {
     return data || null
   },
 
+  async listarClientes(busqueda = '', pagina = 0, porPagina = 20) {
+    let query = supabase
+      .from('clientes')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    if (busqueda.trim()) {
+      // Buscar por nombre (parcial) o por DNI (exacto parcial)
+      query = query.or(`nombres.ilike.%${busqueda.trim()}%,dni_pasaporte.ilike.%${busqueda.trim()}%`)
+    }
+
+    query = query.range(pagina * porPagina, (pagina + 1) * porPagina - 1)
+
+    const { data, count, error } = await query
+    if (error) throw new Error(error.message)
+    return { data: data || [], count: count || 0 }
+  },
+
   async crearCliente(clienteData) {
     const { data, error } = await supabase
       .from('clientes')
@@ -39,6 +57,16 @@ export const clientesService = {
     const { error } = await supabase
       .from('clientes')
       .update(clienteData)
+      .eq('id', id)
+    
+    if (error) throw new Error(error.message)
+    return true
+  },
+
+  async eliminarCliente(id) {
+    const { error } = await supabase
+      .from('clientes')
+      .delete()
       .eq('id', id)
     
     if (error) throw new Error(error.message)

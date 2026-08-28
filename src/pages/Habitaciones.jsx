@@ -104,6 +104,7 @@ function Habitaciones() {
     { label: 'Turnos', icon: '🏪', path: '/turnos', roles: ['recepcionista', 'administrador'], color: 'bg-blue-600 hover:bg-blue-700' },
     { label: 'Cochera', icon: '🚗', path: '/cochera', roles: ['recepcionista', 'administrador'], color: 'bg-gray-700 hover:bg-gray-800' },
     { label: 'Reservas', icon: '📅', path: '/reservas', roles: ['recepcionista', 'administrador'], color: 'bg-indigo-600 hover:bg-indigo-700' },
+    { label: 'Clientes', icon: '👤', path: '/clientes', roles: ['recepcionista', 'administrador'], color: 'bg-emerald-600 hover:bg-emerald-700' },
     { label: 'Limpieza', icon: '🧹', path: '/limpieza', roles: ['recepcionista', 'administrador', 'limpieza'], color: 'bg-yellow-500 hover:bg-yellow-600' },
     { label: 'Productos', icon: '🏷️', path: '/productos', roles: ['recepcionista', 'administrador'], color: 'bg-teal-600 hover:bg-teal-700' },
     { label: 'Reportes', icon: '📈', path: '/reportes-recepcion', roles: ['recepcionista'], color: 'bg-cyan-600 hover:bg-cyan-700' },
