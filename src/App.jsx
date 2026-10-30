@@ -54,7 +54,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/registro-empleado" element={<RutaProtegida roles={['administrador']}><L><MigrarUsuarios /></L></RutaProtegida>} />
+      {/* Ruta pública para creación/activación de contraseña de personal */}
+      <Route path="/registro-empleado" element={<L><MigrarUsuarios /></L>} />
       <Route path="/login" element={usuario ? <Navigate to="/" /> : <Login />} />
       <Route path="/" element={<RutaProtegida><Habitaciones /></RutaProtegida>} />
       <Route path="/habitacion/:id" element={<RutaProtegida><L><DetalleHabitacion /></L></RutaProtegida>} />

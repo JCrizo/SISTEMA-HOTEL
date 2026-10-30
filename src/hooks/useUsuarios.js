@@ -48,11 +48,23 @@ export function useUsuarios() {
     }
   }
 
+  const eliminarUsuario = async (id) => {
+    try {
+      await usuariosService.eliminarUsuario(id)
+      await cargarUsuarios()
+      return { exito: true }
+    } catch (error) {
+      console.error(error)
+      return { exito: false, error: error.message }
+    }
+  }
+
   return {
     usuarios,
     cargando,
     cargarUsuarios,
     guardarUsuario,
-    toggleActivo
+    toggleActivo,
+    eliminarUsuario
   }
 }

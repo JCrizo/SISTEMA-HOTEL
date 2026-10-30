@@ -10,10 +10,10 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
 
   useEffect(() => {
     if (editando) {
-      setNombre(editando.nombre)
-      setEmail(editando.email)
+      setNombre(editando.nombre || '')
+      setEmail(editando.email || '')
       setPassword('')
-      setRol(editando.rol)
+      setRol(editando.rol || 'recepcionista')
     } else {
       setNombre('')
       setEmail('')
@@ -26,16 +26,23 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
   async function handleGuardar() {
     setError('')
     if (!nombre.trim() || !email.trim()) {
-      setError('Nombre y usuario/email son obligatorios')
+      setError('El nombre y el usuario o correo son obligatorios')
       return
     }
 
     setGuardando(true)
-    const { exito, error: errMsg } = await onGuardar({ nombre, email, rol }, editando)
+    const datos = {
+      nombre: nombre.trim(),
+      email: email.trim().toLowerCase(),
+      rol,
+      password: password.trim() || undefined
+    }
+
+    const { exito, error: errMsg } = await onGuardar(datos, editando)
     if (!exito) {
       setError(errMsg || 'Error al guardar usuario')
     } else {
-      onCancelar() // Cierra el form
+      onCancelar() // Cierra el formulario
     }
     setGuardando(false)
   }
@@ -44,9 +51,9 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
     <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 mb-6">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-gray-800">
-          {editando ? `✏️ Editando: ${editando.nombre}` : '✨ Nuevo Usuario'}
+          {editando ? `✏️ Editando: ${editando.nombre}` : '✨ Nuevo Personal'}
         </h3>
-        <p className="text-sm text-gray-500">Completa los datos del personal.</p>
+        <p className="text-sm text-gray-500">Completa los datos del usuario en el sistema.</p>
       </div>
 
       <div className="space-y-4">
@@ -62,27 +69,56 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Correo Electrónico</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+              Usuario o Correo
+            </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
+              placeholder="Ej: juan17 o juan@correo.com"
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
             />
+            <span className="text-[11px] text-gray-400 mt-1 block">
+              Identificador con el que iniciará sesión
+            </span>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Rol del Sistema</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Rol en el Sistema</label>
             <select
               value={rol}
               onChange={e => setRol(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors bg-white font-medium"
             >
               <option value="recepcionista">Recepcionista</option>
               <option value="administrador">Administrador</option>
+              <option value="limpieza">Personal de Limpieza</option>
             </select>
           </div>
+          {editando && (
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+                Nueva Contraseña (Opcional)
+              </label>
+              <input
+                type="text"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Dejar en blanco para mantener la actual"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+          )}
         </div>
+
+        {!editando && (
+          <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5">
+            <span className="text-base leading-none">💡</span>
+            <p>
+              <strong>Activación de cuenta:</strong> Al registrar a este usuario, el personal podrá acceder a la pantalla de Inicio de Sesión y pulsar en <strong>"¿Soy nuevo empleado? Crear contraseña"</strong> para definir su clave de acceso.
+            </p>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 font-medium">
