@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icono from '../Compartido/Icono'
 
 export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEstadoHab }) {
   const [mostrarConfigHab, setMostrarConfigHab] = useState(false)
@@ -32,7 +33,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm mt-8">
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mt-8">
       <div className="flex justify-between items-center cursor-pointer" onClick={() => setMostrarConfigHab(!mostrarConfigHab)}>
         <div className="flex items-center gap-2">
           <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -112,7 +113,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                       disabled={!motivoMant.trim()}
                       className="flex-[2] py-2.5 bg-gray-800 text-white rounded-xl text-sm font-bold hover:bg-black transition-colors disabled:opacity-40"
                     >
-                      🔧 Confirmar Bloqueo
+                      <Icono name="cog" className="w-4 h-4 inline-block shrink-0" /> Confirmar Bloqueo
                     </button>
                   </div>
                 </div>
@@ -130,12 +131,12 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
               <>
                 {hab.observaciones && hab.observaciones.startsWith('[Mantenimiento]') && (
                   <p className="text-xs font-bold text-gray-500 bg-gray-50 px-3 py-2 rounded-lg mb-3">
-                    🔧 {hab.observaciones.replace('[Mantenimiento] ', '')}
+                    <Icono name="cog" className="w-4 h-4 inline-block shrink-0" /> {hab.observaciones.replace('[Mantenimiento] ', '')}
                   </p>
                 )}
                 <button
                   onClick={() => cambiarEstadoHab('disponible')}
-                  className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   Habilitar Habitación (Disponible)

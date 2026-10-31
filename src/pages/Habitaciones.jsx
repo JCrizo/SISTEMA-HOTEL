@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import ControlDiario from '../components/Habitaciones/ControlDiario'
+import Icono from '../components/Compartido/Icono'
 
 export default function Habitaciones() {
   const [habitaciones, setHabitaciones] = useState([])
@@ -150,17 +151,17 @@ export default function Habitaciones() {
     <div className="pb-12 space-y-6">
       {/* Alerta de Turno Ajeno si existe */}
       {turnoAjeno && (
-        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
+        <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">⚠️</span>
+            <span className="text-3xl"><Icono name="alert" className="w-8 h-8 inline-block shrink-0" /></span>
             <div>
-              <h3 className="text-red-800 font-black text-lg">Turno Abierto por Otro Usuario</h3>
-              <p className="text-sm font-medium text-red-700">No podrás realizar operaciones hasta que entregues o cierres el turno en la caja.</p>
+              <h3 className="text-rose-800 font-black text-lg">Turno Abierto por Otro Usuario</h3>
+              <p className="text-sm font-medium text-rose-700">No podrás realizar operaciones hasta que entregues o cierres el turno en la caja.</p>
             </div>
           </div>
           <button 
             onClick={() => navigate('/turnos')}
-            className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors whitespace-nowrap"
+            className="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-md hover:bg-rose-700 transition-colors whitespace-nowrap"
           >
             Ir a Caja a Cerrar
           </button>
@@ -267,7 +268,7 @@ export default function Habitaciones() {
                 onClick={() => setBusqueda('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
               >
-                ✕
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
               </button>
             )}
           </div>
@@ -401,7 +402,7 @@ export default function Habitaciones() {
         <>
           {habitacionesFiltradas.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-2xs">
-              <span className="text-3xl block mb-2">🔍</span>
+              <span className="text-3xl block mb-2"><Icono name="search" className="w-8 h-8 inline-block shrink-0" /></span>
               <p className="text-sm font-bold text-gray-700">No se encontraron habitaciones con los filtros seleccionados</p>
               <button
                 onClick={() => { setFiltroEstado('todas'); setFiltroPiso('todos'); setBusqueda(''); }}
@@ -464,13 +465,13 @@ export default function Habitaciones() {
                   >
                     {/* Floating Badges */}
                     {hab.checkoutVencido && (
-                      <div className="absolute -top-2.5 -left-1.5 bg-red-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs animate-pulse z-10 flex items-center gap-1">
-                        <span>⚠️</span> Checkout vencido
+                      <div className="absolute -top-2.5 -left-1.5 bg-rose-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs animate-pulse z-10 flex items-center gap-1">
+                        <span><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /></span> Checkout vencido
                       </div>
                     )}
                     {tieneReserva && (
                       <div className="absolute -top-2.5 -right-1.5 bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs z-10">
-                        📅 Reserva
+                        <Icono name="calendar" className="w-4 h-4 inline-block shrink-0" /> Reserva
                       </div>
                     )}
 
@@ -497,7 +498,7 @@ export default function Habitaciones() {
                         <div className="my-2 bg-white/80 p-2 rounded-xl border border-gray-100 shadow-2xs">
                           <div className="flex items-center gap-1.5 mb-1">
                             <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
-                              👤
+                              <Icono name="user" className="w-3 h-3" />
                             </div>
                             <span className="text-xs font-bold text-gray-800 truncate" title={hab.huespedActivo}>
                               {hab.huespedActivo}
@@ -506,24 +507,24 @@ export default function Habitaciones() {
                           <div className="flex items-center justify-between text-[10px] text-gray-500 font-medium">
                             <span>Salida: {salidaEstimada || 'Hoy'}</span>
                             {estadoPago === 'pendiente' ? (
-                              <span className="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Debe</span>
+                              <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">Debe</span>
                             ) : estadoPago === 'parcial' ? (
-                              <span className="font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">A cuenta</span>
-                            ) : (
+                              <span className="font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">A cuenta</span>
+                            ) : estadoPago === 'pagado' ? (
                               <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Pagado</span>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       ) : ['pendiente_limpieza', 'en_limpieza', 'limpieza_simple'].includes(hab.estado) ? (
                         <div className="my-2 p-2 rounded-xl bg-amber-50/50 border border-amber-100/50">
                           <p className="text-xs font-bold text-amber-800 flex items-center gap-1">
-                            <span>🧹</span> {hab.estado === 'en_limpieza' ? 'En aseo activo' : 'Esperando mucama'}
+                            <span><Icono name="broom" className="w-4 h-4 inline-block shrink-0" /></span> {hab.estado === 'en_limpieza' ? 'En aseo activo' : 'Esperando mucama'}
                           </p>
                         </div>
                       ) : (
                         <div className="my-2">
                           <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                            <span>✓</span> Lista para Check-in
+                            <span><Icono name="check" className="w-4 h-4 inline-block shrink-0" /></span> Lista para Check-in
                           </span>
                         </div>
                       )}

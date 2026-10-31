@@ -1,3 +1,4 @@
+import Icono from '../Compartido/Icono'
 export default function SeccionEstadia({
   noches, actualizarNoches, fechaSalida, actualizarFechaSalida,
   tarifaPorNoche, setTarifaPorNoche, tarifa, montoEarly, setMontoEarly,
@@ -11,18 +12,18 @@ export default function SeccionEstadia({
       </h3>
 
       {/* Fecha y hora de ingreso real — obligatoria */}
-      <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-5 mb-4">
-        <label className="text-xs font-bold text-green-800 uppercase tracking-wide block mb-2">
-          🕐 Fecha y Hora de Ingreso Real <span className="text-red-500">*</span>
+      <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 mb-4">
+        <label className="text-xs font-bold text-emerald-800 uppercase tracking-wide block mb-2">
+          <Icono name="clock" className="w-4 h-4 inline-block shrink-0" /> Fecha y Hora de Ingreso Real <span className="text-rose-500">*</span>
         </label>
         <input
           type="datetime-local"
           value={fechaIngreso}
           onChange={e => setFechaIngreso(e.target.value)}
           required
-          className="w-full border-2 border-green-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-white transition-colors text-gray-800"
+          className="w-full border-2 border-emerald-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-500 bg-white transition-colors text-gray-800"
         />
-        <p className="text-xs text-green-700 font-medium mt-1.5">
+        <p className="text-xs text-emerald-700 font-medium mt-1.5">
           Pre-llenada con la hora actual. Corrígela si el huésped ingresó antes.
         </p>
       </div>

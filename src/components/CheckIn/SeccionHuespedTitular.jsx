@@ -1,3 +1,4 @@
+import Icono from '../Compartido/Icono'
 export default function SeccionHuespedTitular({
   tipoDoc, setTipoDoc, dni, setDni, onBuscar,
   cliente, nombres, setNombres, telefono, setTelefono,
@@ -44,7 +45,7 @@ export default function SeccionHuespedTitular({
             </button>
           </div>
           {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
-            <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
+            <p className="text-xs text-rose-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
           )}
 
           {cliente && (
@@ -61,13 +62,13 @@ export default function SeccionHuespedTitular({
                 </p>
               )}
               {cliente.lista_negra && (
-                <p className="text-xs text-red-600 font-black mt-2 bg-red-100 px-2 py-1 rounded inline-block">
-                  ⚠ EN LISTA NEGRA
+                <p className="text-xs text-rose-600 font-black mt-2 bg-rose-100 px-2 py-1 rounded inline-block">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> EN LISTA NEGRA
                 </p>
               )}
               {cliente.deuda_pendiente > 0 && (
-                <p className="text-xs text-orange-600 font-bold mt-2 bg-orange-100 px-2 py-1 rounded inline-block">
-                  ⚠ Deuda: S/{cliente.deuda_pendiente}
+                <p className="text-xs text-amber-600 font-bold mt-2 bg-amber-100 px-2 py-1 rounded inline-block">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Deuda: S/{cliente.deuda_pendiente}
                 </p>
               )}
             </div>

@@ -22,7 +22,7 @@ export default function SeccionAcompanantes({
             <div key={idx} className="bg-white border-2 border-gray-100 p-4 rounded-2xl relative shadow-sm">
               <button
                 onClick={() => eliminarAcompanante(idx)}
-                className="absolute top-2 right-2 w-9 h-9 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 active:scale-95 transition-colors shadow-sm"
+                className="absolute top-2 right-2 w-9 h-9 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center hover:bg-rose-100 active:scale-95 transition-colors shadow-sm"
                 title="Eliminar acompañante"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

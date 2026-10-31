@@ -97,7 +97,7 @@ export default function AbrirTurno({ abrirTurno }) {
         <button
           onClick={handleAbrir}
           disabled={guardando || !cajaPrincipalInicial}
-          className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+          className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-sm shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {guardando ? 'Aperturando turno...' : 'Aperturar Turno de Caja'}
         </button>

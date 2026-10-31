@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icono from '../Compartido/Icono'
 
 export default function EditarHuespedModal({
   huesped,
@@ -96,11 +97,11 @@ export default function EditarHuespedModal({
       <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-gray-800">Editar Huésped</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none"><Icono name="x" className="w-5 h-5 inline-block shrink-0" /></button>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-3 mb-3">
+          <div className="bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-lg p-3 mb-3">
             {error}
           </div>
         )}
@@ -149,19 +150,19 @@ export default function EditarHuespedModal({
             />
             <p className="text-xs text-gray-400 mt-1">
               {nochesTotales} noche(s) · Total pactado: <span className="font-bold text-gray-600">S/{nuevaTarifaPactada}</span>
-              {tarifaCambio && <span className="text-orange-500"> (antes S/{hospedaje.tarifa_pactada})</span>}
+              {tarifaCambio && <span className="text-amber-500"> (antes S/{hospedaje.tarifa_pactada})</span>}
             </p>
           </div>
 
           <div className="pt-2 border-t border-gray-100">
-            <label className="text-xs font-bold text-orange-600 uppercase tracking-wide block mb-1">⚠ Fecha y Hora de Ingreso Real</label>
+            <label className="text-xs font-bold text-amber-600 uppercase tracking-wide block mb-1"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Fecha y Hora de Ingreso Real</label>
             <input
               type="datetime-local"
               value={fechaIngreso}
               onChange={e => setFechaIngreso(e.target.value)}
-              className="w-full border-2 border-orange-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-orange-400"
+              className="w-full border-2 border-amber-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-400"
             />
-            <p className="text-xs text-orange-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
+            <p className="text-xs text-amber-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
           </div>
         </div>
 
@@ -180,7 +181,7 @@ export default function EditarHuespedModal({
                       : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'
                   }`}
                 >
-                  {op === 'ninguno' ? 'Ninguno' : op === 'boleta' ? '🧾 Boleta' : '📄 Factura'}
+                  {op === 'ninguno' ? 'Ninguno' : op === 'boleta' ? 'Boleta' : 'Factura'}
                 </button>
               ))}
             </div>

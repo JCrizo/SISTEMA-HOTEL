@@ -3,8 +3,8 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
 
   if (consumos.length === 0) {
     return (
-      <div className="bg-orange-50 border border-orange-100 rounded-2xl p-8 text-center h-full flex flex-col justify-center">
-        <p className="text-orange-600 font-medium">No se han registrado consumos en esta habitación aún.</p>
+      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-8 text-center h-full flex flex-col justify-center">
+        <p className="text-amber-600 font-medium">No se han registrado consumos en esta habitación aún.</p>
       </div>
     )
   }
@@ -40,7 +40,7 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
               </span>
               <button
                 onClick={() => eliminarConsumo(c)}
-                className="w-9 h-9 flex items-center justify-center text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-full transition-colors active:scale-95"
+                className="w-9 h-9 flex items-center justify-center text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-full transition-colors active:scale-95"
                 title="Eliminar consumo"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

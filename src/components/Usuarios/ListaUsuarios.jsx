@@ -1,7 +1,7 @@
 export default function ListaUsuarios({ usuarios, usuarioActualId, onEditar, onToggleActivo, onEliminar }) {
   if (usuarios.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+      <div className="card p-12 text-center">
         <p className="text-gray-500 font-medium">No hay usuarios registrados en el sistema.</p>
       </div>
     )
@@ -10,30 +10,30 @@ export default function ListaUsuarios({ usuarios, usuarioActualId, onEditar, onT
   const getRolBadge = (rol) => {
     switch (rol?.toLowerCase()) {
       case 'administrador':
-        return 'bg-purple-100 text-purple-700'
+        return 'badge-purple'
       case 'recepcionista':
-        return 'bg-blue-100 text-blue-700'
+        return 'badge-info'
       case 'limpieza':
-        return 'bg-teal-100 text-teal-700'
+        return 'badge-ok'
       default:
-        return 'bg-gray-100 text-gray-700'
+        return 'badge-muted'
     }
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
       {usuarios.map(u => {
         const esUsuarioActual = usuarioActualId && (usuarioActualId === u.id || usuarioActualId === u.auth_id)
 
         return (
-          <div key={u.id} className={`bg-white rounded-2xl border shadow-sm p-5 transition-all flex flex-col justify-between ${
-            u.activo ? 'border-gray-100 hover:shadow-md' : 'border-red-100 bg-red-50/20'
+          <div key={u.id} className={`card p-4 sm:p-5 transition-all flex flex-col justify-between ${
+            u.activo ? 'card-hover' : '!border-rose-100 !bg-rose-50/20'
           }`}>
             <div>
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <div className={`w-2.5 h-2.5 rounded-full ${u.activo ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-400'}`}></div>
+                    <div className={`w-2.5 h-2.5 rounded-full ${u.activo ? 'bg-emerald-500' : 'bg-rose-400'}`}></div>
                     <h4 className={`font-bold text-lg ${u.activo ? 'text-gray-800' : 'text-gray-500'}`}>
                       {u.nombre}
                     </h4>
@@ -48,7 +48,7 @@ export default function ListaUsuarios({ usuarios, usuarioActualId, onEditar, onT
                     <span className="font-semibold text-gray-700">{u.email}</span>
                   </p>
                 </div>
-                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide ${getRolBadge(u.rol)}`}>
+                <span className={`badge uppercase tracking-wide shrink-0 ${getRolBadge(u.rol)}`}>
                   {u.rol}
                 </span>
               </div>
@@ -58,23 +58,23 @@ export default function ListaUsuarios({ usuarios, usuarioActualId, onEditar, onT
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 mt-2">
                 <button
                   onClick={() => onEditar(u)}
-                  className="text-xs font-bold px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors"
+                  className="btn btn-secondary btn-sm"
                 >
                   Editar
                 </button>
                 <button
                   onClick={() => onToggleActivo(u)}
-                  className={`text-xs font-bold px-3 py-2 rounded-xl transition-colors ${
+                  className={`btn btn-sm ${
                     u.activo 
-                      ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/50' 
-                      : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200/50'
+                      ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/60' 
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60'
                   }`}
                 >
                   {u.activo ? 'Desactivar' : 'Activar'}
                 </button>
                 <button
                   onClick={() => onEliminar(u)}
-                  className="text-xs font-bold px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors flex items-center gap-1 border border-red-100"
+                  className="btn btn-danger-soft btn-sm"
                   title="Eliminar usuario"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ export default function ListaUsuarios({ usuarios, usuarioActualId, onEditar, onT
               </div>
               
               {!u.activo && (
-                <p className="text-xs font-medium text-red-500 mt-3 text-center bg-red-50 py-1.5 rounded-lg border border-red-100">
+                <p className="text-xs font-medium text-rose-600 mt-3 text-center bg-rose-50 py-1.5 rounded-lg border border-rose-100">
                   Usuario inhabilitado para acceder al sistema
                 </p>
               )}

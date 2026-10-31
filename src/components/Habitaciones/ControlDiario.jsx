@@ -80,10 +80,10 @@ export default function ControlDiario({ habitaciones, turnoActivo }) {
               if (hab.estado === 'ocupada' && h.estado_pago) {
                 if (h.estado_pago === 'pendiente') {
                   tipoPagoText = 'Debe';
-                  badgePagoColor = 'bg-red-50 text-red-600 border border-red-100';
+                  badgePagoColor = 'bg-rose-50 text-rose-600 border border-rose-100';
                 } else if (h.estado_pago === 'parcial') {
                   tipoPagoText = 'A cuenta';
-                  badgePagoColor = 'bg-orange-50 text-orange-600 border border-orange-100';
+                  badgePagoColor = 'bg-amber-50 text-amber-600 border border-amber-100';
                 } else {
                   tipoPagoText = h.metodo_pago ? h.metodo_pago.charAt(0).toUpperCase() + h.metodo_pago.slice(1) : 'Pagado';
                   badgePagoColor = 'bg-emerald-50 text-emerald-600 border border-emerald-100';

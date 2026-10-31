@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTurnoActivo } from '../hooks/useTurnoActivo'
 import { useProductos } from '../hooks/useProductos'
@@ -8,9 +7,9 @@ import ListaCategorias from '../components/Productos/ListaCategorias'
 import FormularioProducto from '../components/Productos/FormularioProducto'
 import ListaProductos from '../components/Productos/ListaProductos'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
+import Icono from '../components/Compartido/Icono'
 
 function Productos() {
-  const navigate = useNavigate()
   const { usuario } = useAuth()
   const { turnoActivo, turnoAjeno } = useTurnoActivo()
   
@@ -47,9 +46,9 @@ function Productos() {
 
   if (cargando) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-500 font-medium">Cargando inventario...</span>
+      <div className="flex flex-col justify-center items-center h-80 gap-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <span className="text-sm text-gray-400 font-semibold">Cargando inventario...</span>
       </div>
     )
   }
@@ -71,42 +70,40 @@ function Productos() {
     productosPorCategoria[clave].push(p)
   })
 
+  // Contadores para las pastillas de filtro (solo lectura, no alteran los datos)
+  const totalPorCategoria = id => productos.filter(p => p.categoria_id === id).length
+  const totalSinCategoria = productos.filter(p => !p.categoria_id).length
+  const totalStockBajo = productos.filter(p => p.activo && p.stock <= 3).length
+
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Volver"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">Inventario de Productos</h2>
-            <p className="text-sm text-gray-500 font-medium">Gestiona tu catálogo y controla el stock</p>
-          </div>
+    <div className="max-w-6xl mx-auto space-y-5 pb-12">
+      {/* Encabezado */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="page-title">Inventario de Productos</h1>
+          <p className="page-sub">
+            {productos.length} productos
+            {totalStockBajo > 0 && (
+              <span className="ml-2 badge badge-warn">
+                <Icono name="alert" className="w-3 h-3" /> {totalStockBajo} con stock bajo
+              </span>
+            )}
+          </p>
         </div>
-        
-        <div className="flex gap-2">
+
+        <div className="grid grid-cols-2 sm:flex gap-2">
           <button
             onClick={() => setMostrarCategorias(!mostrarCategorias)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${
-              mostrarCategorias 
-                ? 'bg-gray-800 text-white' 
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
+            className={`btn ${mostrarCategorias ? 'bg-gray-900 text-white' : 'btn-secondary'}`}
           >
-            🏷️ Categorías
+            <Icono name="tag" className="w-4 h-4" /> Categorías
           </button>
           {!mostrarForm && (
             <button
               onClick={() => { setEditando(null); setMostrarForm(true) }}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95"
+              className="btn btn-primary"
             >
-              + Nuevo Producto
+              <Icono name="plus" className="w-4 h-4" /> Nuevo Producto
             </button>
           )}
         </div>
@@ -129,39 +126,28 @@ function Productos() {
         />
       )}
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        <button 
+      {/* Filtros por categoría (con contadores) */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
           onClick={() => setFiltroCategoria('todas')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
-            filtroCategoria === 'todas' 
-              ? 'bg-gray-800 text-white border-gray-800 shadow-md' 
-              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-          }`}
+          className={`chip ${filtroCategoria === 'todas' ? 'chip-active' : ''}`}
         >
-          Ver Todos
+          Todos ({productos.length})
         </button>
         {categorias.map(cat => (
-          <button 
-            key={cat.id} 
+          <button
+            key={cat.id}
             onClick={() => setFiltroCategoria(cat.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
-              filtroCategoria === cat.id 
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-            }`}
+            className={`chip ${filtroCategoria === cat.id ? '!bg-blue-600 !text-white !border-blue-600' : ''}`}
           >
-            {cat.nombre}
+            {cat.nombre} ({totalPorCategoria(cat.id)})
           </button>
         ))}
-        <button 
+        <button
           onClick={() => setFiltroCategoria('sin_categoria')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
-            filtroCategoria === 'sin_categoria' 
-              ? 'bg-orange-500 text-white border-orange-500 shadow-md' 
-              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-          }`}
+          className={`chip ${filtroCategoria === 'sin_categoria' ? '!bg-amber-500 !text-white !border-amber-500' : ''}`}
         >
-          Sin categoría
+          Sin categoría ({totalSinCategoria})
         </button>
       </div>
 

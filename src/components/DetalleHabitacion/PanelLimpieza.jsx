@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import TarjetaLimpieza from '../Limpieza/TarjetaLimpieza'
+import Icono from '../Compartido/Icono'
 
 export default function PanelLimpieza({ 
   hab, 
@@ -51,13 +52,13 @@ export default function PanelLimpieza({
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-amber-200 p-8 shadow-md relative overflow-hidden">
+    <div className="bg-white rounded-2xl border border-amber-200 p-8 shadow-md relative overflow-hidden">
       <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-            🧹
+            <Icono name="broom" className="w-4 h-4 inline-block shrink-0" />
           </div>
           <div>
             <h3 className="text-lg font-black text-amber-900 tracking-tight">Atención de Limpieza</h3>
@@ -114,7 +115,7 @@ export default function PanelLimpieza({
               {mostrarCobroAdicional ? (
                 <div className="bg-blue-50 rounded-2xl p-5 border-2 border-blue-200 shadow-sm animate-fadeIn">
                   <h4 className="text-sm font-black text-blue-900 mb-3 flex items-center gap-2">
-                    <span>💰</span> Registrar Cobro Excepcional
+                    <span><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span> Registrar Cobro Excepcional
                   </h4>
                   
                   <div className="space-y-3">
@@ -184,7 +185,7 @@ export default function PanelLimpieza({
 
               <button 
                 onClick={handleReabrir}
-                className="w-full py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-2xl text-sm font-bold hover:bg-green-100 hover:border-green-300 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-4 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 rounded-2xl text-sm font-bold hover:bg-emerald-100 hover:border-emerald-300 transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 Revertir Checkout (Huésped se queda)

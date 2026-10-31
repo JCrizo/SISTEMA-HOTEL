@@ -65,7 +65,7 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
         <div className="space-y-3">
           <input
             type="text"
-            placeholder="🔍 Buscar producto..."
+            placeholder="Buscar producto..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full border-2 border-gray-100 rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
@@ -114,8 +114,8 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
                     <div className="text-base md:text-lg font-black text-blue-700 mt-auto">
                       S/{parseFloat(prod.precio).toFixed(2)}
                     </div>
-                    <div className={`text-[10px] md:text-xs mt-1 font-semibold ${prod.stock <= 0 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
-                      {prod.stock <= 0 ? '✕ Agotado' : `Stock: ${prod.stock}`}
+                    <div className={`text-[10px] md:text-xs mt-1 font-semibold ${prod.stock <= 0 ? 'text-rose-500 font-bold' : 'text-gray-400'}`}>
+                      {prod.stock <= 0 ? 'Agotado' : `Stock: ${prod.stock}`}
                     </div>
                   </>
                 ) : (

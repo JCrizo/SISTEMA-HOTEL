@@ -1,3 +1,4 @@
+import Icono from '../Compartido/Icono'
 export default function SeccionPago({
   tarifa, tarifaPorNoche, noches,
   modalPago, setModalPago,
@@ -60,10 +61,10 @@ export default function SeccionPago({
                   onChange={e => setMetodoPago(e.target.value)}
                   className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
                 >
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="yape">📱 Yape / Plin</option>
-                  <option value="tarjeta">💳 Tarjeta (POS)</option>
-                  <option value="transferencia">🏦 Transferencia</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="yape">Yape / Plin</option>
+                  <option value="tarjeta">Tarjeta (POS)</option>
+                  <option value="transferencia">Transferencia</option>
                 </select>
                 {metodoPago === 'tarjeta' && (
                   <input

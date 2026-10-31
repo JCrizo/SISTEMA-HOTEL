@@ -7,6 +7,7 @@ export default function TopBar({ setMobileOpen }) {
   const { usuario } = useAuth();
   const { turnoActivo, cargandoTurno } = useTurnoActivo();
   const navigate = useNavigate();
+  const esLimpieza = (usuario?.rol || '').toLowerCase().trim() === 'limpieza';
   const [hora, setHora] = useState(new Date());
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function TopBar({ setMobileOpen }) {
         {/* Right: Turno & Caja Status + Quick Actions + User Profile */}
         <div className="flex items-center gap-2 md:gap-3">
           {/* Turno & Caja Live Pill */}
-          {cargandoTurno ? (
+          {esLimpieza ? null : cargandoTurno ? (
             <div className="h-7 w-24 bg-gray-100 rounded-full animate-pulse"></div>
           ) : turnoActivo ? (
             <button
@@ -89,6 +90,7 @@ export default function TopBar({ setMobileOpen }) {
           )}
 
           {/* Quick Action Button (Desktop/Tablet) */}
+          {!esLimpieza && (
           <button
             onClick={() => navigate('/reservas')}
             className="hidden md:flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/50 rounded-xl text-xs font-bold transition-colors shadow-2xs"
@@ -98,10 +100,11 @@ export default function TopBar({ setMobileOpen }) {
             </svg>
             <span>Nueva Reserva</span>
           </button>
+          )}
 
           {/* User profile pill */}
           <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-gray-100">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-blue-700 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
               {(usuario?.nombre || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="text-left leading-tight">

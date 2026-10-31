@@ -119,7 +119,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
       {/* Brand Header */}
       <div className="p-5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-700 text-white flex items-center justify-center font-black text-xl shadow-sm">
             O
           </div>
           <div>
@@ -181,7 +181,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           </div>
           <button 
             onClick={handleLogout}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
             title="Cerrar sesión"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

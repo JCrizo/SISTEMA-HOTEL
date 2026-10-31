@@ -23,7 +23,7 @@ export default function ReporteTurnoAnterior({ turno, movimientos }) {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => exportarCierreTurnoPDF(turno, movimientos, [], [])}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/70 rounded-xl text-xs font-bold transition-all shadow-2xs"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/70 rounded-xl text-xs font-bold transition-all shadow-2xs"
             title="Exportar reporte en PDF"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@ export default function ReporteTurnoAnterior({ turno, movimientos }) {
                       : `Salida de caja ${mov.caja_origen}`}
                   </p>
                 </div>
-                <span className="font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
                   − S/ {parseFloat(mov.monto).toFixed(2)}
                 </span>
               </div>

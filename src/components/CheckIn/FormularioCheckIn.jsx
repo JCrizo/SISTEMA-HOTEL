@@ -4,6 +4,7 @@ import SeccionHuespedTitular from './SeccionHuespedTitular'
 import SeccionAcompanantes from './SeccionAcompanantes'
 import SeccionEstadia from './SeccionEstadia'
 import SeccionPago from './SeccionPago'
+import Icono from '../Compartido/Icono'
 
 export default function FormularioCheckIn({
   hab,
@@ -236,9 +237,9 @@ export default function FormularioCheckIn({
 
   // --- RENDERING ...
   return (
-    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       {/* ... header ... */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white flex justify-between items-center">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
@@ -257,7 +258,7 @@ export default function FormularioCheckIn({
         {/* BANNER: Check-in viene de una reserva */}
         {datosIniciales?.reserva && (
           <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl px-6 py-4 flex items-center gap-3">
-            <span className="text-2xl">📋</span>
+            <span className="text-2xl"><Icono name="receipt" className="w-6 h-6 inline-block shrink-0" /></span>
             <div>
               <p className="text-sm font-black text-blue-900">Datos cargados desde Reserva N° {String(datosIniciales.reserva.nro_ficha || '').padStart(6, '0')}</p>
               <p className="text-xs text-blue-700 font-medium">El número de ficha y los datos del huésped fueron pre-llenados automáticamente. Verifica antes de confirmar.</p>
@@ -266,10 +267,10 @@ export default function FormularioCheckIn({
         )}
 
         {/* N° DE FICHA MANUAL */}
-        <div className="bg-indigo-50 border-2 border-indigo-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
-            <label className="text-xs font-black text-indigo-800 uppercase tracking-widest block mb-1.5">
-              📋 Número de Ficha <span className="text-red-500">*</span>
+            <label className="text-xs font-black text-blue-800 uppercase tracking-widest block mb-1.5">
+              <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Número de Ficha <span className="text-rose-500">*</span>
             </label>
             <input
               type="number"
@@ -279,9 +280,9 @@ export default function FormularioCheckIn({
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
               placeholder="Ej: 4425"
-              className="w-full border-2 border-indigo-200 rounded-xl px-4 py-3 text-2xl font-black text-indigo-900 outline-none focus:border-indigo-500 bg-white transition-colors tracking-widest"
+              className="w-full border-2 border-blue-200 rounded-xl px-4 py-3 text-2xl font-black text-blue-900 outline-none focus:border-blue-500 bg-white transition-colors tracking-widest"
             />
-            <p className="text-xs text-indigo-600 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
+            <p className="text-xs text-blue-600 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
           </div>
         </div>
         
@@ -329,7 +330,7 @@ export default function FormularioCheckIn({
                 </button>
               </div>
               {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
-                <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
+                <p className="text-xs text-rose-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
               )}
 
               {cliente && (
@@ -380,10 +381,10 @@ export default function FormularioCheckIn({
                     </p>
                   )}
                   {cliente.lista_negra && (
-                    <p className="text-xs text-red-600 font-black mt-2 bg-red-100 px-2 py-1 rounded inline-block">⚠ EN LISTA NEGRA</p>
+                    <p className="text-xs text-rose-600 font-black mt-2 bg-rose-100 px-2 py-1 rounded inline-block"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> EN LISTA NEGRA</p>
                   )}
                   {cliente.deuda_pendiente > 0 && (
-                    <p className="text-xs text-orange-600 font-bold mt-2 bg-orange-100 px-2 py-1 rounded inline-block">⚠ Deuda: S/{cliente.deuda_pendiente}</p>
+                    <p className="text-xs text-amber-600 font-bold mt-2 bg-amber-100 px-2 py-1 rounded inline-block"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Deuda: S/{cliente.deuda_pendiente}</p>
                   )}
                 </div>
               )}
@@ -457,8 +458,8 @@ export default function FormularioCheckIn({
         />
 
         {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
-            <p className="text-sm font-bold text-red-600 flex justify-center items-center gap-2">
+          <div className="bg-rose-50 border-2 border-rose-200 rounded-xl p-4 text-center">
+            <p className="text-sm font-bold text-rose-600 flex justify-center items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               {error}
             </p>
@@ -475,7 +476,7 @@ export default function FormularioCheckIn({
           <button
             onClick={confirmar}
             disabled={cargando}
-            className="flex-1 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-black text-lg shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
+            className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black text-lg shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
           >
             {cargando ? (
               <span className="flex items-center gap-2">

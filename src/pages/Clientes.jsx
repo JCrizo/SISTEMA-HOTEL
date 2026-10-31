@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { clientesService } from '../services/clientesService';
+import Icono from '../components/Compartido/Icono'
 
 export default function Clientes() {
-  const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -189,7 +188,7 @@ export default function Clientes() {
                 onClick={() => setBusqueda('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
               >
-                ✕
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
               </button>
             )}
           </div>
@@ -238,7 +237,7 @@ export default function Clientes() {
         </div>
       ) : clientes.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-2xs">
-          <span className="text-4xl block mb-2">👤</span>
+          <span className="text-4xl block mb-2"><Icono name="user" className="w-10 h-10 inline-block shrink-0" /></span>
           <h3 className="text-base font-bold text-gray-800 mb-1">No se encontraron huéspedes</h3>
           <p className="text-gray-400 text-xs mb-4">No hay resultados que coincidan con "{busqueda}".</p>
           <button
@@ -290,7 +289,7 @@ export default function Clientes() {
                     <td className="py-3 px-4 whitespace-nowrap">
                       {c.telefono ? (
                         <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                          <span>📞 {c.telefono}</span>
+                          <span><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /> {c.telefono}</span>
                           <a
                             href={`https://wa.me/51${c.telefono.replace(/\D/g, '')}`}
                             target="_blank"
@@ -298,7 +297,7 @@ export default function Clientes() {
                             className="text-emerald-600 hover:text-emerald-700 font-bold ml-1"
                             title="Abrir chat de WhatsApp"
                           >
-                            💬
+                            WhatsApp
                           </a>
                         </div>
                       ) : (
@@ -310,7 +309,7 @@ export default function Clientes() {
                     <td className="py-3 px-4 text-xs text-gray-600 whitespace-nowrap">
                       {c.nacionalidad ? (
                         <span className="flex items-center gap-1">
-                          <span>🌐</span> {c.nacionalidad}
+                          <span><Icono name="globe" className="w-4 h-4 inline-block shrink-0" /></span> {c.nacionalidad}
                         </span>
                       ) : '-'}
                     </td>
@@ -329,7 +328,7 @@ export default function Clientes() {
                     {/* Estado / Lista negra */}
                     <td className="py-3 px-4 text-center whitespace-nowrap">
                       {c.lista_negra ? (
-                        <span className="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-200">
+                        <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">
                           Lista Negra
                         </span>
                       ) : c.deuda_pendiente > 0 ? (
@@ -352,7 +351,7 @@ export default function Clientes() {
                         </button>
                         <button
                           onClick={() => handleEliminar(c.id, c.nombres)}
-                          className="px-2.5 py-1 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                         >
                           Eliminar
                         </button>
@@ -388,7 +387,7 @@ export default function Clientes() {
                     </div>
 
                     {c.lista_negra && (
-                      <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
                         Alerta
                       </span>
                     )}
@@ -435,7 +434,7 @@ export default function Clientes() {
                   </button>
                   <button
                     onClick={() => handleEliminar(c.id, c.nombres)}
-                    className="px-3 py-1 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="px-3 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   >
                     Eliminar
                   </button>
@@ -462,11 +461,11 @@ export default function Clientes() {
       {/* MODAL LIMPIO DE CREACIÓN / EDICIÓN */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-lg font-black text-gray-800">
-                  {editandoCliente ? '✏️ Editar Huésped' : '✨ Nuevo Huésped'}
+                  {editandoCliente ? 'Editar Huésped' : 'Nuevo Huésped'}
                 </h3>
                 <p className="text-xs text-gray-400 font-medium">Ingresa los datos para el registro en el sistema</p>
               </div>
@@ -474,7 +473,7 @@ export default function Clientes() {
                 onClick={cerrarModal}
                 className="text-gray-400 hover:text-gray-600 font-bold text-lg p-1"
               >
-                ✕
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
               </button>
             </div>
 
@@ -556,8 +555,8 @@ export default function Clientes() {
               </div>
 
               {errorForm && (
-                <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-bold">
-                  ⚠️ {errorForm}
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-600 font-bold">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> {errorForm}
                 </div>
               )}
 

@@ -3,6 +3,7 @@ import { useReservas } from '../../hooks/useReservas'
 import { useHabitaciones } from '../../hooks/useHabitaciones'
 import { clientesService } from '../../services/clientesService'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function FormularioReserva({ onCancel, turnoActivo }) {
   const { crearReserva, error: errorReserva } = useReservas()
@@ -97,8 +98,8 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const errorMostrar = errorValidacion || errorReserva
 
   return (
-    <div className="bg-white rounded-3xl border border-indigo-100 p-8 shadow-xl relative overflow-hidden mb-8 max-w-4xl mx-auto">
-      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+    <div className="bg-white rounded-2xl border border-blue-100 p-8 shadow-xl relative overflow-hidden mb-8 max-w-4xl mx-auto">
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
       
       <div className="mb-6">
         <h3 className="text-2xl font-black text-gray-800">Nueva Reserva</h3>
@@ -106,10 +107,10 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
       </div>
 
       {/* N° DE FICHA MANUAL */}
-      <div className="bg-indigo-50 border-2 border-indigo-300 rounded-2xl px-6 py-4 mb-6 flex items-center gap-4">
+      <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl px-6 py-4 mb-6 flex items-center gap-4">
         <div className="flex-1">
-          <label className="text-xs font-black text-indigo-800 uppercase tracking-widest block mb-1.5">
-            📋 Número de Ficha <span className="text-red-500">*</span>
+          <label className="text-xs font-black text-blue-800 uppercase tracking-widest block mb-1.5">
+            <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Número de Ficha <span className="text-rose-500">*</span>
           </label>
           <input
             type="number"
@@ -119,14 +120,14 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
             onFocus={e => e.target.select()}
             onWheel={e => e.target.blur()}
             placeholder="Ej: 4425"
-            className="w-full border-2 border-indigo-200 rounded-xl px-4 py-3 text-2xl font-black text-indigo-900 outline-none focus:border-indigo-500 bg-white transition-colors tracking-widest"
+            className="w-full border-2 border-blue-200 rounded-xl px-4 py-3 text-2xl font-black text-blue-900 outline-none focus:border-blue-500 bg-white transition-colors tracking-widest"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div className="space-y-5">
-          <h4 className="text-sm font-bold text-indigo-800 uppercase tracking-widest border-b border-indigo-100 pb-2">
+          <h4 className="text-sm font-bold text-blue-800 uppercase tracking-widest border-b border-blue-100 pb-2">
             Datos del Huésped
           </h4>
           
@@ -137,7 +138,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 <select
                   value={tipoDoc}
                   onChange={e => { setTipoDoc(e.target.value); setDni('') }}
-                  className="w-24 sm:w-1/3 shrink-0 border-2 border-gray-100 rounded-xl px-2 sm:px-3 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                  className="w-24 sm:w-1/3 shrink-0 border-2 border-gray-100 rounded-xl px-2 sm:px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
                 >
                   <option value="dni">DNI</option>
                   <option value="pasaporte">Pasaporte</option>
@@ -156,23 +157,23 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                   }}
                   onBlur={buscarCliente}
                   placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-                  className="flex-1 min-w-0 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                  className="flex-1 min-w-0 border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
                   maxLength={tipoDoc === 'dni' ? 8 : 20}
                 />
               </div>
               <button
                 onClick={buscarCliente}
-                className="w-full sm:w-auto px-4 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-xl text-sm font-bold transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl text-sm font-bold transition-colors"
               >
                 Buscar
               </button>
             </div>
             {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
-              <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
+              <p className="text-xs text-rose-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
             )}
             {cliente && (
-              <div className="mt-2 bg-indigo-50 border border-indigo-100 p-3 rounded-xl space-y-2">
-                <p className="text-xs font-bold text-indigo-700 flex items-center gap-1">
+              <div className="mt-2 bg-blue-50 border border-blue-100 p-3 rounded-xl space-y-2">
+                <p className="text-xs font-bold text-blue-700 flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   Cliente registrado
                 </p>
@@ -206,7 +207,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                   });
 
                   return (
-                    <div className="text-[10px] text-indigo-800 space-y-1 pt-1 border-t border-indigo-100/50">
+                    <div className="text-[10px] text-blue-800 space-y-1 pt-1 border-t border-blue-100/50">
                       <p><span className="font-bold">Última visita:</span> {new Date(ultimo.ingreso).toLocaleDateString()} (S/{ultimo.tarifa_pactada})</p>
                       <p><span className="font-bold">Hab. favorita:</span> {favorita} ({maxCount} veces)</p>
                       <p><span className="font-bold">Total visitas:</span> {historicos.length}</p>
@@ -224,7 +225,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               value={nombres}
               onChange={e => setNombres(e.target.value)}
               placeholder="Ej: María Gonzales"
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
             />
           </div>
 
@@ -235,13 +236,13 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               value={telefono}
               onChange={e => setTelefono(e.target.value)}
               placeholder="Número de celular"
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         <div className="space-y-5">
-          <h4 className="text-sm font-bold text-indigo-800 uppercase tracking-widest border-b border-indigo-100 pb-2">
+          <h4 className="text-sm font-bold text-blue-800 uppercase tracking-widest border-b border-blue-100 pb-2">
             Detalles de la Reserva
           </h4>
           
@@ -250,7 +251,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
             <select
               value={habitacionId}
               onChange={e => setHabitacionId(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
             >
               <option value="">Seleccionar habitación...</option>
               {habitaciones.map(h => (
@@ -271,7 +272,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
               placeholder="Se llena con el precio de la habitación"
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors font-bold text-gray-700"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors font-bold text-gray-700"
             />
             <p className="text-[11px] text-gray-400 mt-1">Se precarga con el precio actual de la habitación, pero puedes negociar otra tarifa aquí mismo.</p>
           </div>
@@ -283,7 +284,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 type="datetime-local"
                 value={fechaLlegada}
                 onChange={e => setFechaLlegada(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
               />
             </div>
             <div>
@@ -292,7 +293,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 type="datetime-local"
                 value={fechaSalida}
                 onChange={e => setFechaSalida(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -305,7 +306,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 value={adelanto}
                 onChange={e => setAdelanto(e.target.value)}
                 placeholder="0.00"
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
               />
             </div>
             <div>
@@ -315,7 +316,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
                 value={montoEarly}
                 onChange={e => setMontoEarly(e.target.value)}
                 placeholder="0.00"
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors"
+                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -326,15 +327,15 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               value={observaciones}
               onChange={e => setObservaciones(e.target.value)}
               placeholder="Requerimientos especiales, hora exacta de llegada..."
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 bg-gray-50 focus:bg-white transition-colors h-16 resize-none"
+              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors h-16 resize-none"
             />
           </div>
         </div>
       </div>
 
       {errorMostrar && (
-        <div className="mt-6 bg-red-50 text-red-600 text-sm p-4 rounded-xl border border-red-100 font-bold text-center">
-          ⚠ {errorMostrar}
+        <div className="mt-6 bg-rose-50 text-rose-600 text-sm p-4 rounded-xl border border-rose-100 font-bold text-center">
+          <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> {errorMostrar}
         </div>
       )}
 
@@ -348,7 +349,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
         <button
           onClick={handleCrearReserva}
           disabled={guardando}
-          className="flex-[2] py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg shadow-md transition-transform active:scale-[0.98] disabled:opacity-50"
+          className="flex-[2] py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg shadow-md transition-transform active:scale-[0.98] disabled:opacity-50"
         >
           {guardando ? 'Registrando...' : 'Confirmar Reserva'}
         </button>

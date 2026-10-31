@@ -9,14 +9,16 @@ import PanelHuespedActivo from '../components/DetalleHabitacion/PanelHuespedActi
 import PanelLimpieza from '../components/DetalleHabitacion/PanelLimpieza'
 import ConfigHabitacion from '../components/DetalleHabitacion/ConfigHabitacion'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
+import EncabezadoPagina from '../components/Compartido/EncabezadoPagina'
+import Icono from '../components/Compartido/Icono'
 
 const colores = {
-  disponible:         'from-green-500 to-emerald-600 shadow-green-200 text-white',
-  ocupada:            'from-red-500 to-rose-600 shadow-red-200 text-white',
-  pendiente_limpieza: 'from-amber-400 to-orange-500 shadow-amber-200 text-white',
-  en_limpieza:        'from-yellow-400 to-amber-500 shadow-yellow-200 text-white',
-  limpieza_simple:    'from-amber-400 to-orange-500 shadow-amber-200 text-white',
-  habilitada:         'from-green-500 to-emerald-600 shadow-green-200 text-white',
+  disponible:         'from-emerald-500 to-emerald-600 shadow-emerald-200 text-white',
+  ocupada:            'from-rose-500 to-rose-600 shadow-rose-200 text-white',
+  pendiente_limpieza: 'from-amber-400 to-amber-500 shadow-amber-200 text-white',
+  en_limpieza:        'from-amber-400 to-amber-500 shadow-amber-200 text-white',
+  limpieza_simple:    'from-amber-400 to-amber-500 shadow-amber-200 text-white',
+  habilitada:         'from-emerald-500 to-emerald-600 shadow-emerald-200 text-white',
   mantenimiento:      'from-gray-500 to-slate-600 shadow-gray-200 text-white',
 }
 
@@ -75,34 +77,27 @@ function DetalleHabitacion() {
   }
 
   if (!hab) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-red-50 text-red-600 p-6 rounded-2xl border-2 border-red-200 text-center max-w-md">
-        <span className="text-4xl mb-2 block">🚫</span>
+    <div className="flex items-center justify-center p-4 py-16">
+      <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border-2 border-rose-200 text-center max-w-md">
+        <span className="text-4xl mb-2 block"><Icono name="ban" className="w-10 h-10 inline-block shrink-0" /></span>
         <h2 className="text-lg font-black mb-1">Habitación no encontrada</h2>
-        <button onClick={() => navigate('/')} className="mt-4 bg-red-600 text-white px-6 py-2 rounded-xl font-bold">Volver al inicio</button>
+        <button onClick={() => navigate('/')} className="btn btn-danger mt-4">Volver al inicio</button>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10 mb-6">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Volver"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          </button>
-          <h1 className="text-xl font-black text-gray-800 tracking-tight">Recepción de Habitación</h1>
-        </div>
-      </header>
+    <div className="max-w-4xl mx-auto pb-12">
+      <EncabezadoPagina
+        titulo="Recepción de Habitación"
+        onVolver={() => navigate('/')}
+        tituloVolver="Volver al inicio"
+      />
 
-      <main className="max-w-4xl mx-auto px-4">
+      <main>
         
         {/* CABECERA DE HABITACIÓN */}
-        <div className={`bg-gradient-to-r ${colores[hab.estado]} rounded-3xl p-8 mb-8 shadow-lg relative overflow-hidden`}>
+        <div className={`bg-gradient-to-r ${colores[hab.estado]} rounded-2xl p-8 mb-8 shadow-lg relative overflow-hidden`}>
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 2h8v8h-8V5zm-6 0h4v14H5V5zm6 14v-4h8v4h-8z"/></svg>
           </div>
@@ -128,13 +123,13 @@ function DetalleHabitacion() {
 
         {/* DISPONIBLE */}
         {hab.estado === 'disponible' && (
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center mb-8">
-            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">✨</div>
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center mb-8">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><Icono name="sparkles" className="w-8 h-8 inline-block shrink-0" /></div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">Habitación Lista</h3>
             <p className="text-gray-500 mb-6">Esta habitación está limpia y lista para recibir nuevos huéspedes.</p>
             {reservaPendiente && (
-              <div className="mb-6 p-4 bg-orange-50 border-2 border-orange-200 text-orange-800 rounded-xl text-sm font-bold animate-pulse flex items-center gap-2 justify-center">
-                <span>⚠</span> Hay una reserva pendiente programada para hoy.
+              <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-xl text-sm font-bold animate-pulse flex items-center gap-2 justify-center">
+                <span><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /></span> Hay una reserva pendiente programada para hoy.
               </div>
             )}
             <button 
@@ -160,7 +155,7 @@ function DetalleHabitacion() {
                 }
                 navigate(`/checkin/${hab.id}`)
               }}
-              className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-green-200 transition-transform active:scale-95 flex items-center justify-center gap-2 mx-auto"
+              className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-200 transition-transform active:scale-95 flex items-center justify-center gap-2 mx-auto"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
               {reservaPendiente ? 'Check-In de Reserva' : 'Iniciar Check-In Directo'}
@@ -193,15 +188,15 @@ function DetalleHabitacion() {
 
         {/* OCUPADA sin hospedaje = inconsistencia */}
         {hab.estado === 'ocupada' && !cargando && !hospedaje && (
-          <div className="bg-red-50 text-red-700 rounded-3xl p-8 border-2 border-red-200 shadow-sm text-center mb-8">
-            <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚠</div>
+          <div className="bg-rose-50 text-rose-700 rounded-2xl p-8 border-2 border-rose-200 shadow-sm text-center mb-8">
+            <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><Icono name="alert" className="w-8 h-8 inline-block shrink-0" /></div>
             <h3 className="text-xl font-bold mb-2">Inconsistencia Detectada</h3>
-            <p className="text-red-600/80 mb-6 max-w-md mx-auto">
+            <p className="text-rose-600/80 mb-6 max-w-md mx-auto">
               La habitación figura como ocupada en el sistema, pero no se encontró el registro del check-in (probablemente fue eliminado manualmente).
             </p>
             <button 
               onClick={() => cambiarEstadoHab('disponible')}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-md transition-colors"
+              className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-md transition-colors"
             >
               Forzar Cambio a Disponible
             </button>
@@ -227,8 +222,8 @@ function DetalleHabitacion() {
 
         {/* MANTENIMIENTO */}
         {hab.estado === 'mantenimiento' && (
-          <div className="bg-gray-800 text-white rounded-3xl p-8 shadow-lg text-center mb-8">
-            <div className="text-4xl mb-4">🔧</div>
+          <div className="bg-gray-800 text-white rounded-2xl p-8 shadow-lg text-center mb-8">
+            <div className="text-4xl mb-4"><Icono name="cog" className="w-10 h-10 inline-block shrink-0" /></div>
             <h3 className="text-xl font-bold mb-2">En Mantenimiento</h3>
             <p className="text-gray-400">La habitación está bloqueada por mantenimiento o reparaciones.</p>
           </div>

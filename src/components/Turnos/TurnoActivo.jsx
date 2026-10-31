@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarMovimiento }) {
   const [mostrarMovimiento, setMostrarMovimiento] = useState(false)
@@ -130,7 +131,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
             <div className="bg-gray-50/60 p-3 rounded-xl border border-gray-100 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs text-gray-500 font-semibold mb-1">
                 <span>Efectivo</span>
-                <span className="text-[11px] text-emerald-600">💵</span>
+                <span className="text-[11px] text-emerald-600"><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span>
               </div>
               <span className="font-black text-gray-800 text-base">S/ {efectivo.toFixed(2)}</span>
             </div>
@@ -138,7 +139,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
             <div className={`p-3 rounded-xl border flex flex-col justify-between ${yape > 0 ? 'bg-purple-50/50 border-purple-100' : 'bg-gray-50/60 border-gray-100'}`}>
               <div className="flex items-center justify-between text-xs text-purple-700 font-semibold mb-1">
                 <span>Yape / Plin</span>
-                <span className="text-[11px]">📱</span>
+                <span className="text-[11px]"><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /></span>
               </div>
               <span className="font-black text-purple-900 text-base">S/ {yape.toFixed(2)}</span>
             </div>
@@ -146,7 +147,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
             <div className={`p-3 rounded-xl border flex flex-col justify-between ${tarjeta > 0 ? 'bg-blue-50/50 border-blue-100' : 'bg-gray-50/60 border-gray-100'}`}>
               <div className="flex items-center justify-between text-xs text-blue-700 font-semibold mb-1">
                 <span>Tarjeta (POS)</span>
-                <span className="text-[11px]">💳</span>
+                <span className="text-[11px]"><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span>
               </div>
               <span className="font-black text-blue-900 text-base">S/ {tarjeta.toFixed(2)}</span>
             </div>
@@ -154,7 +155,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
             <div className={`p-3 rounded-xl border flex flex-col justify-between ${transferencia > 0 ? 'bg-teal-50/50 border-teal-100' : 'bg-gray-50/60 border-gray-100'}`}>
               <div className="flex items-center justify-between text-xs text-teal-700 font-semibold mb-1">
                 <span>Transferencia</span>
-                <span className="text-[11px]">🏦</span>
+                <span className="text-[11px]"><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span>
               </div>
               <span className="font-black text-teal-900 text-base">S/ {transferencia.toFixed(2)}</span>
             </div>
@@ -173,7 +174,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
             onClick={() => setMostrarMovimiento(!mostrarMovimiento)}
             className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all border border-blue-100 flex items-center justify-center gap-1.5"
           >
-            <span>{mostrarMovimiento ? '✕ Cerrar Formulario' : '+ Nuevo Movimiento / Gasto'}</span>
+            <span>{mostrarMovimiento ? 'Cerrar Formulario' : '+ Nuevo Movimiento / Gasto'}</span>
           </button>
         </div>
 
@@ -297,7 +298,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
                     {mov.autorizado_por ? ` • Autorizado por ${mov.autorizado_por}` : ''}
                   </p>
                 </div>
-                <span className="text-xs font-black text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-lg whitespace-nowrap">
+                <span className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-lg whitespace-nowrap">
                   − S/ {parseFloat(mov.monto).toFixed(2)}
                 </span>
               </div>

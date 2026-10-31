@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTurnos } from '../hooks/useTurnos'
 
 import ReporteTurnoAnterior from '../components/Turnos/ReporteTurnoAnterior'
@@ -8,8 +7,6 @@ import TurnoActivo from '../components/Turnos/TurnoActivo'
 import CerrarTurno from '../components/Turnos/CerrarTurno'
 
 export default function Turnos() {
-  const navigate = useNavigate()
-  
   const {
     cargando,
     turnoActivo,

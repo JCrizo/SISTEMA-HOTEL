@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import EditarHuespedModal from './EditarHuespedModal'
 import CambiarHabitacionActivaModal from './CambiarHabitacionActivaModal'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function PanelHuespedActivo({
   hab,
@@ -144,7 +145,7 @@ export default function PanelHuespedActivo({
       {/* COLUMNA IZQUIERDA: Info y Acciones Rápidas */}
       <div className="space-y-6">
         {/* Huésped Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm relative overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
@@ -161,14 +162,14 @@ export default function PanelHuespedActivo({
                   className="flex-1 sm:flex-none text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-200 transition-colors"
                   title="Editar datos del huésped y tarifa"
                 >
-                  ✏️ Editar
+                  <Icono name="pencil" className="w-4 h-4 inline-block shrink-0" /> Editar
                 </button>
                 <button
                   onClick={() => setMostrarCambioHab(true)}
                   className="flex-1 sm:flex-none text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 transition-colors"
                   title="Mover huésped a otra habitación"
                 >
-                  🔀 Mover
+                  Mover
                 </button>
               </div>
             </div>
@@ -178,7 +179,7 @@ export default function PanelHuespedActivo({
             <p className="text-xl font-black text-gray-800">{huesped?.nombres || 'Sin nombre'} <span className="text-sm font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded ml-2">Titular</span></p>
             <div className="flex items-center gap-4 mt-1">
               <p className="text-sm font-bold text-gray-500">{huesped?.dni_pasaporte}</p>
-              {huesped?.telefono && <p className="text-sm font-bold text-gray-500">📞 {huesped.telefono}</p>}
+              {huesped?.telefono && <p className="text-sm font-bold text-gray-500"><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /> {huesped.telefono}</p>}
             </div>
 
             {/* ACOMPAÑANTES */}
@@ -207,9 +208,9 @@ export default function PanelHuespedActivo({
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Checkout</p>
               {new Date(hospedaje.salida_estimada) < new Date() ? (
                 <>
-                  <p className="text-sm font-bold text-orange-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
-                  <p className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                    ⚠ Checkout vencido
+                  <p className="text-sm font-bold text-amber-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+                  <p className="text-[10px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md mt-1 inline-block">
+                    <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Checkout vencido
                   </p>
                 </>
               ) : (
@@ -219,19 +220,19 @@ export default function PanelHuespedActivo({
           </div>
           
           {hospedaje.observaciones && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-              <p className="text-xs font-black text-yellow-800 uppercase tracking-wider mb-1">Observaciones</p>
-              <p className="text-sm font-medium text-yellow-700">{hospedaje.observaciones}</p>
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+              <p className="text-xs font-black text-amber-800 uppercase tracking-wider mb-1">Observaciones</p>
+              <p className="text-sm font-medium text-amber-700">{hospedaje.observaciones}</p>
             </div>
           )}
           
           {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
-            <div className="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-2">
-              <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               <div>
-                <p className="text-xs font-black text-indigo-800 uppercase tracking-wider capitalize">Requiere {hospedaje.comprobante}</p>
+                <p className="text-xs font-black text-blue-800 uppercase tracking-wider capitalize">Requiere {hospedaje.comprobante}</p>
                 {hospedaje.comprobante === 'factura' && hospedaje.ruc && (
-                  <p className="text-sm font-bold text-indigo-600">RUC: {hospedaje.ruc}</p>
+                  <p className="text-sm font-bold text-blue-600">RUC: {hospedaje.ruc}</p>
                 )}
               </div>
             </div>
@@ -241,8 +242,8 @@ export default function PanelHuespedActivo({
         {/* Acciones Rápidas */}
         <div className="grid grid-cols-2 gap-3">
           <button onClick={() => navigate(`/consumos/${hab.id}`)}
-            className="py-3 px-4 bg-white border border-orange-200 text-orange-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-orange-50 hover:border-orange-300 transition-all flex flex-col items-center justify-center gap-1 group">
-            <span className="text-2xl group-hover:scale-110 transition-transform">🍔</span>
+            className="py-3 px-4 bg-white border border-amber-200 text-amber-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-amber-50 hover:border-amber-300 transition-all flex flex-col items-center justify-center gap-1 group">
+            <span className="text-2xl group-hover:scale-110 transition-transform"><Icono name="receipt" className="w-6 h-6 inline-block shrink-0" /></span>
             Punto de Venta
           </button>
           <button
@@ -250,7 +251,7 @@ export default function PanelHuespedActivo({
             disabled={!turnoActivo}
             className="py-3 px-4 bg-white border border-purple-200 text-purple-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-purple-50 hover:border-purple-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">⚠️</span>
+            <span className="text-2xl group-hover:scale-110 transition-transform"><Icono name="alert" className="w-6 h-6 inline-block shrink-0" /></span>
             Cargos Extras
           </button>
           <button
@@ -258,22 +259,22 @@ export default function PanelHuespedActivo({
             disabled={!turnoActivo}
             className="py-3 px-4 bg-white border border-blue-200 text-blue-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">💰</span>
+            <span className="text-2xl group-hover:scale-110 transition-transform"><Icono name="cash" className="w-6 h-6 inline-block shrink-0" /></span>
             Abonar Pago
           </button>
           <button
             onClick={() => setMostrarExtension(true)}
-            className="py-3 px-4 bg-white border border-green-200 text-green-700 rounded-2xl text-sm font-bold shadow-sm hover:bg-green-50 hover:border-green-300 transition-all flex flex-col items-center justify-center gap-1 group"
+            className="py-3 px-4 bg-white border border-emerald-200 text-emerald-700 rounded-2xl text-sm font-bold shadow-sm hover:bg-emerald-50 hover:border-emerald-300 transition-all flex flex-col items-center justify-center gap-1 group"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+            <span className="text-2xl group-hover:scale-110 transition-transform"><Icono name="calendar" className="w-6 h-6 inline-block shrink-0" /></span>
             Modificar Fechas
           </button>
         </div>
 
         {!turnoActivo && (
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 text-center">
-            <p className="text-sm font-bold text-yellow-800 flex items-center justify-center gap-2">
-              <span>🔒</span> Sin turno activo: opciones de caja bloqueadas.
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-center">
+            <p className="text-sm font-bold text-amber-800 flex items-center justify-center gap-2">
+              <span><Icono name="lock" className="w-4 h-4 inline-block shrink-0" /></span> Sin turno activo: opciones de caja bloqueadas.
             </p>
           </div>
         )}
@@ -282,7 +283,7 @@ export default function PanelHuespedActivo({
       {/* COLUMNA DERECHA: Cuenta y Modales */}
       <div className="space-y-6">
         {/* Cuenta Resumen */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Estado de Cuenta
@@ -315,33 +316,33 @@ export default function PanelHuespedActivo({
               </div>
             </div>
 
-            <div className="bg-green-50 rounded-xl p-4 space-y-2 border border-green-100">
-              <p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-2">Abonos Realizados</p>
+            <div className="bg-emerald-50 rounded-xl p-4 space-y-2 border border-emerald-100">
+              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">Abonos Realizados</p>
               {pagosHospedaje > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-emerald-700">
                   <span className="font-bold">Pago Hospedaje</span><span className="font-black">− S/{pagosHospedaje.toFixed(2)}</span>
                 </div>
               )}
               {pagosConsumo > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-emerald-700">
                   <span className="font-bold">Pago Consumos</span><span className="font-black">− S/{pagosConsumo.toFixed(2)}</span>
                 </div>
               )}
               {pagosPenalidad > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-emerald-700">
                   <span className="font-bold">Pago Cargos Extras</span><span className="font-black">− S/{pagosPenalidad.toFixed(2)}</span>
                 </div>
               )}
               {totalPagadoReal === 0 && (
-                <p className="text-sm font-bold text-green-600/50 italic">Sin abonos registrados</p>
+                <p className="text-sm font-bold text-emerald-600/50 italic">Sin abonos registrados</p>
               )}
             </div>
 
-            <div className={`rounded-2xl p-5 border-2 flex justify-between items-center ${saldo > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-              <span className={`font-bold uppercase tracking-widest text-xs ${saldo > 0 ? 'text-red-500' : 'text-gray-500'}`}>
+            <div className={`rounded-2xl p-5 border-2 flex justify-between items-center ${saldo > 0 ? 'bg-rose-50 border-rose-200' : 'bg-gray-50 border-gray-200'}`}>
+              <span className={`font-bold uppercase tracking-widest text-xs ${saldo > 0 ? 'text-rose-500' : 'text-gray-500'}`}>
                 {saldo > 0 ? 'Saldo a Cobrar' : 'Cuenta Saldada'}
               </span>
-              <span className={`font-black text-2xl ${saldo > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+              <span className={`font-black text-2xl ${saldo > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
                 S/{Math.max(0, saldo).toFixed(2)}
               </span>
             </div>
@@ -350,9 +351,9 @@ export default function PanelHuespedActivo({
 
         {/* Modal de Pago */}
         {mostrarPago && (
-          <div className="bg-white rounded-3xl border-2 border-blue-500 p-6 shadow-xl relative animate-fadeIn">
+          <div className="bg-white rounded-2xl border-2 border-blue-500 p-6 shadow-xl relative animate-fadeIn">
             <h4 className="text-lg font-black text-blue-900 mb-4 flex items-center gap-2">
-              <span>💰</span> Registrar Nuevo Abono
+              <span><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span> Registrar Nuevo Abono
             </h4>
             
             <div className="space-y-4">
@@ -406,9 +407,9 @@ export default function PanelHuespedActivo({
 
         {/* Modal de Penalidades */}
         {mostrarPenalidad && (
-          <div className="bg-white rounded-3xl border-2 border-purple-500 p-6 shadow-xl relative animate-fadeIn">
+          <div className="bg-white rounded-2xl border-2 border-purple-500 p-6 shadow-xl relative animate-fadeIn">
              <h4 className="text-lg font-black text-purple-900 mb-4 flex items-center gap-2">
-              <span>⚠️</span> Agregar Cargo Extra
+              <span><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /></span> Agregar Cargo Extra
             </h4>
             
             <div className="space-y-4">
@@ -437,9 +438,9 @@ export default function PanelHuespedActivo({
 
         {/* Modal Extension */}
         {mostrarExtension && (
-          <div className="bg-white rounded-3xl border-2 border-green-500 p-6 shadow-xl relative animate-fadeIn">
-            <h4 className="text-lg font-black text-green-900 mb-2 flex items-center gap-2">
-              <span>📅</span> Modificar Fechas
+          <div className="bg-white rounded-2xl border-2 border-emerald-500 p-6 shadow-xl relative animate-fadeIn">
+            <h4 className="text-lg font-black text-emerald-900 mb-2 flex items-center gap-2">
+              <span><Icono name="calendar" className="w-4 h-4 inline-block shrink-0" /></span> Modificar Fechas
             </h4>
             <p className="text-sm font-bold text-gray-500 mb-4">
               Checkout actual: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short'})} a las 12:00 PM
@@ -453,16 +454,16 @@ export default function PanelHuespedActivo({
                   value={fechaExtension}
                   onChange={e => setFechaExtension(e.target.value)}
                   min={new Date(hospedaje.ingreso).toISOString().split('T')[0]}
-                  className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-gray-50 focus:bg-white transition-colors"
+                  className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-500 bg-gray-50 focus:bg-white transition-colors"
                 />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método de Pago de la Extensión</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {[['efectivo','💵 Efectivo'],['yape','📱 Yape/Plin'],['tarjeta','💳 Tarjeta'],['transferencia','🏦 Transf.']].map(([val, label]) => (
+                  {[['efectivo','Efectivo'],['yape','Yape/Plin'],['tarjeta','Tarjeta'],['transferencia','Transf.']].map(([val, label]) => (
                     <button key={val} onClick={() => setMetodoPagoExtension(val)}
                       className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
-                        metodoPagoExtension === val ? 'bg-green-50 border-green-400 text-green-700' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                        metodoPagoExtension === val ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
                       }`}>{label}</button>
                   ))}
                 </div>
@@ -473,7 +474,7 @@ export default function PanelHuespedActivo({
               <button onClick={() => setMostrarExtension(false)}
                 className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
               <button onClick={handleExtenderEstadia}
-                className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700 active:scale-[0.98] transition-transform">
+                className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-transform">
                 Guardar Cambios
               </button>
             </div>
@@ -481,7 +482,7 @@ export default function PanelHuespedActivo({
         )}
 
         <button onClick={handleCheckout}
-          className="w-full py-4 mt-6 bg-red-600 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-red-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 border-4 border-red-100">
+          className="w-full py-4 mt-6 bg-rose-600 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-rose-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 border-4 border-rose-100">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           Finalizar Hospedaje (Checkout)
         </button>

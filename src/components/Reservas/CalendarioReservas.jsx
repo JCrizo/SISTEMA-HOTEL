@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Icono from '../Compartido/Icono'
 
 export default function CalendarioReservas({ habitaciones, ocupaciones, cargando }) {
   const navigate = useNavigate()
@@ -83,9 +84,9 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
       return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-600 text-white shadow-2xs'
     }
     if (ocupacion.estado === 'confirmada') {
-      return 'bg-gradient-to-r from-blue-600 to-indigo-600 border-indigo-700 text-white shadow-2xs'
+      return 'bg-gradient-to-r from-blue-600 to-blue-700 border-blue-700 text-white shadow-2xs'
     }
-    return 'bg-gradient-to-r from-amber-400 to-orange-500 border-amber-600 text-white shadow-2xs' // pendiente
+    return 'bg-gradient-to-r from-amber-400 to-amber-500 border-amber-600 text-white shadow-2xs' // pendiente
   }
 
   return (
@@ -122,7 +123,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
           </div>
 
           <span className="text-xs font-black text-gray-700 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs">
-            📅 {tituloPeriodo}
+            <Icono name="calendar" className="w-4 h-4 inline-block shrink-0" /> {tituloPeriodo}
           </span>
         </div>
 
@@ -264,7 +265,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
                         title={`${oc.nombre} (${oc.tipo}) - Click para ver detalles`}
                       >
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-xs">{oc.tipo === 'hospedaje' ? '🛌' : '📅'}</span>
+                          <span className="shrink-0"><Icono name={oc.tipo === 'hospedaje' ? 'user' : 'calendar'} className="w-3 h-3" /></span>
                           <span className="truncate font-bold">{oc.nombre}</span>
                         </div>
                       </div>
@@ -280,7 +281,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
       {/* MODAL DE DETALLES RÁPIDOS AL CLICKEAR UNA RESERVA/HOSPEDAJE EN EL CALENDARIO */}
       {reservaSeleccionada && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
               <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
                 reservaSeleccionada.tipo === 'hospedaje'
@@ -293,7 +294,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
                 onClick={() => setReservaSeleccionada(null)}
                 className="text-gray-400 hover:text-gray-600 font-bold p-1"
               >
-                ✕
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
               </button>
             </div>
 
