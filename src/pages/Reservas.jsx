@@ -55,6 +55,11 @@ export default function Reservas() {
     navigate(`/checkin/${reserva.habitacion_id}?reserva=${reserva.id}`)
   }
 
+  // Reservas cuya llegada ya pasó (antes de hoy) y siguen sin atender
+  const inicioHoy = new Date(); inicioHoy.setHours(0, 0, 0, 0)
+  const esVencida = (r) => new Date(r.fecha_llegada) < inicioHoy
+  const vencidas = reservas.filter(esVencida)
+
   if (cargandoRes && reservas.length === 0) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
@@ -138,6 +143,15 @@ export default function Reservas() {
         ) : (
           /* Vista Lista Original */
           <>
+            {vencidas.length > 0 && (
+              <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-4 py-3">
+                <Icono name="alert" className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm font-semibold">
+                  {vencidas.length === 1 ? 'Hay 1 reserva' : `Hay ${vencidas.length} reservas`} con llegada anterior a hoy que no se {vencidas.length === 1 ? 'ha' : 'han'} atendido.
+                  Conviértelas en check-in o anúlalas para mantener la lista al día.
+                </p>
+              </div>
+            )}
             {reservas.length === 0 && !cargandoRes ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm flex flex-col items-center justify-center">
             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-300 text-4xl mb-4">
@@ -149,7 +163,7 @@ export default function Reservas() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {reservas.map(r => (
-              <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-sm hover:border-blue-100 transition-all overflow-hidden flex flex-col">
+              <div key={r.id} className={`card card-hover overflow-hidden flex flex-col ${esVencida(r) ? '!border-amber-300' : ''}`}>
                 <div className="p-6 flex-1">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -167,7 +181,8 @@ export default function Reservas() {
                           N° {String(r.nro_ficha).padStart(6, '0')}
                         </span>
                       )}
-                      <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                      {esVencida(r) && <span className="badge badge-warn">Vencida</span>}
+                      <span className="badge badge-muted uppercase">
                         {r.estado}
                       </span>
                     </div>

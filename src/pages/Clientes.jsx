@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { clientesService } from '../services/clientesService';
 import Icono from '../components/Compartido/Icono'
 import { useAuth } from '../context/AuthContext'
+import HistorialHuesped from '../components/Clientes/HistorialHuesped'
 
 export default function Clientes() {
   const { usuario } = useAuth()
@@ -19,6 +20,7 @@ export default function Clientes() {
 
   // Modal de creación / edición
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [clienteHistorial, setClienteHistorial] = useState(null);
   const [editandoCliente, setEditandoCliente] = useState(null);
 
   const initialFormState = {
@@ -375,14 +377,20 @@ export default function Clientes() {
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
+                          onClick={() => setClienteHistorial(c)}
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          Historial
+                        </button>
+                        <button
                           onClick={() => abrirModalEditar(c)}
-                          className="px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => handleEliminar(c.id, c.nombres)}
-                          className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                         >
                           Eliminar
                         </button>
@@ -458,14 +466,20 @@ export default function Clientes() {
 
                 <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
                   <button
+                    onClick={() => setClienteHistorial(c)}
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Historial
+                  </button>
+                  <button
                     onClick={() => abrirModalEditar(c)}
-                    className="px-3 py-1 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleEliminar(c.id, c.nombres)}
-                    className="px-3 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   >
                     Eliminar
                   </button>
@@ -487,6 +501,10 @@ export default function Clientes() {
             {loading ? 'Cargando más...' : `Cargar más (${clientes.length} de ${totalCount})`}
           </button>
         </div>
+      )}
+
+      {clienteHistorial && (
+        <HistorialHuesped cliente={clienteHistorial} onCerrar={() => setClienteHistorial(null)} />
       )}
 
       {/* MODAL LIMPIO DE CREACIÓN / EDICIÓN */}
