@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import LimiteErrores from './components/Compartido/LimiteErrores'
 import MainLayout from './components/Layout/MainLayout'
 import Login from './pages/Login'
 import Habitaciones from './pages/Habitaciones'
@@ -30,7 +31,7 @@ function CargandoPagina() {
 }
 
 function L({ children }) {
-  return <Suspense fallback={<CargandoPagina />}>{children}</Suspense>
+  return <LimiteErrores><Suspense fallback={<CargandoPagina />}>{children}</Suspense></LimiteErrores>
 }
 
 function RutaProtegida({ children, roles }) {

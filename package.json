@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "verificar": "node scripts/verificar-imports.mjs",
+    "build": "node scripts/verificar-imports.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

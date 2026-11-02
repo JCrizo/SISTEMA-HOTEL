@@ -1,0 +1,4 @@
+1) Cierra "npm run dev".
+2) Descomprime este zip SOBRE la carpeta SISTEMA-HOTEL (acepta reemplazar archivos).
+3) npm run dev  -> revisa en localhost (Ctrl+Shift+R por la caché del PWA).
+4) git add . ; git commit -m "rediseño UI v2 sobrio" ; git push
