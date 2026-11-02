@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { clientesService } from '../services/clientesService';
 import Icono from '../components/Compartido/Icono'
+import { useAuth } from '../context/AuthContext'
 
 export default function Clientes() {
+  const { usuario } = useAuth()
+  const esAdmin = (usuario?.rol || '').toLowerCase().trim() === 'administrador'
   const [clientes, setClientes] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -68,6 +71,23 @@ export default function Clientes() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // Exporta a Excel la lista cargada (respeta la búsqueda actual). xlsx se carga solo al usarse.
+  const exportarExcel = async () => {
+    const XLSX = await import('xlsx')
+    const filas = clientes.map(c => ({
+      Documento: c.tipo_documento || '',
+      'N° documento': c.dni_pasaporte || '',
+      Nombres: c.nombres || '',
+      Teléfono: c.telefono || '',
+      Nacionalidad: c.nacionalidad || '',
+      'Tarifa habitual': c.tarifa_habitual ?? '',
+    }))
+    const hoja = XLSX.utils.json_to_sheet(filas)
+    const libro = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(libro, hoja, 'Huéspedes')
+    XLSX.writeFile(libro, `huespedes-${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
 
   const abrirModalNuevo = () => {
     setEditandoCliente(null);
@@ -157,15 +177,26 @@ export default function Clientes() {
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Gestiona el padrón de clientes, documentos y tarifas preferenciales</p>
         </div>
 
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        {esAdmin && (
+        <button
+          onClick={exportarExcel}
+          disabled={clientes.length === 0}
+          className="btn btn-secondary w-full sm:w-auto disabled:opacity-50"
+        >
+          Exportar Excel
+        </button>
+        )}
         <button
           onClick={abrirModalNuevo}
-          className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2"
+          className="btn btn-primary w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
           </svg>
           <span>Nuevo Huésped</span>
         </button>
+        </div>
       </div>
 
       {/* Barra de Búsqueda y Switcher de Vistas */}

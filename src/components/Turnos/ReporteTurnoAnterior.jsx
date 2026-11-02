@@ -1,6 +1,9 @@
+import { useAuth } from '../../context/AuthContext'
 import { exportarCierreTurnoPDF, exportarCierreTurnoExcel } from '../../utils/exportReportes'
 
 export default function ReporteTurnoAnterior({ turno, movimientos }) {
+  const { usuario } = useAuth()
+  const esAdmin = (usuario?.rol || '').toLowerCase().trim() === 'administrador'
   if (!turno) return null
 
   return (
@@ -20,6 +23,7 @@ export default function ReporteTurnoAnterior({ turno, movimientos }) {
           </p>
         </div>
 
+        {esAdmin && (
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => exportarCierreTurnoPDF(turno, movimientos, [], [])}
@@ -42,6 +46,7 @@ export default function ReporteTurnoAnterior({ turno, movimientos }) {
             <span>Excel</span>
           </button>
         </div>
+        )}
       </div>
 
       {/* Tarjetas de Físico Entregado */}
