@@ -1,3 +1,4 @@
+import Icono from '../Compartido/Icono'
 export default function SeccionEstadia({
   noches, actualizarNoches, fechaSalida, actualizarFechaSalida,
   tarifaPorNoche, setTarifaPorNoche, tarifa, montoEarly, setMontoEarly,
@@ -11,24 +12,24 @@ export default function SeccionEstadia({
       </h3>
 
       {/* Fecha y hora de ingreso real — obligatoria */}
-      <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-5 mb-4">
-        <label className="text-xs font-bold text-green-800 uppercase tracking-wide block mb-2">
-          🕐 Fecha y Hora de Ingreso Real <span className="text-red-500">*</span>
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-4">
+        <label className="text-xs font-bold text-emerald-800 uppercase tracking-wide block mb-2">
+          <Icono name="clock" className="w-4 h-4 inline-block shrink-0" /> Fecha y Hora de Ingreso Real <span className="text-rose-500">*</span>
         </label>
         <input
           type="datetime-local"
           value={fechaIngreso}
           onChange={e => setFechaIngreso(e.target.value)}
           required
-          className="w-full border-2 border-green-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-white transition-colors text-gray-800"
+          className="w-full border border-emerald-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-500 bg-white transition-colors text-gray-800"
         />
-        <p className="text-xs text-green-700 font-medium mt-1.5">
+        <p className="text-xs text-emerald-700 font-medium mt-1.5">
           Pre-llenada con la hora actual. Corrígela si el huésped ingresó antes.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <label className="text-xs font-bold text-blue-800 uppercase tracking-wide block mb-2">Noches a hospedarse</label>
           <input
             type="number"
@@ -38,7 +39,7 @@ export default function SeccionEstadia({
             onChange={e => actualizarNoches(e.target.value)}
             onFocus={e => e.target.select()}
             onWheel={e => e.target.blur()}
-            className="w-full border-2 border-white rounded-xl px-4 py-3 text-lg font-black text-blue-900 bg-white outline-none focus:border-blue-500 shadow-sm text-center"
+            className="w-full border border-white rounded-xl px-4 py-3 text-lg font-black text-blue-900 bg-white outline-none focus:border-blue-500 shadow-sm text-center"
           />
         </div>
 
@@ -49,7 +50,7 @@ export default function SeccionEstadia({
               type="date"
               value={fechaSalida}
               onChange={e => actualizarFechaSalida(e.target.value)}
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
             />
           </div>
           <div className="hidden sm:block w-px h-12 bg-gray-200"></div>
@@ -62,7 +63,7 @@ export default function SeccionEstadia({
               onChange={e => setTarifaPorNoche(e.target.value)}
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-bold text-gray-700"
             />
           </div>
         </div>
@@ -81,7 +82,7 @@ export default function SeccionEstadia({
           onFocus={e => e.target.select()}
           onWheel={e => e.target.blur()}
           placeholder="S/0.00 si no aplica"
-          className="w-full md:w-1/3 border-2 border-amber-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 bg-white transition-colors"
+          className="w-full md:w-1/3 border border-amber-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 bg-white transition-colors"
         />
         {parseFloat(montoEarly || 0) > 0 && (
           <p className="text-xs text-amber-700 font-bold mt-1">

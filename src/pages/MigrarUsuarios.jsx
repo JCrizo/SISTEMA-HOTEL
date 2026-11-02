@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import Icono from '../components/Compartido/Icono'
 
 export default function MigrarUsuarios() {
   const navigate = useNavigate()
@@ -107,13 +108,12 @@ export default function MigrarUsuarios() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-800 flex items-center justify-center p-4">
 
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 w-full max-w-md relative z-10 border border-white/20">
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10 border border-white/20">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg transform -rotate-6">
-            🔑
+          <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg transform -rotate-6">
+            <Icono name="key" className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-black text-gray-800 tracking-tight">
             Crear mi Contraseña
@@ -126,7 +126,7 @@ export default function MigrarUsuarios() {
         {mensajeExito ? (
           <div className="space-y-5 text-center animate-fade-in py-2">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
-              ✓
+              <Icono name="check" className="w-8 h-8" strokeWidth={3} />
             </div>
             
             <div>
@@ -141,7 +141,7 @@ export default function MigrarUsuarios() {
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.98]"
+              className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.98]"
             >
               Ir a Iniciar Sesión
             </button>
@@ -203,15 +203,15 @@ export default function MigrarUsuarios() {
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3.5 rounded-xl border border-red-100 font-medium">
-                ⚠️ {error}
+              <div className="flex items-center gap-2 bg-rose-50 text-rose-700 text-sm p-3.5 rounded-xl border border-rose-100 font-semibold">
+                <Icono name="alert" className="w-4 h-4 shrink-0" /> {error}
               </div>
             )}
 
             <button 
               type="submit" 
               disabled={cargando}
-              className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {cargando ? 'Verificando y Creando...' : 'Crear mi Contraseña'}
             </button>

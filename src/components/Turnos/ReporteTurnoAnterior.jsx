@@ -1,102 +1,146 @@
+import { useAuth } from '../../context/AuthContext'
 import { exportarCierreTurnoPDF, exportarCierreTurnoExcel } from '../../utils/exportReportes'
 
 export default function ReporteTurnoAnterior({ turno, movimientos }) {
+  const { usuario } = useAuth()
+  const esAdmin = (usuario?.rol || '').toLowerCase().trim() === 'administrador'
   if (!turno) return null
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 mb-6 shadow-sm">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-2xs mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-gray-100">
         <div>
-          <p className="text-xs font-bold text-blue-800 uppercase tracking-widest mb-1">Reporte Turno Anterior</p>
-          <p className="text-xl font-black text-blue-900 capitalize">{turno.tipo}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100">
+              Turno Anterior
+            </span>
+            <span className="text-base font-black text-gray-800 capitalize">
+              Turno {turno.tipo}
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 mt-1 font-medium">
+            Cerrado el {new Date(turno.cierre).toLocaleString('es-PE')} por <strong className="text-gray-700">{turno.usuarios?.nombre || 'Recepcionista'}</strong>
+          </p>
         </div>
-        <div className="flex gap-2">
+
+        {esAdmin && (
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => exportarCierreTurnoPDF(turno, movimientos, [], [])}
-            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition-colors shadow-sm"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/70 rounded-xl text-xs font-bold transition-all shadow-2xs"
+            title="Exportar reporte en PDF"
           >
-            📄 PDF
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>PDF</span>
           </button>
           <button
             onClick={() => exportarCierreTurnoExcel(turno, movimientos, [], [])}
-            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition-colors shadow-sm"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/70 rounded-xl text-xs font-bold transition-all shadow-2xs"
+            title="Exportar reporte en Excel"
           >
-            📊 Excel
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Excel</span>
           </button>
         </div>
-      </div>
-      
-      <div className="flex flex-col gap-1 mb-4 text-sm text-blue-800">
-        <p><span className="font-semibold opacity-75">Cierre:</span> {new Date(turno.cierre).toLocaleString('es-PE')}</p>
-        <p><span className="font-semibold opacity-75">Recepcionista:</span> {turno.usuarios?.nombre || 'No registrado'}</p>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-50 shadow-sm">
-          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1" title="Lo que el recepcionista declaró dejar en billetes/monedas">Físico Entregado (Principal)</p>
-          <p className="text-lg font-black text-blue-900">S/{turno.caja_principal_actual}</p>
+      {/* Tarjetas de Físico Entregado */}
+      <div className="grid grid-cols-2 gap-3 my-4">
+        <div className="bg-gray-50/70 rounded-xl p-3 border border-gray-100">
+          <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">
+            Físico Entregado (Principal)
+          </p>
+          <p className="text-xl font-black text-gray-800">
+            S/ {parseFloat(turno.caja_principal_actual || 0).toFixed(2)}
+          </p>
         </div>
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-50 shadow-sm">
-          <p className="text-xs text-blue-600/70 font-bold uppercase mb-1">Físico Entregado (Consumos)</p>
-          <p className="text-lg font-black text-blue-900">S/{turno.caja_consumos_actual}</p>
+        <div className="bg-gray-50/70 rounded-xl p-3 border border-gray-100">
+          <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">
+            Físico Entregado (Consumos)
+          </p>
+          <p className="text-xl font-black text-gray-800">
+            S/ {parseFloat(turno.caja_consumos_actual || 0).toFixed(2)}
+          </p>
         </div>
       </div>
 
+      {/* Desglose de Medios de Pago */}
       {turno.desglose_efectivo != null && (
-        <div className="bg-white rounded-xl p-4 border border-blue-50 shadow-sm mb-4">
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3">Medios de pago</p>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm items-center">
-              <span className="text-gray-600 flex items-center gap-2">💵 Efectivo</span>
-              <span className="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">S/{parseFloat(turno.desglose_efectivo || 0).toFixed(2)}</span>
+        <div className="bg-gray-50/50 rounded-xl p-3.5 border border-gray-100 mb-3">
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-2">
+            Desglose de medios de pago declarados
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100">
+              <span className="text-gray-500 font-semibold">Efectivo</span>
+              <span className="font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                S/ {parseFloat(turno.desglose_efectivo || 0).toFixed(2)}
+              </span>
             </div>
             {parseFloat(turno.desglose_yape || 0) > 0 && (
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-gray-600 flex items-center gap-2">📱 Yape</span>
-                <span className="font-bold text-gray-800">S/{parseFloat(turno.desglose_yape).toFixed(2)}</span>
+              <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100">
+                <span className="text-gray-500 font-semibold">Yape/Plin</span>
+                <span className="font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">
+                  S/ {parseFloat(turno.desglose_yape).toFixed(2)}
+                </span>
               </div>
             )}
             {parseFloat(turno.desglose_tarjeta || 0) > 0 && (
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-gray-600 flex items-center gap-2">💳 Tarjeta</span>
-                <span className="font-bold text-gray-800">S/{parseFloat(turno.desglose_tarjeta).toFixed(2)}</span>
+              <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100">
+                <span className="text-gray-500 font-semibold">Tarjeta</span>
+                <span className="font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                  S/ {parseFloat(turno.desglose_tarjeta).toFixed(2)}
+                </span>
               </div>
             )}
             {parseFloat(turno.desglose_transferencia || 0) > 0 && (
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-gray-600 flex items-center gap-2">🏦 Transf.</span>
-                <span className="font-bold text-gray-800">S/{parseFloat(turno.desglose_transferencia).toFixed(2)}</span>
+              <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100">
+                <span className="text-gray-500 font-semibold">Transf.</span>
+                <span className="font-bold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
+                  S/ {parseFloat(turno.desglose_transferencia).toFixed(2)}
+                </span>
               </div>
             )}
           </div>
         </div>
       )}
 
+      {/* Movimientos si hubo */}
       {movimientos.length > 0 && (
-        <div className="bg-white rounded-xl p-4 border border-blue-50 shadow-sm mb-4">
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3">Movimientos</p>
-          <div className="space-y-3">
+        <div className="bg-gray-50/50 rounded-xl p-3.5 border border-gray-100 mb-3">
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-2">
+            Movimientos registrados ({movimientos.length})
+          </p>
+          <div className="space-y-2">
             {movimientos.map(mov => (
-              <div key={mov.id} className="flex justify-between items-start pb-2 border-b border-gray-50 last:border-0 last:pb-0">
+              <div key={mov.id} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 text-xs">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{mov.concepto}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="font-bold text-gray-800">{mov.concepto}</p>
+                  <p className="text-[10px] text-gray-400">
                     {mov.tipo === 'prestamo_entre_cajas'
                       ? `Préstamo: ${mov.caja_origen} → ${mov.caja_destino}`
                       : `Salida de caja ${mov.caja_origen}`}
                   </p>
                 </div>
-                <span className="text-sm font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">− S/{mov.monto}</span>
+                <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
+                  − S/ {parseFloat(mov.monto).toFixed(2)}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
 
+      {/* Observaciones */}
       {turno.observaciones && (
-        <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
-          <p className="text-xs text-yellow-800 font-bold uppercase mb-1">Observaciones</p>
-          <p className="text-sm text-yellow-900">{turno.observaciones}</p>
+        <div className="bg-amber-50/70 rounded-xl p-3 border border-amber-200/60 text-xs text-amber-900">
+          <strong className="block font-bold text-amber-800 mb-0.5">Observaciones de entrega:</strong>
+          {turno.observaciones}
         </div>
       )}
     </div>

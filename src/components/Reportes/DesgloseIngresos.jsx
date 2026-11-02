@@ -1,6 +1,6 @@
 export default function DesgloseIngresos({ stats, totalIngresos }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+    <div className="card p-4 sm:p-6 h-full flex flex-col">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-gray-800">Desglose de Ingresos</h3>
         <p className="text-sm text-gray-500">Distribución de las ganancias</p>
@@ -9,7 +9,7 @@ export default function DesgloseIngresos({ stats, totalIngresos }) {
       <div className="space-y-4 flex-1">
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-bold text-gray-600 flex items-center gap-2">🛏️ Hospedaje</span>
+            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Hospedaje</span>
             <span className="font-black text-gray-800">S/{stats.ingresosHospedaje.toFixed(2)}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
@@ -19,17 +19,17 @@ export default function DesgloseIngresos({ stats, totalIngresos }) {
 
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-bold text-gray-600 flex items-center gap-2">🍔 Consumos</span>
+            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Consumos</span>
             <span className="font-black text-gray-800">S/{stats.ingresosConsumos.toFixed(2)}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-            <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: `${totalIngresos > 0 ? (stats.ingresosConsumos / totalIngresos) * 100 : 0}%` }}></div>
+            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${totalIngresos > 0 ? (stats.ingresosConsumos / totalIngresos) * 100 : 0}%` }}></div>
           </div>
         </div>
 
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-bold text-gray-600 flex items-center gap-2">🚗 Cochera</span>
+            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Cochera</span>
             <span className="font-black text-gray-800">S/{stats.ingresosCochera.toFixed(2)}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
@@ -40,7 +40,7 @@ export default function DesgloseIngresos({ stats, totalIngresos }) {
 
       <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
         <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Total</span>
-        <span className="text-2xl font-black text-green-700">S/{totalIngresos.toFixed(2)}</span>
+        <span className="text-2xl font-black text-emerald-700">S/{totalIngresos.toFixed(2)}</span>
       </div>
     </div>
   )

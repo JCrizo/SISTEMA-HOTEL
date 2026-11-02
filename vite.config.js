@@ -7,12 +7,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: { navigateFallbackDenylist: [/^\/api\//] },
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Sistema Hotel',
         short_name: 'Hotel',
         description: 'Sistema de gestión hotelera',
-        theme_color: '#16a34a',
+        theme_color: '#2563eb',
         background_color: '#f3f4f6',
         display: 'standalone',
         orientation: 'portrait',

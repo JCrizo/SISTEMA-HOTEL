@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useReportes } from '../hooks/useReportes'
 
 import MetricasPrincipales from '../components/Reportes/MetricasPrincipales'
@@ -8,8 +7,6 @@ import DeudasPendientes from '../components/Reportes/DeudasPendientes'
 import HospedajesActivos from '../components/Reportes/HospedajesActivos'
 
 function Reportes() {
-  const navigate = useNavigate()
-  
   const {
     cargando,
     periodo,
@@ -36,34 +33,23 @@ function Reportes() {
   const totalIngresos = stats.ingresosHospedaje + stats.ingresosConsumos + stats.ingresosCochera
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Volver"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">Panel de Estadísticas</h2>
-            <p className="text-sm text-gray-500 font-medium">Visualiza el rendimiento de tu negocio</p>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-5 pb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="page-title">Panel de Estadísticas</h1>
+          <p className="page-sub">Visualiza el rendimiento de tu negocio</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Periodo:</label>
+        <div className="flex items-center gap-2">
+          <label className="label !mb-0">Periodo</label>
           <select
             value={periodo}
             onChange={e => setPeriodo(e.target.value)}
-            className="border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white shadow-sm"
+            className="input !w-auto !py-2 font-bold"
           >
-            <option value="hoy">📅 Hoy</option>
-            <option value="semana">📆 Últimos 7 días</option>
-            <option value="mes">📊 Este mes</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Últimos 7 días</option>
+            <option value="mes">Este mes</option>
           </select>
         </div>
       </div>

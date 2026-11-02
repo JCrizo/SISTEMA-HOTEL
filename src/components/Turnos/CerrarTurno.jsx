@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function CerrarTurno({ cerrarTurno }) {
   const navigate = useNavigate()
@@ -13,7 +14,7 @@ export default function CerrarTurno({ cerrarTurno }) {
 
   async function handleCerrar() {
     if (!cajaPrincipalFinal) return
-    if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente para entregar el turno.')) return
+    if (!confirm('¿Confirmar cierre de turno? Se cerrará tu sesión automáticamente para entregar la caja al siguiente turno.')) return
     
     setError('')
     setGuardando(true)
@@ -22,63 +23,80 @@ export default function CerrarTurno({ cerrarTurno }) {
       logout()
       navigate('/login')
     } else {
-      setError('Error al cerrar el turno. Es posible que no tengas permisos para cerrar el turno de otro usuario, o haya un problema de conexión.')
+      setError('Error al cerrar el turno. Verifica que tengas los permisos correspondientes o que la conexión esté activa.')
     }
     setGuardando(false)
   }
 
   return (
-    <div className="bg-red-50 rounded-2xl shadow-sm border border-red-100 p-6">
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-red-800">Cierre de Turno</h3>
-        <p className="text-sm text-red-600/80">Declara el dinero físico antes de entregar la caja.</p>
+    <div className="bg-white rounded-2xl shadow-2xs border border-rose-100 p-5 sm:p-6">
+      <div className="mb-5 pb-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+          <h3 className="text-lg font-black text-gray-800">Cierre y Entrega de Turno</h3>
+        </div>
+        <p className="text-xs text-gray-400 font-medium mt-0.5">
+          Declara el conteo de dinero físico que dejas físicamente en la gaveta
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="text-xs font-bold text-red-700 uppercase block mb-1">Caja Principal Final (S/)</label>
+          <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block mb-1">
+            Caja Principal Final (S/) *
+          </label>
           <input
             type="number"
+            step="0.01"
+            required
             value={cajaPrincipalFinal}
             onChange={e => setCajaPrincipalFinal(e.target.value)}
-            placeholder="Efectivo en caja"
-            className="w-full border-2 border-red-200 rounded-xl px-4 py-3 text-lg font-bold focus:border-red-500 outline-none bg-white"
+            placeholder="0.00"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg font-black text-gray-800 focus:border-rose-500 focus:bg-white outline-none transition-colors"
           />
+          <span className="text-[11px] text-gray-400 mt-1 block">Efectivo total en billetes/monedas</span>
         </div>
+
         <div>
-          <label className="text-xs font-bold text-red-700 uppercase block mb-1">Caja Consumos Final (S/)</label>
+          <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block mb-1">
+            Caja Consumos Final (S/)
+          </label>
           <input
             type="number"
+            step="0.01"
             value={cajaConsumosFinal}
             onChange={e => setCajaConsumosFinal(e.target.value)}
-            placeholder="Efectivo en caja"
-            className="w-full border-2 border-red-200 rounded-xl px-4 py-3 text-lg font-bold focus:border-red-500 outline-none bg-white"
+            placeholder="0.00"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg font-black text-gray-800 focus:border-rose-500 focus:bg-white outline-none transition-colors"
           />
+          <span className="text-[11px] text-gray-400 mt-1 block">Efectivo de ventas de cafetería/tienda</span>
         </div>
       </div>
       
-      <div className="mb-6">
-        <label className="text-xs font-bold text-red-700 uppercase block mb-1">Novedades u Observaciones</label>
+      <div className="mb-5">
+        <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block mb-1">
+          Novedades u Observaciones de Entrega
+        </label>
         <textarea
           value={observaciones}
           onChange={e => setObservaciones(e.target.value)}
-          placeholder="Ej: Faltan 10 soles en caja principal, dejé llave en recepción..."
-          className="w-full border border-red-200 rounded-xl px-4 py-3 text-sm focus:border-red-500 outline-none min-h-[100px] resize-y bg-white"
+          placeholder="Ej: Faltan S/ 5 en caja chica, dejé llave de habitación 204 en recepción..."
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:border-rose-500 focus:bg-white outline-none min-h-[80px] resize-y"
         />
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-100 border-l-4 border-red-600 text-red-800 p-4 rounded text-sm font-bold shadow-sm">
-          {error}
+        <div className="mb-5 bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-xl text-xs font-bold">
+          <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> {error}
         </div>
       )}
 
       <button
         onClick={handleCerrar}
         disabled={guardando || !cajaPrincipalFinal}
-        className="w-full py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl text-lg font-black shadow-md transition-transform active:scale-[0.98] disabled:opacity-50"
+        className="bg-rose-600 hover:bg-rose-700 w-full py-3.5 text-white rounded-xl text-sm font-bold shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
       >
-        {guardando ? 'Cerrando turno...' : 'Entregar Turno y Salir'}
+        {guardando ? 'Cerrando turno y sesión...' : 'Entregar Turno y Cerrar Sesión'}
       </button>
     </div>
   )

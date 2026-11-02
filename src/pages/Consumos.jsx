@@ -8,6 +8,7 @@ import AvisoSinTurno from '../components/AvisoSinTurno'
 import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 import CatalogoProductos from '../components/Consumos/CatalogoProductos'
 import ListaConsumosRegistrados from '../components/Consumos/ListaConsumosRegistrados'
+import Icono from '../components/Compartido/Icono'
 
 function Consumos() {
   const { id } = useParams()
@@ -46,28 +47,28 @@ function Consumos() {
   const totalConsumos = consumos.reduce((s, c) => s + parseFloat(c.precio_unitario) * c.cantidad, 0)
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col -mx-3 sm:mx-0">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
+      <header className="card overflow-hidden sm:rounded-2xl rounded-none">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(`/habitacion/${id}`)}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors flex-shrink-0"
+            title="Volver a la habitación"
+            aria-label="Volver a la habitación"
+            className="btn btn-secondary !px-0 w-11 sm:w-10 shrink-0"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <Icono name="chevronLeft" className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-black text-gray-800 truncate">
-              Punto de Venta · <span className="text-blue-600">Hab. {hab.numero}</span>
+              Punto de Venta · <span className="text-gray-500">Hab. {hab.numero}</span>
             </h2>
             <p className="text-xs text-gray-500 font-medium hidden sm:block">Carga productos a la cuenta del huésped</p>
           </div>
           {/* Badge cuenta en móvil */}
           {consumos.length > 0 && (
             <div className="flex-shrink-0 lg:hidden">
-              <span className="text-xs font-black bg-blue-600 text-white px-2.5 py-1 rounded-full">
+              <span className="text-xs font-black bg-gray-900 text-white px-2.5 py-1 rounded-full">
                 S/{totalConsumos.toFixed(2)}
               </span>
             </div>
@@ -84,7 +85,7 @@ function Consumos() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            🏷️ Catálogo
+            <Icono name="tag" className="w-4 h-4 inline-block shrink-0" /> Catálogo
           </button>
           <button
             onClick={() => setTabActivo('cuenta')}
@@ -94,9 +95,9 @@ function Consumos() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            🧾 Cuenta
+            <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Cuenta
             {consumos.length > 0 && (
-              <span className="absolute top-1.5 right-6 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              <span className="absolute top-1.5 right-6 w-5 h-5 bg-gray-900 text-white text-[10px] font-black rounded-full flex items-center justify-center">
                 {consumos.length}
               </span>
             )}

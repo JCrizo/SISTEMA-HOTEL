@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import EditarHuespedModal from './EditarHuespedModal'
 import CambiarHabitacionActivaModal from './CambiarHabitacionActivaModal'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function PanelHuespedActivo({
   hab,
@@ -144,31 +145,30 @@ export default function PanelHuespedActivo({
       {/* COLUMNA IZQUIERDA: Info y Acciones Rápidas */}
       <div className="space-y-6">
         {/* Huésped Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+        <div className="card p-4 sm:p-6">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               Datos del Huésped
             </h3>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 text-center">
+              <span className="badge badge-muted justify-center !text-xs">
                 Ficha N° {String(hospedaje.nro_ficha ?? 0).padStart(6, '0')}
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setMostrarEditar(true)}
-                  className="flex-1 sm:flex-none text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-200 transition-colors"
+                  className="btn btn-secondary btn-sm flex-1 sm:flex-none"
                   title="Editar datos del huésped y tarifa"
                 >
-                  ✏️ Editar
+                  <Icono name="pencil" className="w-4 h-4 inline-block shrink-0" /> Editar
                 </button>
                 <button
                   onClick={() => setMostrarCambioHab(true)}
-                  className="flex-1 sm:flex-none text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 transition-colors"
+                  className="btn btn-secondary btn-sm flex-1 sm:flex-none"
                   title="Mover huésped a otra habitación"
                 >
-                  🔀 Mover
+                  Mover
                 </button>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function PanelHuespedActivo({
             <p className="text-xl font-black text-gray-800">{huesped?.nombres || 'Sin nombre'} <span className="text-sm font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded ml-2">Titular</span></p>
             <div className="flex items-center gap-4 mt-1">
               <p className="text-sm font-bold text-gray-500">{huesped?.dni_pasaporte}</p>
-              {huesped?.telefono && <p className="text-sm font-bold text-gray-500">📞 {huesped.telefono}</p>}
+              {huesped?.telefono && <p className="text-sm font-bold text-gray-500"><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /> {huesped.telefono}</p>}
             </div>
 
             {/* ACOMPAÑANTES */}
@@ -188,7 +188,7 @@ export default function PanelHuespedActivo({
                 <div className="space-y-1.5">
                   {hospedaje.huesped_hospedaje.filter(h => !h.es_titular).map((ac, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
                       <p className="text-sm font-bold text-gray-700">{ac.clientes?.nombres}</p>
                       <span className="text-xs font-bold text-gray-400">({ac.clientes?.dni_pasaporte})</span>
                     </div>
@@ -207,31 +207,31 @@ export default function PanelHuespedActivo({
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Checkout</p>
               {new Date(hospedaje.salida_estimada) < new Date() ? (
                 <>
-                  <p className="text-sm font-bold text-orange-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
-                  <p className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                    ⚠ Checkout vencido
+                  <p className="text-sm font-bold text-amber-600">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+                  <p className="badge badge-warn mt-1">
+                    <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Checkout vencido
                   </p>
                 </>
               ) : (
-                <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
+                <p className="text-sm font-bold text-gray-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
               )}
             </div>
           </div>
           
           {hospedaje.observaciones && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-              <p className="text-xs font-black text-yellow-800 uppercase tracking-wider mb-1">Observaciones</p>
-              <p className="text-sm font-medium text-yellow-700">{hospedaje.observaciones}</p>
+            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Observaciones</p>
+              <p className="text-sm font-medium text-gray-700">{hospedaje.observaciones}</p>
             </div>
           )}
           
           {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
-            <div className="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-2">
-              <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               <div>
-                <p className="text-xs font-black text-indigo-800 uppercase tracking-wider capitalize">Requiere {hospedaje.comprobante}</p>
+                <p className="text-[11px] font-bold text-gray-600 uppercase tracking-wide capitalize">Requiere {hospedaje.comprobante}</p>
                 {hospedaje.comprobante === 'factura' && hospedaje.ruc && (
-                  <p className="text-sm font-bold text-indigo-600">RUC: {hospedaje.ruc}</p>
+                  <p className="text-sm font-bold text-gray-700">RUC: {hospedaje.ruc}</p>
                 )}
               </div>
             </div>
@@ -241,39 +241,39 @@ export default function PanelHuespedActivo({
         {/* Acciones Rápidas */}
         <div className="grid grid-cols-2 gap-3">
           <button onClick={() => navigate(`/consumos/${hab.id}`)}
-            className="py-3 px-4 bg-white border border-orange-200 text-orange-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-orange-50 hover:border-orange-300 transition-all flex flex-col items-center justify-center gap-1 group">
-            <span className="text-2xl group-hover:scale-110 transition-transform">🍔</span>
+            className="btn btn-secondary !h-auto !flex-col !py-3 gap-1 group text-gray-700">
+            <span className="text-gray-500 group-hover:text-blue-600 transition-colors"><Icono name="receipt" className="w-6 h-6 inline-block shrink-0" /></span>
             Punto de Venta
           </button>
           <button
             onClick={() => setMostrarPenalidad(!mostrarPenalidad)}
             disabled={!turnoActivo}
-            className="py-3 px-4 bg-white border border-purple-200 text-purple-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-purple-50 hover:border-purple-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
+            className="btn btn-secondary !h-auto !flex-col !py-3 gap-1 group text-gray-700"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">⚠️</span>
+            <span className="text-gray-500 group-hover:text-blue-600 transition-colors"><Icono name="alert" className="w-6 h-6 inline-block shrink-0" /></span>
             Cargos Extras
           </button>
           <button
             onClick={() => setMostrarPago(true)}
             disabled={!turnoActivo}
-            className="py-3 px-4 bg-white border border-blue-200 text-blue-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all flex flex-col items-center justify-center gap-1 group disabled:opacity-50"
+            className="btn btn-secondary !h-auto !flex-col !py-3 gap-1 group text-gray-700"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">💰</span>
+            <span className="text-gray-500 group-hover:text-blue-600 transition-colors"><Icono name="cash" className="w-6 h-6 inline-block shrink-0" /></span>
             Abonar Pago
           </button>
           <button
             onClick={() => setMostrarExtension(true)}
-            className="py-3 px-4 bg-white border border-green-200 text-green-700 rounded-2xl text-sm font-bold shadow-sm hover:bg-green-50 hover:border-green-300 transition-all flex flex-col items-center justify-center gap-1 group"
+            className="btn btn-secondary !h-auto !flex-col !py-3 gap-1 group text-gray-700"
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">📅</span>
+            <span className="text-gray-500 group-hover:text-blue-600 transition-colors"><Icono name="calendar" className="w-6 h-6 inline-block shrink-0" /></span>
             Modificar Fechas
           </button>
         </div>
 
         {!turnoActivo && (
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 text-center">
-            <p className="text-sm font-bold text-yellow-800 flex items-center justify-center gap-2">
-              <span>🔒</span> Sin turno activo: opciones de caja bloqueadas.
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-center">
+            <p className="text-sm font-semibold text-gray-600 flex items-center justify-center gap-2">
+              <span><Icono name="lock" className="w-4 h-4 inline-block shrink-0" /></span> Sin turno activo: opciones de caja bloqueadas.
             </p>
           </div>
         )}
@@ -282,8 +282,8 @@ export default function PanelHuespedActivo({
       {/* COLUMNA DERECHA: Cuenta y Modales */}
       <div className="space-y-6">
         {/* Cuenta Resumen */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+        <div className="card p-4 sm:p-6">
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-5 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Estado de Cuenta
           </h3>
@@ -300,7 +300,7 @@ export default function PanelHuespedActivo({
               </div>
             )}
             {totalPenalidades > 0 && (
-              <div className="flex justify-between items-center text-sm text-purple-700">
+              <div className="flex justify-between items-center text-sm text-gray-700">
                 <span className="font-bold">Cargos Adicionales / Penalidades</span>
                 <span className="font-black">S/{totalPenalidades.toFixed(2)}</span>
               </div>
@@ -315,33 +315,33 @@ export default function PanelHuespedActivo({
               </div>
             </div>
 
-            <div className="bg-green-50 rounded-xl p-4 space-y-2 border border-green-100">
-              <p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-2">Abonos Realizados</p>
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2 border border-gray-200">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Abonos realizados</p>
               {pagosHospedaje > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-gray-700">
                   <span className="font-bold">Pago Hospedaje</span><span className="font-black">− S/{pagosHospedaje.toFixed(2)}</span>
                 </div>
               )}
               {pagosConsumo > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-gray-700">
                   <span className="font-bold">Pago Consumos</span><span className="font-black">− S/{pagosConsumo.toFixed(2)}</span>
                 </div>
               )}
               {pagosPenalidad > 0 && (
-                <div className="flex justify-between text-sm text-green-700">
+                <div className="flex justify-between text-sm text-gray-700">
                   <span className="font-bold">Pago Cargos Extras</span><span className="font-black">− S/{pagosPenalidad.toFixed(2)}</span>
                 </div>
               )}
               {totalPagadoReal === 0 && (
-                <p className="text-sm font-bold text-green-600/50 italic">Sin abonos registrados</p>
+                <p className="text-sm font-medium text-gray-400 italic">Sin abonos registrados</p>
               )}
             </div>
 
-            <div className={`rounded-2xl p-5 border-2 flex justify-between items-center ${saldo > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-              <span className={`font-bold uppercase tracking-widest text-xs ${saldo > 0 ? 'text-red-500' : 'text-gray-500'}`}>
+            <div className={`rounded-2xl p-5 border flex justify-between items-center ${saldo > 0 ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'}`}>
+              <span className={`font-bold uppercase tracking-widest text-xs text-gray-500`}>
                 {saldo > 0 ? 'Saldo a Cobrar' : 'Cuenta Saldada'}
               </span>
-              <span className={`font-black text-2xl ${saldo > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+              <span className={`font-black text-2xl ${saldo > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
                 S/{Math.max(0, saldo).toFixed(2)}
               </span>
             </div>
@@ -350,23 +350,23 @@ export default function PanelHuespedActivo({
 
         {/* Modal de Pago */}
         {mostrarPago && (
-          <div className="bg-white rounded-3xl border-2 border-blue-500 p-6 shadow-xl relative animate-fadeIn">
-            <h4 className="text-lg font-black text-blue-900 mb-4 flex items-center gap-2">
-              <span>💰</span> Registrar Nuevo Abono
+          <div className="card p-4 sm:p-6 animate-fadeIn">
+            <h4 className="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
+              <span><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span> Registrar Nuevo Abono
             </h4>
             
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Monto (S/)</label>
                 <input type="number" value={montoPago} onChange={e => setMontoPago(e.target.value)}
-                  placeholder="0.00" className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors" />
+                  placeholder="0.00" className="w-full border border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors" />
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Concepto</label>
                   <select value={conceptoPago} onChange={e => setConceptoPago(e.target.value)}
-                    className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
+                    className="w-full border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
                     <option value="hospedaje">Hospedaje</option>
                     <option value="consumo">Consumos</option>
                     <option value="pago_penalidad">Cargo Adicional</option>
@@ -375,7 +375,7 @@ export default function PanelHuespedActivo({
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método</label>
                   <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}
-                    className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
+                    className="w-full border border-gray-100 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors">
                     <option value="efectivo">Efectivo</option>
                     <option value="yape">Yape / Plin</option>
                     <option value="tarjeta">Tarjeta</option>
@@ -388,16 +388,16 @@ export default function PanelHuespedActivo({
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nro. de Operación / Ticket</label>
                   <input type="text" value={nroTicket} onChange={e => setNroTicket(e.target.value)}
-                    placeholder="Opcional" className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors" />
+                    placeholder="Opcional" className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 transition-colors" />
                 </div>
               )}
             </div>
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setMostrarPago(false)}
-                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+                className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
               <button onClick={handleRegistrarPago} disabled={guardandoPago}
-                className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50">
+                className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-sm hover:bg-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50">
                 {guardandoPago ? 'Procesando...' : 'Confirmar Pago'}
               </button>
             </div>
@@ -406,29 +406,29 @@ export default function PanelHuespedActivo({
 
         {/* Modal de Penalidades */}
         {mostrarPenalidad && (
-          <div className="bg-white rounded-3xl border-2 border-purple-500 p-6 shadow-xl relative animate-fadeIn">
-             <h4 className="text-lg font-black text-purple-900 mb-4 flex items-center gap-2">
-              <span>⚠️</span> Agregar Cargo Extra
+          <div className="card p-4 sm:p-6 animate-fadeIn">
+             <h4 className="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
+              <span><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /></span> Agregar Cargo Extra
             </h4>
             
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Monto del cargo (S/)</label>
                 <input type="number" value={montoPenalidad} onChange={e => setMontoPenalidad(e.target.value)}
-                  placeholder="0.00" className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors" />
+                  placeholder="0.00" className="w-full border border-gray-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-gray-200 bg-gray-50 focus:bg-white transition-colors" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Motivo / Descripción</label>
                 <input type="text" value={descPenalidad} onChange={e => setDescPenalidad(e.target.value)}
-                  placeholder="Ej: Sábana manchada, llave perdida..." className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors" />
+                  placeholder="Ej: Sábana manchada, llave perdida..." className="w-full border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-gray-200 bg-gray-50 focus:bg-white transition-colors" />
               </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setMostrarPenalidad(false)}
-                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+                className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
               <button onClick={handleRegistrarPenalidad}
-                className="flex-[2] py-3 bg-purple-600 text-white rounded-xl font-bold shadow-md hover:bg-purple-700 active:scale-[0.98] transition-transform">
+                className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-xs hover:bg-blue-700 active:scale-[0.98] transition-transform">
                 Aplicar Cargo a la Cuenta
               </button>
             </div>
@@ -437,9 +437,9 @@ export default function PanelHuespedActivo({
 
         {/* Modal Extension */}
         {mostrarExtension && (
-          <div className="bg-white rounded-3xl border-2 border-green-500 p-6 shadow-xl relative animate-fadeIn">
-            <h4 className="text-lg font-black text-green-900 mb-2 flex items-center gap-2">
-              <span>📅</span> Modificar Fechas
+          <div className="card p-4 sm:p-6 animate-fadeIn">
+            <h4 className="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">
+              <span><Icono name="calendar" className="w-4 h-4 inline-block shrink-0" /></span> Modificar Fechas
             </h4>
             <p className="text-sm font-bold text-gray-500 mb-4">
               Checkout actual: {new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short'})} a las 12:00 PM
@@ -453,16 +453,16 @@ export default function PanelHuespedActivo({
                   value={fechaExtension}
                   onChange={e => setFechaExtension(e.target.value)}
                   min={new Date(hospedaje.ingreso).toISOString().split('T')[0]}
-                  className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-green-500 bg-gray-50 focus:bg-white transition-colors"
+                  className="w-full border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition-colors"
                 />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Método de Pago de la Extensión</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {[['efectivo','💵 Efectivo'],['yape','📱 Yape/Plin'],['tarjeta','💳 Tarjeta'],['transferencia','🏦 Transf.']].map(([val, label]) => (
+                  {[['efectivo','Efectivo'],['yape','Yape/Plin'],['tarjeta','Tarjeta'],['transferencia','Transf.']].map(([val, label]) => (
                     <button key={val} onClick={() => setMetodoPagoExtension(val)}
-                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
-                        metodoPagoExtension === val ? 'bg-green-50 border-green-400 text-green-700' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                      className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                        metodoPagoExtension === val ? 'bg-blue-50 border-blue-400 text-blue-700' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
                       }`}>{label}</button>
                   ))}
                 </div>
@@ -471,9 +471,9 @@ export default function PanelHuespedActivo({
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setMostrarExtension(false)}
-                className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
+                className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
               <button onClick={handleExtenderEstadia}
-                className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700 active:scale-[0.98] transition-transform">
+                className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-xs hover:bg-blue-700 active:scale-[0.98] transition-transform">
                 Guardar Cambios
               </button>
             </div>
@@ -481,9 +481,9 @@ export default function PanelHuespedActivo({
         )}
 
         <button onClick={handleCheckout}
-          className="w-full py-4 mt-6 bg-red-600 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-red-700 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 border-4 border-red-100">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          Finalizar Hospedaje (Checkout)
+          className="btn w-full !min-h-[52px] !text-base mt-2 bg-gray-900 text-white hover:bg-black shadow-xs">
+          <Icono name="logout" className="w-5 h-5" />
+          Finalizar hospedaje (checkout)
         </button>
 
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import Icono from '../Compartido/Icono'
 
 export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza, onHabilitar, esVistaIntegrada, onSuccess }) {
   const { usuario } = useAuth()
@@ -39,12 +40,12 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
   }
 
   const badgeColors = {
-    pendiente_limpieza: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    en_limpieza: 'bg-blue-100 text-blue-800 border-blue-200',
-    limpieza_simple: 'bg-orange-100 text-orange-800 border-orange-200',
-    ocupada: 'bg-red-100 text-red-700 border-red-200',
-    disponible: 'bg-green-100 text-green-700 border-green-200',
-    mantenimiento: 'bg-gray-100 text-gray-600 border-gray-200'
+    pendiente_limpieza: 'badge-warn',
+    en_limpieza: 'badge-info',
+    limpieza_simple: 'badge-warn',
+    ocupada: 'badge-danger',
+    disponible: 'badge-ok',
+    mantenimiento: 'badge-muted'
   }
 
   const badgeLabels = {
@@ -59,19 +60,19 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
   const esLimpiezaMantenimiento = limpiezaActiva && (hab.estado === 'ocupada' || hab.estado === 'disponible')
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+    <div className="card card-hover p-4 sm:p-5">
       {!esVistaIntegrada && (
         <div className="flex justify-between items-start mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-2xl text-gray-800">Hab {hab.numero}</h3>
+              <h3 className="font-black text-2xl text-gray-800 tracking-tight">Hab {hab.numero}</h3>
             </div>
-            <p className="text-sm text-gray-500 font-medium">{hab.tipo_actual}</p>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wide">{hab.tipo_actual}</p>
             {hab.hospedajeActivo?.huesped_hospedaje?.[0]?.clientes?.nombres && (
-              <p className="text-xs text-gray-400 mt-0.5">👤 {hab.hospedajeActivo.huesped_hospedaje[0].clientes.nombres}</p>
+              <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-1"><Icono name="user" className="w-3 h-3" /> {hab.hospedajeActivo.huesped_hospedaje[0].clientes.nombres}</p>
             )}
           </div>
-          <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${badgeColors[hab.estado] || badgeColors.disponible}`}>
+          <span className={`badge shrink-0 ${badgeColors[hab.estado] || badgeColors.disponible}`}>
             {badgeLabels[hab.estado] || hab.estado}
           </span>
         </div>
@@ -99,18 +100,18 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
           <button
             onClick={handleHabilitar}
             disabled={guardando}
-            className="w-full py-2.5 border-2 border-dashed border-green-300 text-green-700 rounded-xl text-sm font-semibold hover:bg-green-50 transition-colors disabled:opacity-50"
+            className="btn w-full border-2 border-dashed border-emerald-300 text-emerald-700 hover:bg-emerald-50 !whitespace-normal text-center"
           >
-            {guardando ? 'Guardando...' : '✓ Marcar como Disponible (sin registrar limpieza)'}
+            {guardando ? 'Guardando...' : (<><Icono name="check" className="w-4 h-4 shrink-0" /> Marcar como disponible (sin registrar limpieza)</>)}
           </button>
         </div>
       )}
 
       {/* Feedback tras iniciar limpieza (antes de que onSuccess recargue) */}
       {limpiezaIniciada && hab.estado !== 'en_limpieza' && (
-        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
           <p className="text-sm text-blue-800 font-bold flex items-center justify-center gap-2">
-            <span className="animate-pulse">⏳</span> Limpieza registrada. Recargando...
+            <Icono name="clock" className="w-4 h-4 animate-pulse" /> Limpieza registrada. Recargando...
           </p>
         </div>
       )}
@@ -141,9 +142,9 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
         ) : (
           <button
             onClick={() => setMostrarForm(true)}
-            className="w-full py-2.5 border-2 border-dashed border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:border-blue-300 hover:text-blue-600 transition-colors"
+            className="btn w-full border-2 border-dashed border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"
           >
-            + Registrar limpieza de mantenimiento
+            <Icono name="plus" className="w-4 h-4" /> Registrar limpieza de mantenimiento
           </button>
         )
       )}
@@ -159,7 +160,7 @@ function FormularioLimpieza({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+        <label className="label">
           Personal asignado
         </label>
         <input
@@ -167,48 +168,48 @@ function FormularioLimpieza({
           value={personal}
           onChange={e => setPersonal(e.target.value)}
           placeholder="Nombre del personal"
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+          className="input"
         />
       </div>
 
       {mostrarTipoSimpleTotal && (
         <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+          <label className="label">
             Alcance de la limpieza
           </label>
           <div className="flex gap-2">
             <button
               onClick={() => setTipoSeleccionado('total')}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border-2 ${
+              className={`btn flex-1 border ${
                 tipoSeleccionado === 'total'
-                  ? 'bg-yellow-50 text-yellow-700 border-yellow-500'
+                  ? 'bg-amber-50 text-amber-700 border-amber-500'
                   : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
               }`}
             >
-              🧹 Total
+              <Icono name="broom" className="w-4 h-4" /> Total
             </button>
             <button
               onClick={() => setTipoSeleccionado('simple')}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border-2 ${
+              className={`btn flex-1 border ${
                 tipoSeleccionado === 'simple'
-                  ? 'bg-orange-50 text-orange-700 border-orange-500'
+                  ? 'bg-blue-50 text-blue-700 border-blue-500'
                   : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
               }`}
             >
-              🧺 Simple
+              <Icono name="sparkles" className="w-4 h-4" /> Simple
             </button>
           </div>
         </div>
       )}
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+        <label className="label">
           Tipo de limpieza
         </label>
         <select
           value={tipoLimpiezaId}
           onChange={e => setTipoLimpiezaId(e.target.value)}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+          className="input"
         >
           <option value="">Selecciona un tipo...</option>
           {tiposLimpieza.map(t => (
@@ -218,23 +219,23 @@ function FormularioLimpieza({
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+        <label className="label">
           Hora de inicio
         </label>
         <input
           type="time"
           value={horaInicio}
           onChange={e => setHoraInicio(e.target.value)}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+          className="input"
         />
       </div>
 
       <button
         onClick={onIniciar}
         disabled={guardando}
-        className="w-full py-3 rounded-xl text-sm font-bold text-white shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700"
+        className="btn btn-primary w-full"
       >
-        {guardando ? 'Guardando...' : '▶ Iniciar Limpieza'}
+        {guardando ? 'Guardando...' : 'Iniciar limpieza'}
       </button>
     </div>
   )
@@ -243,28 +244,28 @@ function FormularioLimpieza({
 function PanelFinalizar({ horaFin, setHoraFin, guardando, onHabilitar, mantenimiento }) {
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
         <p className="text-sm text-blue-800 flex items-center gap-2 font-medium">
-          <span className="animate-pulse">⏳</span> Limpieza en progreso...
+          <Icono name="clock" className="w-4 h-4 animate-pulse" /> Limpieza en progreso...
         </p>
       </div>
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+        <label className="label">
           Hora de finalización
         </label>
         <input
           type="time"
           value={horaFin}
           onChange={e => setHoraFin(e.target.value)}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+          className="input"
         />
       </div>
       <button
         onClick={onHabilitar}
         disabled={guardando}
-        className="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
+        className="btn btn-success w-full"
       >
-        {guardando ? 'Guardando...' : mantenimiento ? '✓ Marcar Limpieza Finalizada' : '✓ Marcar como Disponible'}
+        {guardando ? 'Guardando...' : (<><Icono name="check" className="w-4 h-4" /> {mantenimiento ? 'Marcar limpieza finalizada' : 'Marcar como disponible'}</>)}
       </button>
     </div>
   )

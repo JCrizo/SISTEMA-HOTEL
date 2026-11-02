@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { clientesService } from '../services/clientesService';
+import Icono from '../components/Compartido/Icono'
+import { useAuth } from '../context/AuthContext'
+import HistorialHuesped from '../components/Clientes/HistorialHuesped'
 
 export default function Clientes() {
-  const navigate = useNavigate();
+  const { usuario } = useAuth()
+  const esAdmin = (usuario?.rol || '').toLowerCase().trim() === 'administrador'
   const [clientes, setClientes] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -12,10 +15,14 @@ export default function Clientes() {
   const [pagina, setPagina] = useState(0);
   const porPagina = 20;
 
-  const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false);
-  const [editandoId, setEditandoId] = useState(null);
+  // Vista: 'tabla' o 'tarjetas'
+  const [vista, setVista] = useState('tabla');
 
-  // Form states
+  // Modal de creación / edición
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [clienteHistorial, setClienteHistorial] = useState(null);
+  const [editandoCliente, setEditandoCliente] = useState(null);
+
   const initialFormState = {
     tipo_documento: 'DNI',
     dni_pasaporte: '',
@@ -26,6 +33,7 @@ export default function Clientes() {
   };
   const [formData, setFormData] = useState(initialFormState);
   const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState('');
 
   const cargarClientes = useCallback(async (busquedaActual, paginaActual, append = false) => {
     try {
@@ -66,350 +74,562 @@ export default function Clientes() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleGuardarNuevo = async (e) => {
-    e.preventDefault();
-    if (!formData.nombres || !formData.dni_pasaporte) {
-        alert('Nombre y DNI/Pasaporte son requeridos');
-        return;
-    }
-    
-    setGuardando(true);
-    try {
-      const { tipo_documento, ...datosParaGuardar } = formData;
-      await clientesService.crearCliente({
-        ...datosParaGuardar,
-        tarifa_habitual: datosParaGuardar.tarifa_habitual ? parseFloat(datosParaGuardar.tarifa_habitual) : null
-      });
-      setMostrarFormNuevo(false);
-      setFormData(initialFormState);
-      setPagina(0);
-      cargarClientes(busqueda, 0);
-    } catch (error) {
-      console.error('Error al guardar cliente:', error);
-      alert('Error al guardar el cliente');
-    } finally {
-      setGuardando(false);
-    }
+  // Exporta a Excel la lista cargada (respeta la búsqueda actual). xlsx se carga solo al usarse.
+  const exportarExcel = async () => {
+    const XLSX = await import('xlsx')
+    const filas = clientes.map(c => ({
+      Documento: c.tipo_documento || '',
+      'N° documento': c.dni_pasaporte || '',
+      Nombres: c.nombres || '',
+      Teléfono: c.telefono || '',
+      Nacionalidad: c.nacionalidad || '',
+      'Tarifa habitual': c.tarifa_habitual ?? '',
+    }))
+    const hoja = XLSX.utils.json_to_sheet(filas)
+    const libro = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(libro, hoja, 'Huéspedes')
+    XLSX.writeFile(libro, `huespedes-${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
+
+  const abrirModalNuevo = () => {
+    setEditandoCliente(null);
+    setFormData(initialFormState);
+    setErrorForm('');
+    setModalAbierto(true);
   };
 
-  const handleGuardarEdicion = async (e, id) => {
-    e.preventDefault();
-    setGuardando(true);
-    try {
-      const { tipo_documento, ...datosParaActualizar } = formData;
-      await clientesService.actualizarCliente(id, {
-        ...datosParaActualizar,
-        tarifa_habitual: datosParaActualizar.tarifa_habitual ? parseFloat(datosParaActualizar.tarifa_habitual) : null
-      });
-      setEditandoId(null);
-      setFormData(initialFormState);
-      cargarClientes(busqueda, 0);
-      setPagina(0);
-    } catch (error) {
-      console.error('Error al actualizar cliente:', error);
-      alert('Error al actualizar el cliente');
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const iniciarEdicion = (cliente) => {
-    setEditandoId(cliente.id);
+  const abrirModalEditar = (cliente) => {
+    setEditandoCliente(cliente);
     setFormData({
       tipo_documento: 'DNI',
       dni_pasaporte: cliente.dni_pasaporte || '',
       nombres: cliente.nombres || '',
       telefono: cliente.telefono || '',
       nacionalidad: cliente.nacionalidad || '',
-      tarifa_habitual: cliente.tarifa_habitual || ''
+      tarifa_habitual: cliente.tarifa_habitual != null ? String(cliente.tarifa_habitual) : ''
     });
-    setMostrarFormNuevo(false);
+    setErrorForm('');
+    setModalAbierto(true);
   };
 
-  const cancelarEdicion = () => {
-    setEditandoId(null);
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setEditandoCliente(null);
     setFormData(initialFormState);
+    setErrorForm('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorForm('');
+
+    if (!formData.nombres.trim() || !formData.dni_pasaporte.trim()) {
+      setErrorForm('El nombre y el DNI/Pasaporte son obligatorios');
+      return;
+    }
+    
+    setGuardando(true);
+    try {
+      const { tipo_documento, ...datosParaGuardar } = formData;
+      const payload = {
+        ...datosParaGuardar,
+        nombres: datosParaGuardar.nombres.trim(),
+        dni_pasaporte: datosParaGuardar.dni_pasaporte.trim(),
+        telefono: datosParaGuardar.telefono.trim() || null,
+        nacionalidad: datosParaGuardar.nacionalidad.trim() || null,
+        tarifa_habitual: datosParaGuardar.tarifa_habitual ? parseFloat(datosParaGuardar.tarifa_habitual) : null
+      };
+
+      if (editandoCliente) {
+        await clientesService.actualizarCliente(editandoCliente.id, payload);
+      } else {
+        await clientesService.crearCliente(payload);
+      }
+
+      cerrarModal();
+      setPagina(0);
+      cargarClientes(busqueda, 0);
+    } catch (error) {
+      console.error('Error al guardar cliente:', error);
+      setErrorForm(error.message || 'Error al guardar los datos del cliente');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const handleEliminar = async (id, nombre) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar al cliente ${nombre}?`)) {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar al huésped "${nombre}"? Esta acción no se puede deshacer.`)) {
       try {
         await clientesService.eliminarCliente(id);
-        cargarClientes(busqueda, 0);
         setPagina(0);
+        cargarClientes(busqueda, 0);
       } catch (error) {
         console.error('Error al eliminar cliente:', error);
-        alert('Error al eliminar el cliente');
+        alert('No se pudo eliminar el cliente. Es posible que tenga registros o reservas asociadas.');
       }
     }
   };
 
-  const renderForm = (isEdit = false, id = null) => (
-    <form onSubmit={(e) => isEdit ? handleGuardarEdicion(e, id) : handleGuardarNuevo(e)} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
-      <h3 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
-        {isEdit ? 'Editar Cliente' : 'Nuevo Cliente'}
-      </h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Documento *</label>
-          <div className="flex">
-            <select
-              name="tipo_documento"
-              value={formData.tipo_documento}
-              onChange={handleInputChange}
-              className="bg-gray-50 border border-gray-300 border-r-0 text-gray-900 text-sm rounded-l-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5"
-            >
-              <option value="DNI">DNI</option>
-              <option value="Pasaporte">Pasap.</option>
-              <option value="Otro">Otro</option>
-            </select>
-            <input
-              type="text"
-              name="dni_pasaporte"
-              value={formData.dni_pasaporte}
-              onChange={handleInputChange}
-              required
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              placeholder="Número..."
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
-          <input
-            type="text"
-            name="nombres"
-            value={formData.nombres}
-            onChange={handleInputChange}
-            required
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="Nombres y apellidos"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-          <input
-            type="text"
-            name="telefono"
-            value={formData.telefono}
-            onChange={handleInputChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="+54 9 11 1234-5678"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nacionalidad</label>
-          <input
-            type="text"
-            name="nacionalidad"
-            value={formData.nacionalidad}
-            onChange={handleInputChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="Ej: Argentina, Brasil..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Habitual (S/)</label>
-          <input
-            type="number"
-            inputMode="decimal"
-            name="tarifa_habitual"
-            value={formData.tarifa_habitual}
-            onChange={handleInputChange}
-            onWheel={(e) => e.target.blur()}
-            onFocus={(e) => e.target.select()}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="0.00"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={isEdit ? cancelarEdicion : () => setMostrarFormNuevo(false)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:ring-4 focus:ring-gray-200"
-          disabled={guardando}
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:ring-green-300 disabled:opacity-50"
-          disabled={guardando}
-        >
-          {guardando ? 'Guardando...' : (isEdit ? 'Guardar Cambios' : 'Guardar')}
-        </button>
-      </div>
-    </form>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10 mb-6">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => navigate('/')} className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors" title="Volver">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-xl font-black text-gray-800 tracking-tight">Gestión de Clientes</h1>
-            <p className="text-sm text-gray-500">Busca, registra y administra los datos de tus huéspedes</p>
-          </div>
+    <div className="space-y-6 pb-12">
+      {/* Encabezado Principal Integrado */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Directorio de Huéspedes</h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium">Gestiona el padrón de clientes, documentos y tarifas preferenciales</p>
         </div>
-      </header>
 
-      <main className="max-w-4xl mx-auto px-4">
-        {/* Top Section */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
-          <div className="relative w-full md:w-96">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        {esAdmin && (
+        <button
+          onClick={exportarExcel}
+          disabled={clientes.length === 0}
+          className="btn btn-secondary w-full sm:w-auto disabled:opacity-50"
+        >
+          Exportar Excel
+        </button>
+        )}
+        <button
+          onClick={abrirModalNuevo}
+          className="btn btn-primary w-full sm:w-auto"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Nuevo Huésped</span>
+        </button>
+        </div>
+      </div>
+
+      {/* Barra de Búsqueda y Switcher de Vistas */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Buscador */}
+          <div className="relative w-full sm:w-96">
+            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="search"
-              className="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-2xl bg-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-              placeholder="Buscar por nombre o DNI..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar por nombre, DNI o pasaporte..."
+              className="w-full bg-gray-50/80 border border-gray-200/80 rounded-xl pl-9 pr-8 py-2 text-xs sm:text-sm font-medium outline-none focus:border-blue-500 focus:bg-white transition-all"
             />
+            {busqueda && (
+              <button 
+                onClick={() => setBusqueda('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
+              >
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
+              </button>
+            )}
           </div>
-          
+
+          {/* Selector de Vista (Tabla vs Tarjetas) */}
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
+              <button
+                onClick={() => setVista('tabla')}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                  vista === 'tabla' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
+                }`}
+                title="Vista tabla de datos"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>Tabla</span>
+              </button>
+              <button
+                onClick={() => setVista('tarjetas')}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                  vista === 'tarjetas' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
+                }`}
+                title="Vista tarjetas"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                <span>Tarjetas</span>
+              </button>
+            </div>
+
+            <span className="text-xs font-bold text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 whitespace-nowrap">
+              {totalCount} huéspedes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido: Tabla o Tarjetas */}
+      {loading && clientes.length === 0 ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-sm text-gray-400 font-semibold">Cargando directorio...</span>
+        </div>
+      ) : clientes.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-2xs">
+          <span className="text-4xl block mb-2"><Icono name="user" className="w-10 h-10 inline-block shrink-0" /></span>
+          <h3 className="text-base font-bold text-gray-800 mb-1">No se encontraron huéspedes</h3>
+          <p className="text-gray-400 text-xs mb-4">No hay resultados que coincidan con "{busqueda}".</p>
           <button
-            onClick={() => {
-              setFormData(initialFormState);
-              setMostrarFormNuevo(!mostrarFormNuevo);
-              setEditandoId(null);
-            }}
-            className="w-full md:w-auto px-5 py-3 bg-blue-600 text-white text-sm font-bold rounded-2xl shadow-sm hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors"
+            onClick={() => setBusqueda('')}
+            className="px-4 py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-100 transition-colors"
           >
-            + Nuevo Cliente
+            Ver todos los clientes
           </button>
         </div>
+      ) : vista === 'tabla' ? (
+        /* VISTA TABLA DATA-TABLE MODERNA */
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden overflow-x-auto">
+          <table className="w-full text-left text-xs sm:text-sm">
+            <thead className="bg-gray-50/80 text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-100">
+              <tr>
+                <th className="py-3 px-4">Huésped</th>
+                <th className="py-3 px-4">Documento</th>
+                <th className="py-3 px-4">Contacto</th>
+                <th className="py-3 px-4">Nacionalidad</th>
+                <th className="py-3 px-4 text-right">Tarifa Habitual</th>
+                <th className="py-3 px-4 text-center">Estado</th>
+                <th className="py-3 px-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-gray-700 font-medium">
+              {clientes.map(c => {
+                const inicial = (c.nombres || 'C').charAt(0).toUpperCase();
 
-        {!loading && (
-          <div className="mb-4 text-sm font-medium text-gray-500">
-            {totalCount} cliente{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
-          </div>
-        )}
+                return (
+                  <tr key={c.id} className="hover:bg-gray-50/60 transition-colors">
+                    {/* Nombre y Avatar */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                          {inicial}
+                        </div>
+                        <span className="font-bold text-gray-800 text-xs sm:text-sm">{c.nombres}</span>
+                      </div>
+                    </td>
 
-        {/* New Client Form */}
-        {mostrarFormNuevo && !editandoId && renderForm()}
+                    {/* DNI */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className="font-semibold text-gray-700 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 text-xs">
+                        {c.dni_pasaporte}
+                      </span>
+                    </td>
 
-        {/* Loading State */}
-        {loading && clientes.length === 0 ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : null}
+                    {/* Teléfono */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      {c.telefono ? (
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <span><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /> {c.telefono}</span>
+                          <a
+                            href={`https://wa.me/51${c.telefono.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-600 hover:text-emerald-700 font-bold ml-1"
+                            title="Abrir chat de WhatsApp"
+                          >
+                            WhatsApp
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic text-xs">Sin teléfono</span>
+                      )}
+                    </td>
 
-        {/* Empty State */}
-        {!loading && clientes.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
-            <span className="text-4xl block mb-3">🔍</span>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">No se encontraron clientes</h3>
-            <p className="text-gray-500 text-sm">Intenta con otra búsqueda o crea un nuevo cliente.</p>
-          </div>
-        )}
+                    {/* Nacionalidad */}
+                    <td className="py-3 px-4 text-xs text-gray-600 whitespace-nowrap">
+                      {c.nacionalidad ? (
+                        <span className="flex items-center gap-1">
+                          <span><Icono name="globe" className="w-4 h-4 inline-block shrink-0" /></span> {c.nacionalidad}
+                        </span>
+                      ) : '-'}
+                    </td>
 
-        {/* List of Clients */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {clientes.map((cliente) => (
-            editandoId === cliente.id ? (
-              <div key={cliente.id} className="md:col-span-2">
-                {renderForm(true, cliente.id)}
-              </div>
-            ) : (
-              <div key={cliente.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow flex flex-col justify-between">
+                    {/* Tarifa habitual */}
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      {c.tarifa_habitual != null ? (
+                        <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 text-xs">
+                          S/ {parseFloat(c.tarifa_habitual).toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+
+                    {/* Estado / Lista negra */}
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      {c.lista_negra ? (
+                        <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">
+                          Lista Negra
+                        </span>
+                      ) : c.deuda_pendiente > 0 ? (
+                        <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                          Debe S/ {c.deuda_pendiente}
+                        </span>
+                      ) : (
+                        <span className="text-emerald-600 text-xs font-semibold">● Activo</span>
+                      )}
+                    </td>
+
+                    {/* Acciones */}
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setClienteHistorial(c)}
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          Historial
+                        </button>
+                        <button
+                          onClick={() => abrirModalEditar(c)}
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleEliminar(c.id, c.nombres)}
+                          className="px-2.5 py-1 max-sm:min-h-[44px] text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        /* VISTA TARJETAS COMPACTAS (2-3 Columnas) */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {clientes.map(c => {
+            const inicial = (c.nombres || 'C').charAt(0).toUpperCase();
+
+            return (
+              <div 
+                key={c.id}
+                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
+              >
                 <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-black text-gray-800 leading-tight">
-                      {cliente.nombres}
-                    </h3>
-                    {cliente.lista_negra && (
-                      <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ml-2">
-                        Lista Negra
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                        {inicial}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-gray-800 text-sm truncate leading-snug">{c.nombres}</h3>
+                        <p className="text-[11px] font-medium text-gray-400">Doc: {c.dni_pasaporte}</p>
+                      </div>
+                    </div>
+
+                    {c.lista_negra && (
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        Alerta
                       </span>
                     )}
                   </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded border border-gray-200 mr-2">
-                        {cliente.dni_pasaporte}
-                      </span>
-                    </div>
-                    
-                    {cliente.telefono && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <svg className="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                        {cliente.telefono}
-                      </div>
-                    )}
-                    
-                    {cliente.nacionalidad && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <svg className="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        {cliente.nacionalidad}
-                      </div>
-                    )}
 
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {cliente.tarifa_habitual != null && (
-                        <span className="bg-green-50 text-green-700 text-xs font-medium px-2 py-1 rounded-md border border-green-100">
-                          Tarifa habitual: S/{cliente.tarifa_habitual}
-                        </span>
-                      )}
-                      
-                      {cliente.deuda_pendiente > 0 && (
-                        <span className="bg-orange-50 text-orange-700 text-xs font-medium px-2 py-1 rounded-md border border-orange-100">
-                          Deuda: S/{cliente.deuda_pendiente}
-                        </span>
-                      )}
-                    </div>
+                  <div className="space-y-1 my-3 text-xs text-gray-600">
+                    {c.telefono && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Tel:</span>
+                        <div className="flex items-center gap-1 font-semibold">
+                          <span>{c.telefono}</span>
+                          <a
+                            href={`https://wa.me/51${c.telefono.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-600 font-bold ml-1 hover:underline text-[11px]"
+                          >
+                            WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                    {c.nacionalidad && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">País:</span>
+                        <span className="font-medium">{c.nacionalidad}</span>
+                      </div>
+                    )}
+                    {c.tarifa_habitual != null && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Tarifa habitual:</span>
+                        <span className="font-bold text-emerald-700">S/ {parseFloat(c.tarifa_habitual).toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 border-t border-gray-50 pt-3 mt-2">
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
                   <button
-                    onClick={() => iniciarEdicion(cliente)}
-                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                    onClick={() => setClienteHistorial(c)}
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Historial
+                  </button>
+                  <button
+                    onClick={() => abrirModalEditar(c)}
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     Editar
                   </button>
                   <button
-                    onClick={() => handleEliminar(cliente.id, cliente.nombres)}
-                    className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                    onClick={() => handleEliminar(c.id, c.nombres)}
+                    className="px-3 py-1 max-sm:min-h-[44px] text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   >
                     Eliminar
                   </button>
                 </div>
               </div>
-            )
-          ))}
+            );
+          })}
         </div>
+      )}
 
-        {/* Load More Button */}
-        {clientes.length < totalCount && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={handleCargarMas}
-              disabled={loading}
-              className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-xl shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Cargando...' : 'Cargar más'}
-            </button>
+      {/* Botón Cargar Más */}
+      {clientes.length < totalCount && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={handleCargarMas}
+            disabled={loading}
+            className="px-6 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl shadow-2xs hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Cargando más...' : `Cargar más (${clientes.length} de ${totalCount})`}
+          </button>
+        </div>
+      )}
+
+      {clienteHistorial && (
+        <HistorialHuesped cliente={clienteHistorial} onCerrar={() => setClienteHistorial(null)} />
+      )}
+
+      {/* MODAL LIMPIO DE CREACIÓN / EDICIÓN */}
+      {modalAbierto && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-sm border border-gray-100 animate-scale-up">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-black text-gray-800">
+                  {editandoCliente ? 'Editar Huésped' : 'Nuevo Huésped'}
+                </h3>
+                <p className="text-xs text-gray-400 font-medium">Ingresa los datos para el registro en el sistema</p>
+              </div>
+              <button 
+                onClick={cerrarModal}
+                className="text-gray-400 hover:text-gray-600 font-bold text-lg p-1"
+              >
+                <Icono name="x" className="w-4 h-4 inline-block shrink-0" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                    Documento (DNI/Pasaporte) *
+                  </label>
+                  <input
+                    type="text"
+                    name="dni_pasaporte"
+                    required
+                    value={formData.dni_pasaporte}
+                    onChange={handleInputChange}
+                    placeholder="Número de documento..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                    Nombres y Apellidos *
+                  </label>
+                  <input
+                    type="text"
+                    name="nombres"
+                    required
+                    value={formData.nombres}
+                    onChange={handleInputChange}
+                    placeholder="Nombre completo..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                    Teléfono / WhatsApp
+                  </label>
+                  <input
+                    type="text"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    placeholder="Ej: 994611683"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                    Nacionalidad
+                  </label>
+                  <input
+                    type="text"
+                    name="nacionalidad"
+                    value={formData.nacionalidad}
+                    onChange={handleInputChange}
+                    placeholder="Ej: Peruana, Argentina..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                    Tarifa Habitual / Preferencial (S/)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="tarifa_habitual"
+                    value={formData.tarifa_habitual}
+                    onChange={handleInputChange}
+                    placeholder="Ej: 80.00 (Opcional)"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                  />
+                  <span className="text-[11px] text-gray-400 mt-0.5 block">Se sugerirá automáticamente durante el Check-In si se define.</span>
+                </div>
+              </div>
+
+              {errorForm && (
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-600 font-bold">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> {errorForm}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={cerrarModal}
+                  disabled={guardando}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {guardando ? 'Guardando...' : editandoCliente ? 'Guardar Cambios' : 'Registrar Huésped'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }

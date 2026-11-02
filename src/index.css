@@ -114,3 +114,71 @@ code {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   SISTEMA DE DISEÑO — HOTEL OTI
+   Paleta: azul (acción) · gris (estructura) · esmeralda (ok/libre)
+           ámbar (atención) · rosa/rojo (peligro) · violeta (reservas)
+   Regla móvil: todo botón mide mínimo 44px de alto en pantallas < sm.
+   ============================================================ */
+@layer utilities {
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
+
+@layer components {
+  /* Páginas */
+  .page-title { @apply text-2xl font-black text-gray-800 tracking-tight; }
+  .page-sub   { @apply text-xs sm:text-sm text-gray-500 font-medium; }
+
+  /* Superficies */
+  .card       { @apply bg-white rounded-2xl border border-gray-100 shadow-2xs; }
+  .card-pad   { @apply p-4 sm:p-5; }
+  .card-hover { @apply transition-all hover:border-gray-200 hover:shadow-sm; }
+
+  /* Botones: usar siempre  className="btn btn-primary"  (base + variante) */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold
+           transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed
+           min-h-[44px] sm:min-h-[38px] whitespace-nowrap;
+  }
+  .btn-primary     { @apply bg-blue-600 text-white hover:bg-blue-700 shadow-xs; }
+  .btn-secondary   { @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50; }
+  .btn-soft        { @apply bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100; }
+  .btn-success     { @apply bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs; }
+  .btn-danger      { @apply bg-rose-600 text-white hover:bg-rose-700 shadow-xs; }
+  .btn-danger-soft { @apply bg-rose-50 text-rose-700 border border-rose-100 hover:bg-rose-100; }
+  .btn-ghost       { @apply text-gray-600 hover:bg-gray-100; }
+  .btn-sm          { @apply min-h-[36px] px-3 py-1.5 text-xs; }
+
+  /* Campos */
+  .input {
+    @apply w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm font-medium
+           text-gray-800 outline-none transition-colors
+           focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+           disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .label { @apply block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5; }
+
+  /* Badges: usar  className="badge badge-ok"  */
+  .badge        { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold border; }
+  .badge-ok     { @apply bg-emerald-50 text-emerald-700 border-emerald-100; }
+  .badge-warn   { @apply bg-amber-50 text-amber-700 border-amber-100; }
+  .badge-danger { @apply bg-rose-50 text-rose-700 border-rose-100; }
+  .badge-info   { @apply bg-blue-50 text-blue-700 border-blue-100; }
+  .badge-purple { @apply bg-purple-50 text-purple-700 border-purple-100; }
+  .badge-muted  { @apply bg-gray-50 text-gray-600 border-gray-200; }
+
+  /* Pastillas de filtro: "chip" y, si está activa, "chip chip-active" */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap
+           bg-gray-50 text-gray-600 border border-gray-100 hover:bg-gray-100 transition-colors;
+  }
+  .chip-active { @apply bg-gray-900 text-white border-gray-900 hover:bg-gray-800; }
+
+  /* Tablas: <div className="card overflow-x-auto"><table className="table-base"> */
+  .table-base { @apply w-full text-sm text-left; }
+  .table-base thead th { @apply px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide bg-gray-50 border-b border-gray-100 whitespace-nowrap; }
+  .table-base tbody td { @apply px-4 py-3 border-b border-gray-50 text-gray-700; }
+  .table-base tbody tr:hover { background-color: rgb(249 250 251 / 0.6); }
+}

@@ -5,6 +5,7 @@ import { useUsuarios } from '../hooks/useUsuarios'
 
 import FormularioUsuario from '../components/Usuarios/FormularioUsuario'
 import ListaUsuarios from '../components/Usuarios/ListaUsuarios'
+import Icono from '../components/Compartido/Icono'
 
 function Usuarios() {
   const navigate = useNavigate()
@@ -79,54 +80,44 @@ function Usuarios() {
 
   if (cargando) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-500 font-medium">Cargando personal...</span>
+      <div className="flex flex-col justify-center items-center h-80 gap-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <span className="text-sm text-gray-400 font-semibold">Cargando personal...</span>
       </div>
     )
   }
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto space-y-5 pb-12">
       {/* Alerta general (por ejemplo si intenta autoeliminarse) */}
       {mensajeAlerta && (
-        <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl flex items-center justify-between shadow-sm animate-fade-in">
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
+            <Icono name="alert" className="w-5 h-5 text-amber-600 shrink-0" />
             <p className="text-sm font-semibold">{mensajeAlerta}</p>
           </div>
           <button 
             onClick={() => setMensajeAlerta('')} 
-            className="text-amber-600 hover:text-amber-900 font-bold text-sm px-2 py-1 rounded-lg hover:bg-amber-100"
+            className="text-amber-600 hover:text-amber-900 p-2 rounded-lg hover:bg-amber-100"
+            aria-label="Cerrar aviso"
           >
-            ✕
+            <Icono name="x" className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Volver"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">Personal y Usuarios</h2>
-            <p className="text-sm text-gray-500 font-medium">Gestiona accesos, roles y personal del hotel</p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="page-title">Personal y Usuarios</h1>
+          <p className="page-sub">Gestiona accesos, roles y personal del hotel</p>
         </div>
-        
+
         {!mostrarForm && (
           <button
             onClick={() => { setEditando(null); setMostrarForm(true); }}
-            className="px-5 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 flex items-center gap-2"
+            className="btn btn-primary"
           >
-            <span>+</span> Nuevo Personal
+            <Icono name="plus" className="w-4 h-4" /> Nuevo personal
           </button>
         )}
       </div>
@@ -149,10 +140,10 @@ function Usuarios() {
 
       {/* Modal de confirmación para eliminar usuario */}
       {usuarioAEliminar && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-4 mx-auto">
-              🗑️
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-6 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 mx-auto">
+              <Icono name="trash" className="w-6 h-6" />
             </div>
             
             <h3 className="text-xl font-black text-gray-800 text-center mb-2">
@@ -170,8 +161,8 @@ function Usuarios() {
             </div>
 
             {errorEliminar && (
-              <div className="mb-5 bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs font-semibold">
-                ⚠️ {errorEliminar}
+              <div className="mb-5 flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold">
+                <Icono name="alert" className="w-4 h-4 shrink-0" /> {errorEliminar}
               </div>
             )}
 
@@ -180,7 +171,7 @@ function Usuarios() {
                 type="button"
                 onClick={() => setUsuarioAEliminar(null)}
                 disabled={eliminando}
-                className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors"
+                className="btn btn-secondary flex-1"
               >
                 Cancelar
               </button>
@@ -188,9 +179,9 @@ function Usuarios() {
                 type="button"
                 onClick={confirmarEliminacion}
                 disabled={eliminando}
-                className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm shadow-md transition-all disabled:opacity-50"
+                className="btn btn-danger flex-1"
               >
-                {eliminando ? 'Eliminando...' : 'Sí, Eliminar'}
+                {eliminando ? 'Eliminando...' : 'Sí, eliminar'}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Icono from '../Compartido/Icono'
 
 export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
   const [nombre, setNombre] = useState('')
@@ -48,10 +49,10 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 mb-6">
+    <div className="card border-blue-100 p-4 sm:p-6">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-gray-800">
-          {editando ? `✏️ Editando: ${editando.nombre}` : '✨ Nuevo Personal'}
+          {editando ? `Editando: ${editando.nombre}` : 'Nuevo personal'}
         </h3>
         <p className="text-sm text-gray-500">Completa los datos del usuario en el sistema.</p>
       </div>
@@ -112,8 +113,8 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
         </div>
 
         {!editando && (
-          <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5">
-            <span className="text-base leading-none">💡</span>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5">
+            <Icono name="key" className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
             <p>
               <strong>Activación de cuenta:</strong> Al registrar a este usuario, el personal podrá acceder a la pantalla de Inicio de Sesión y pulsar en <strong>"¿Soy nuevo empleado? Crear contraseña"</strong> para definir su clave de acceso.
             </p>
@@ -121,8 +122,8 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
         )}
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 font-medium">
-            ⚠ {error}
+          <div className="flex items-center gap-2 bg-rose-50 text-rose-700 text-sm p-3 rounded-xl border border-rose-100 font-semibold">
+            <Icono name="alert" className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
 
@@ -136,7 +137,7 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 flex-1 py-2.5 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
           >
             {guardando ? 'Guardando...' : editando ? 'Guardar Cambios' : 'Crear Usuario'}
           </button>

@@ -35,9 +35,9 @@ export default function HospedajesActivos({ hospedajesActivos }) {
               <div className="text-right flex flex-col items-end gap-1">
                 <p className="text-sm font-black text-gray-800">S/{h.tarifa_pactada}</p>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                  h.estado_pago === 'pagado' ? 'bg-green-100 text-green-700' :
-                  h.estado_pago === 'parcial' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
+                  h.estado_pago === 'pagado' ? 'bg-emerald-100 text-emerald-700' :
+                  h.estado_pago === 'parcial' ? 'bg-amber-100 text-amber-700' :
+                  'bg-rose-100 text-rose-700'
                 }`}>
                   {h.estado_pago === 'pagado' ? 'Pagado' :
                    h.estado_pago === 'parcial' ? 'A cuenta' : 'Pendiente'}

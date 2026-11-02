@@ -1,3 +1,4 @@
+import Icono from '../Compartido/Icono'
 export default function SeccionHuespedTitular({
   tipoDoc, setTipoDoc, dni, setDni, onBuscar,
   cliente, nombres, setNombres, telefono, setTelefono,
@@ -17,7 +18,7 @@ export default function SeccionHuespedTitular({
             <select
               value={tipoDoc}
               onChange={e => { setTipoDoc(e.target.value); setDni('') }}
-              className="w-1/3 border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+              className="w-1/3 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
             >
               <option value="dni">DNI</option>
               <option value="pasaporte">Pasaporte</option>
@@ -33,7 +34,7 @@ export default function SeccionHuespedTitular({
               }}
               onBlur={onBuscar}
               placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-              className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
               maxLength={tipoDoc === 'dni' ? 8 : 20}
             />
             <button
@@ -44,11 +45,11 @@ export default function SeccionHuespedTitular({
             </button>
           </div>
           {tipoDoc === 'dni' && dni.length > 0 && dni.length < 8 && (
-            <p className="text-xs text-red-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
+            <p className="text-xs text-rose-500 font-bold mt-1.5">El DNI debe tener 8 dígitos</p>
           )}
 
           {cliente && (
-            <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
+            <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
               <p className="text-xs font-bold text-blue-800 flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -61,13 +62,13 @@ export default function SeccionHuespedTitular({
                 </p>
               )}
               {cliente.lista_negra && (
-                <p className="text-xs text-red-600 font-black mt-2 bg-red-100 px-2 py-1 rounded inline-block">
-                  ⚠ EN LISTA NEGRA
+                <p className="text-xs text-rose-600 font-black mt-2 bg-rose-100 px-2 py-1 rounded inline-block">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> EN LISTA NEGRA
                 </p>
               )}
               {cliente.deuda_pendiente > 0 && (
-                <p className="text-xs text-orange-600 font-bold mt-2 bg-orange-100 px-2 py-1 rounded inline-block">
-                  ⚠ Deuda: S/{cliente.deuda_pendiente}
+                <p className="text-xs text-amber-600 font-bold mt-2 bg-amber-100 px-2 py-1 rounded inline-block">
+                  <Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Deuda: S/{cliente.deuda_pendiente}
                 </p>
               )}
             </div>
@@ -80,7 +81,7 @@ export default function SeccionHuespedTitular({
             <input
               type="text" value={nombres} onChange={e => setNombres(e.target.value)}
               placeholder="Ej: Juan Pérez"
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -89,7 +90,7 @@ export default function SeccionHuespedTitular({
               <input
                 type="text" value={telefono} onChange={e => setTelefono(e.target.value)}
                 placeholder="Opcional"
-                className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
               />
             </div>
             <div>
@@ -97,7 +98,7 @@ export default function SeccionHuespedTitular({
               <input
                 type="text" value={nacionalidad} onChange={e => setNacionalidad(e.target.value)}
                 placeholder="Ej: Peruana"
-                className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
               />
             </div>
           </div>

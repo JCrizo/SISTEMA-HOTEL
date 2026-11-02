@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Icono from '../Compartido/Icono'
 
 export default function FormularioProducto({ editando, categorias, onGuardar, onCancelar }) {
   const [nombre, setNombre] = useState('')
@@ -42,31 +43,36 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 mb-6">
-      <div className="mb-4">
-        <h3 className="text-lg font-bold text-gray-800">
-          {editando ? `✏️ Editando: ${editando.nombre}` : '✨ Nuevo Producto'}
-        </h3>
-        <p className="text-sm text-gray-500">Añade o modifica un artículo en el inventario.</p>
+    <div className="card border-blue-100 p-4 sm:p-6">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center shrink-0">
+          <Icono name={editando ? 'pencil' : 'plus'} className="w-5 h-5" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-lg font-black text-gray-800 truncate">
+            {editando ? `Editando: ${editando.nombre}` : 'Nuevo producto'}
+          </h3>
+          <p className="text-sm text-gray-500">Añade o modifica un artículo en el inventario.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div className="lg:col-span-2">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nombre del Producto</label>
+          <label className="label">Nombre del producto</label>
           <input
             type="text"
             value={nombre}
             onChange={e => setNombre(e.target.value)}
             placeholder="Ej: Gaseosa Inka Cola 500ml"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+            className="input"
           />
         </div>
         <div>
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Categoría</label>
+          <label className="label">Categoría</label>
           <select
             value={categoriaId}
             onChange={e => setCategoriaId(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+            className="input"
           >
             <option value="">Sin categoría</option>
             {categorias.map(cat => (
@@ -75,7 +81,7 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
           </select>
         </div>
         <div>
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Precio (S/)</label>
+          <label className="label">Precio (S/)</label>
           <input
             type="number"
             inputMode="decimal"
@@ -84,11 +90,11 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
             onFocus={e => e.target.select()}
             onWheel={e => e.target.blur()}
             placeholder="0.00"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors font-semibold text-blue-700"
+            className="input font-bold"
           />
         </div>
         <div className="lg:col-span-1">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Stock Inicial</label>
+          <label className="label">Stock inicial</label>
           <input
             type="number"
             inputMode="numeric"
@@ -97,30 +103,27 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
             onFocus={e => e.target.select()}
             onWheel={e => e.target.blur()}
             placeholder="Cantidad"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition-colors"
+            className="input"
           />
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 font-medium mb-4">
-          ⚠ {error}
+        <div className="flex items-center gap-2 bg-rose-50 text-rose-700 text-sm p-3 rounded-xl border border-rose-100 font-semibold mb-4">
+          <Icono name="alert" className="w-4 h-4 shrink-0" /> {error}
         </div>
       )}
 
-      <div className="flex gap-3 pt-2 border-t border-gray-50">
-        <button
-          onClick={onCancelar}
-          className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
-        >
+      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 border-t border-gray-100">
+        <button onClick={onCancelar} className="btn btn-secondary sm:px-6">
           Cancelar
         </button>
         <button
           onClick={handleGuardar}
           disabled={guardando}
-          className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
+          className="btn btn-primary flex-1"
         >
-          {guardando ? 'Guardando...' : editando ? 'Guardar Cambios' : 'Registrar Producto'}
+          {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Registrar producto'}
         </button>
       </div>
     </div>

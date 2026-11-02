@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icono from '../Compartido/Icono'
 
 export default function ListaCategorias({ categorias, guardarCategoria, eliminarCategoria }) {
   const [nuevaCategoria, setNuevaCategoria] = useState('')
@@ -29,15 +30,13 @@ export default function ListaCategorias({ categorias, guardarCategoria, eliminar
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-bold text-gray-800">Gestionar Categorías</h3>
-          <p className="text-sm text-gray-500">Agrupa tus productos (ej: Bebidas, Snacks)</p>
-        </div>
+    <div className="card p-4 sm:p-6">
+      <div className="mb-4">
+        <h3 className="text-lg font-black text-gray-800">Gestionar categorías</h3>
+        <p className="text-sm text-gray-500">Agrupa tus productos (ej: Bebidas, Snacks)</p>
       </div>
       
-      <div className="flex flex-col gap-2 mb-4 max-h-48 overflow-y-auto pr-2">
+      <div className="flex flex-col gap-2 mb-4 max-h-56 overflow-y-auto pr-1">
         {categorias.length === 0 ? (
           <p className="text-sm text-gray-400 italic">No hay categorías registradas.</p>
         ) : (
@@ -49,40 +48,45 @@ export default function ListaCategorias({ categorias, guardarCategoria, eliminar
                     type="text"
                     value={nombreCategoriaEdit}
                     onChange={e => setNombreCategoriaEdit(e.target.value)}
-                    className="flex-1 border-2 border-blue-500 rounded-lg px-3 py-1.5 text-sm outline-none"
+                    className="input flex-1 !py-1.5"
                     autoFocus
                   />
-                  <button 
+                  <button
                     onClick={handleGuardarEdicion}
                     disabled={guardando}
-                    className="text-xs px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    className="btn btn-primary btn-sm"
                   >
                     Guardar
                   </button>
-                  <button 
+                  <button
                     onClick={() => setEditandoCategoria(null)}
-                    className="text-xs px-3 py-1.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300"
+                    className="btn btn-secondary btn-sm"
                   >
                     Cancelar
                   </button>
                 </>
               ) : (
                 <>
-                  <span className="flex-1 text-sm font-semibold text-gray-700 px-2">{cat.nombre}</span>
-                  <button 
+                  <Icono name="tag" className="w-4 h-4 text-gray-400 ml-1 shrink-0" />
+                  <span className="flex-1 text-sm font-semibold text-gray-700 truncate">{cat.nombre}</span>
+                  <button
                     onClick={() => {
                       setEditandoCategoria(cat.id)
                       setNombreCategoriaEdit(cat.nombre)
                     }}
-                    className="text-xs px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors"
+                    className="btn btn-secondary btn-sm"
+                    title="Editar categoría"
                   >
-                    Editar
+                    <Icono name="pencil" className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Editar</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleEliminar(cat)}
-                    className="text-xs px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg transition-colors"
+                    className="btn btn-danger-soft btn-sm"
+                    title="Eliminar categoría"
                   >
-                    Eliminar
+                    <Icono name="trash" className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Eliminar</span>
                   </button>
                 </>
               )}
@@ -97,15 +101,15 @@ export default function ListaCategorias({ categorias, guardarCategoria, eliminar
           value={nuevaCategoria}
           onChange={e => setNuevaCategoria(e.target.value)}
           placeholder="Nueva categoría..."
-          className="flex-1 border-2 border-gray-200 focus:border-green-500 rounded-xl px-4 py-2 text-sm outline-none transition-colors"
+          className="input flex-1"
           onKeyDown={e => e.key === 'Enter' && handleCrear()}
         />
-        <button 
+        <button
           onClick={handleCrear}
           disabled={guardando || !nuevaCategoria.trim()}
-          className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-sm disabled:opacity-50 transition-colors"
+          className="btn btn-success"
         >
-          Agregar
+          <Icono name="plus" className="w-4 h-4" /> Agregar
         </button>
       </div>
     </div>
