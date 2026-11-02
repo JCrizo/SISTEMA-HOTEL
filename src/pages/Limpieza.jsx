@@ -209,3 +209,5 @@ function SeccionHabitaciones({ titulo, children }) {
     </section>
   )
 }
+
+export default Limpieza
