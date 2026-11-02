@@ -139,6 +139,7 @@ export default function Reservas() {
             habitaciones={habitaciones} 
             ocupaciones={ocupaciones} 
             cargando={cargandoCal} 
+            onCambiarHabitacion={setReservaACambiar}
           />
         ) : (
           /* Vista Lista Original */
@@ -262,13 +263,17 @@ export default function Reservas() {
           </div>
         )}
 
+          </>
+        )}
+
         {reservaACambiar && (
           <CambiarHabitacionReservaModal
             reserva={reservaACambiar}
-            onClose={() => setReservaACambiar(null)}
+            onClose={() => {
+              setReservaACambiar(null)
+              if (vistaActual === 'calendario') cargarCalendario()
+            }}
           />
-        )}
-          </>
         )}
       </main>
     </div>

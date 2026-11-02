@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icono from '../Compartido/Icono'
 
-export default function CalendarioReservas({ habitaciones, ocupaciones, cargando }) {
+export default function CalendarioReservas({ habitaciones, ocupaciones, cargando, onCambiarHabitacion }) {
   const navigate = useNavigate()
   const [fechaBase, setFechaBase] = useState(new Date())
   const [diasVentana, setDiasVentana] = useState(14) // 7, 14 o 30 días
@@ -327,6 +327,18 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
               >
                 Cerrar
               </button>
+              {reservaSeleccionada.tipo !== 'hospedaje' && onCambiarHabitacion && reservaSeleccionada.raw && (
+                <button
+                  onClick={() => {
+                    const hab = habitaciones.find(h => h.id === reservaSeleccionada.habitacion_id)
+                    onCambiarHabitacion({ ...reservaSeleccionada.raw, habitaciones: { numero: hab?.numero } })
+                    setReservaSeleccionada(null)
+                  }}
+                  className="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-xs transition-colors"
+                >
+                  Cambiar hab.
+                </button>
+              )}
               {reservaSeleccionada.tipo !== 'hospedaje' && (
                 <button
                   onClick={() => {
