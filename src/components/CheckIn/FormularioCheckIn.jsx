@@ -253,23 +253,23 @@ export default function FormularioCheckIn({
         </div>
       </div>
 
-      <div className="p-8 space-y-8">
+      <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
 
         {/* BANNER: Check-in viene de una reserva */}
         {datosIniciales?.reserva && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 flex items-center gap-3">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl px-4 sm:px-6 py-4 flex items-center gap-3">
             <span className="text-2xl"><Icono name="receipt" className="w-6 h-6 inline-block shrink-0" /></span>
             <div>
-              <p className="text-sm font-black text-blue-900">Datos cargados desde Reserva N° {String(datosIniciales.reserva.nro_ficha || '').padStart(6, '0')}</p>
-              <p className="text-xs text-blue-700 font-medium">El número de ficha y los datos del huésped fueron pre-llenados automáticamente. Verifica antes de confirmar.</p>
+              <p className="text-sm font-black text-gray-800">Datos cargados desde Reserva N° {String(datosIniciales.reserva.nro_ficha || '').padStart(6, '0')}</p>
+              <p className="text-xs text-gray-500 font-medium">El número de ficha y los datos del huésped fueron pre-llenados automáticamente. Verifica antes de confirmar.</p>
             </div>
           </div>
         )}
 
         {/* N° DE FICHA MANUAL */}
-        <div className="bg-blue-50 border border-blue-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
-            <label className="text-xs font-black text-blue-800 uppercase tracking-widest block mb-1.5">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1.5">
               <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Número de Ficha <span className="text-rose-500">*</span>
             </label>
             <input
@@ -280,9 +280,9 @@ export default function FormularioCheckIn({
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
               placeholder="Ej: 4425"
-              className="w-full border border-blue-200 rounded-xl px-4 py-3 text-2xl font-black text-blue-900 outline-none focus:border-blue-500 bg-white transition-colors tracking-widest"
+              className="input !text-2xl !font-black !tracking-widest !py-3"
             />
-            <p className="text-xs text-blue-600 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
+            <p className="text-xs text-gray-500 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
           </div>
         </div>
         
@@ -367,7 +367,7 @@ export default function FormularioCheckIn({
                     });
 
                     return (
-                      <div className="text-[10px] text-blue-800 space-y-1 pt-1 border-t border-blue-200/50">
+                      <div className="text-xs text-gray-600 space-y-1 pt-1 border-t border-gray-200">
                         <p><span className="font-bold">Última visita:</span> {new Date(ultimo.ingreso).toLocaleDateString()} (S/{ultimo.tarifa_pactada})</p>
                         <p><span className="font-bold">Hab. favorita:</span> {favorita} ({maxCount} veces)</p>
                         <p><span className="font-bold">Total visitas:</span> {historicos.length}</p>
@@ -376,15 +376,15 @@ export default function FormularioCheckIn({
                   })()}
 
                   {cliente.tarifa_habitual && (
-                    <p className="text-xs font-bold text-blue-700 mt-1 bg-white px-2 py-1 rounded inline-block shadow-sm">
+                    <p className="badge badge-info mt-1">
                       Tarifa habitual: S/{cliente.tarifa_habitual}
                     </p>
                   )}
                   {cliente.lista_negra && (
-                    <p className="text-xs text-rose-600 font-black mt-2 bg-rose-100 px-2 py-1 rounded inline-block"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> EN LISTA NEGRA</p>
+                    <p className="badge badge-danger mt-2"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> EN LISTA NEGRA</p>
                   )}
                   {cliente.deuda_pendiente > 0 && (
-                    <p className="text-xs text-amber-600 font-bold mt-2 bg-amber-100 px-2 py-1 rounded inline-block"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Deuda: S/{cliente.deuda_pendiente}</p>
+                    <p className="badge badge-warn mt-2"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Deuda: S/{cliente.deuda_pendiente}</p>
                   )}
                 </div>
               )}
@@ -466,17 +466,17 @@ export default function FormularioCheckIn({
           </div>
         )}
 
-        <div className="pt-4 border-t border-gray-100 flex gap-4">
+        <div className="pt-4 border-t border-gray-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
           <button
             onClick={() => navigate('/')}
-            className="px-8 py-4 border border-gray-200 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+            className="btn btn-secondary !min-h-[52px] sm:px-8"
           >
             Cancelar
           </button>
           <button
             onClick={confirmar}
             disabled={cargando}
-            className="bg-blue-600 hover:bg-blue-700 flex-1 py-4 text-white rounded-2xl font-black text-base shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
+            className="btn btn-primary flex-1 !min-h-[52px] !text-base disabled:opacity-50"
           >
             {cargando ? (
               <span className="flex items-center gap-2">

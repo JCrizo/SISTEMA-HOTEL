@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import LimiteErrores from './components/Compartido/LimiteErrores'
+import EsqueletoPagina from './components/Compartido/EsqueletoPagina'
 import MainLayout from './components/Layout/MainLayout'
 import Login from './pages/Login'
 import Habitaciones from './pages/Habitaciones'
@@ -27,7 +28,7 @@ const MigrarUsuarios     = lazy(() => import('./pages/MigrarUsuarios'))
 const Clientes           = lazy(() => import('./pages/Clientes'))
 
 function CargandoPagina() {
-  return <div className="p-4 text-gray-500">Cargando...</div>
+  return <EsqueletoPagina />
 }
 
 function L({ children }) {
@@ -51,7 +52,7 @@ function RutaProtegida({ children, roles }) {
 function App() {
   const { usuario, cargando } = useAuth()
 
-  if (cargando) return <div className="p-4 text-gray-500">Cargando...</div>
+  if (cargando) return <EsqueletoPagina />
 
   return (
     <Routes>

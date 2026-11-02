@@ -278,7 +278,7 @@ export default function Habitaciones() {
             <div className="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
               <button
                 onClick={() => setVista('tarjetas')}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 max-sm:min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
                   vista === 'tarjetas' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -289,7 +289,7 @@ export default function Habitaciones() {
               </button>
               <button
                 onClick={() => setVista('tabla')}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 max-sm:min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
                   vista === 'tabla' ? 'bg-white text-blue-600 shadow-2xs' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -312,7 +312,7 @@ export default function Habitaciones() {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto">
             <button
               onClick={() => setFiltroEstado('todas')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              className={`px-3 py-1 max-sm:min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
                 filtroEstado === 'todas' 
                   ? 'bg-gray-900 text-white' 
                   : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
@@ -322,7 +322,7 @@ export default function Habitaciones() {
             </button>
             <button
               onClick={() => setFiltroEstado('disponible')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1 max-sm:min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                 filtroEstado === 'disponible' 
                   ? 'bg-emerald-600 text-white shadow-2xs' 
                   : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100/70 border border-emerald-100'
@@ -333,7 +333,7 @@ export default function Habitaciones() {
             </button>
             <button
               onClick={() => setFiltroEstado('ocupada')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1 max-sm:min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                 filtroEstado === 'ocupada' 
                   ? 'bg-blue-600 text-white shadow-2xs' 
                   : 'bg-blue-50 text-blue-700 hover:bg-blue-100/70 border border-blue-100'
@@ -344,7 +344,7 @@ export default function Habitaciones() {
             </button>
             <button
               onClick={() => setFiltroEstado('limpieza')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1 max-sm:min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                 filtroEstado === 'limpieza' 
                   ? 'bg-amber-600 text-white shadow-2xs' 
                   : 'bg-amber-50 text-amber-700 hover:bg-amber-100/70 border border-amber-100'
@@ -355,7 +355,7 @@ export default function Habitaciones() {
             </button>
             <button
               onClick={() => setFiltroEstado('reserva')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1 max-sm:min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                 filtroEstado === 'reserva' 
                   ? 'bg-purple-600 text-white shadow-2xs' 
                   : 'bg-purple-50 text-purple-700 hover:bg-purple-100/70 border border-purple-100'
@@ -371,7 +371,7 @@ export default function Habitaciones() {
             <span className="hidden md:inline mr-1 text-[11px] text-gray-400 uppercase font-bold">Piso:</span>
             <button
               onClick={() => setFiltroPiso('todos')}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-colors ${
+              className={`px-2.5 py-1 max-sm:min-h-[44px] rounded-lg font-bold transition-colors ${
                 filtroPiso === 'todos' ? 'bg-gray-800 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
               }`}
             >
@@ -381,7 +381,7 @@ export default function Habitaciones() {
               <button
                 key={p}
                 onClick={() => setFiltroPiso(p)}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-colors ${
+                className={`px-2.5 py-1 max-sm:min-h-[44px] rounded-lg font-bold transition-colors ${
                   filtroPiso === p ? 'bg-blue-600 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
                 }`}
               >
