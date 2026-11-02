@@ -68,12 +68,12 @@ export default function ListaProductos({ productosPorCategoria, onEditar, onTogg
                     className={`card card-hover p-4 flex flex-col gap-3 ${!p.activo ? 'opacity-60 grayscale-[0.5]' : ''}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 shrink-0 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center">
                         <Icono name="box" className="w-5 h-5" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h3 className="font-bold text-gray-800 leading-tight truncate" title={p.nombre}>{p.nombre}</h3>
-                        <p className="font-black text-blue-700 text-lg leading-tight mt-0.5">S/ {parseFloat(p.precio).toFixed(2)}</p>
+                        <p className="font-black text-gray-800 text-lg leading-tight mt-0.5">S/ {parseFloat(p.precio).toFixed(2)}</p>
                       </div>
                       {!p.activo && <span className="badge badge-muted">Inactivo</span>}
                     </div>
@@ -98,7 +98,7 @@ export default function ListaProductos({ productosPorCategoria, onEditar, onTogg
                       </button>
                       <button
                         onClick={() => onToggleActivo(p)}
-                        className={`btn btn-sm flex-1 ${p.activo ? 'btn-danger-soft' : 'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100'}`}
+                        className={`btn btn-sm flex-1 ${p.activo ? 'btn-danger-soft' : 'btn-soft'}`}
                       >
                         {p.activo ? 'Desactivar' : 'Reactivar'}
                       </button>
@@ -118,7 +118,7 @@ export default function ListaProductos({ productosPorCategoria, onEditar, onTogg
           onClick={cerrarAjuste}
         >
           <div
-            className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-xl p-5 space-y-4"
+            className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-sm p-5 space-y-4"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">

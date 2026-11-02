@@ -104,7 +104,7 @@ export default function TopBar({ setMobileOpen }) {
 
           {/* User profile pill */}
           <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-gray-100">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-blue-700 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+            <div className="bg-blue-600 w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-bold shadow-2xs">
               {(usuario?.nombre || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="text-left leading-tight">

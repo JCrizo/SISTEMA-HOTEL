@@ -61,14 +61,14 @@ function Consumos() {
           </button>
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-black text-gray-800 truncate">
-              Punto de Venta · <span className="text-blue-600">Hab. {hab.numero}</span>
+              Punto de Venta · <span className="text-gray-500">Hab. {hab.numero}</span>
             </h2>
             <p className="text-xs text-gray-500 font-medium hidden sm:block">Carga productos a la cuenta del huésped</p>
           </div>
           {/* Badge cuenta en móvil */}
           {consumos.length > 0 && (
             <div className="flex-shrink-0 lg:hidden">
-              <span className="text-xs font-black bg-blue-600 text-white px-2.5 py-1 rounded-full">
+              <span className="text-xs font-black bg-gray-900 text-white px-2.5 py-1 rounded-full">
                 S/{totalConsumos.toFixed(2)}
               </span>
             </div>
@@ -97,7 +97,7 @@ function Consumos() {
           >
             <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Cuenta
             {consumos.length > 0 && (
-              <span className="absolute top-1.5 right-6 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              <span className="absolute top-1.5 right-6 w-5 h-5 bg-gray-900 text-white text-[10px] font-black rounded-full flex items-center justify-center">
                 {consumos.length}
               </span>
             )}

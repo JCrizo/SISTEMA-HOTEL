@@ -397,7 +397,7 @@ function Cochera() {
                   )}
 
                   {mostrarExtension === v.id ? (
-                    <div className="bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100">
+                    <div className="bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-200">
                       <p className="text-xs font-black text-blue-800 uppercase tracking-wide mb-3">Agregar cargo adicional</p>
                       <div className="space-y-2 mb-3">
                         <input

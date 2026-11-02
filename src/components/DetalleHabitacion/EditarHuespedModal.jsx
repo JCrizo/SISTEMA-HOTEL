@@ -113,7 +113,7 @@ export default function EditarHuespedModal({
               type="text"
               value={nombres}
               onChange={e => setNombres(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
+              className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
             />
           </div>
 
@@ -123,7 +123,7 @@ export default function EditarHuespedModal({
               type="text"
               value={dni}
               onChange={e => setDni(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
+              className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
             />
           </div>
 
@@ -133,7 +133,7 @@ export default function EditarHuespedModal({
               type="text"
               value={telefono}
               onChange={e => setTelefono(e.target.value)}
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
+              className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
             />
           </div>
 
@@ -146,7 +146,7 @@ export default function EditarHuespedModal({
               onChange={e => setTarifaPorNoche(e.target.value)}
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
-              className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-400"
+              className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-400"
             />
             <p className="text-xs text-gray-400 mt-1">
               {nochesTotales} noche(s) · Total pactado: <span className="font-bold text-gray-600">S/{nuevaTarifaPactada}</span>
@@ -155,14 +155,14 @@ export default function EditarHuespedModal({
           </div>
 
           <div className="pt-2 border-t border-gray-100">
-            <label className="text-xs font-bold text-amber-600 uppercase tracking-wide block mb-1"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Fecha y Hora de Ingreso Real</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1"><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /> Fecha y Hora de Ingreso Real</label>
             <input
               type="datetime-local"
               value={fechaIngreso}
               onChange={e => setFechaIngreso(e.target.value)}
-              className="w-full border-2 border-amber-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-500"
             />
-            <p className="text-xs text-amber-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
+            <p className="text-xs text-gray-400 mt-1">Solo modifica si el ingreso fue registrado en un horario incorrecto.</p>
           </div>
         </div>
 
@@ -173,10 +173,9 @@ export default function EditarHuespedModal({
                 <button
                   key={op}
                   onClick={() => setComprobante(op)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
                     comprobante === op
-                      ? op === 'factura' ? 'bg-purple-50 text-purple-700 border-purple-400'
-                        : op === 'boleta' ? 'bg-blue-50 text-blue-700 border-blue-400'
+                      ? op === 'factura' || op === 'boleta' ? 'bg-blue-50 text-blue-700 border-blue-400'
                         : 'bg-gray-100 text-gray-600 border-gray-300'
                       : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200'
                   }`}
@@ -194,7 +193,7 @@ export default function EditarHuespedModal({
                   onChange={e => setRuc(e.target.value.replace(/[^0-9]/g, ''))}
                   maxLength={11}
                   placeholder="Ej: 20123456789"
-                  className="w-full border-2 border-purple-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-purple-400"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-500"
                 />
               </div>
             )}
@@ -202,11 +201,11 @@ export default function EditarHuespedModal({
 
         <div className="flex gap-3 mt-6">
           <button onClick={onClose}
-            className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">
+            className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">
             Cancelar
           </button>
           <button onClick={handleGuardar} disabled={guardando}
-            className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50">
+            className="flex-[2] py-3 bg-blue-600 text-white rounded-xl font-bold shadow-sm hover:bg-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50">
             {guardando ? 'Guardando...' : 'Guardar Cambios'}
           </button>
         </div>

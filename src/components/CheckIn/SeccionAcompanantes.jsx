@@ -19,7 +19,7 @@ export default function SeccionAcompanantes({
       {acompanantes.length > 0 && (
         <div className="space-y-4">
           {acompanantes.map((ac, idx) => (
-            <div key={idx} className="bg-white border-2 border-gray-100 p-4 rounded-2xl relative shadow-sm">
+            <div key={idx} className="bg-white border border-gray-100 p-4 rounded-2xl relative shadow-sm">
               <button
                 onClick={() => eliminarAcompanante(idx)}
                 className="absolute top-2 right-2 w-9 h-9 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center hover:bg-rose-100 active:scale-95 transition-colors shadow-sm"
@@ -40,7 +40,7 @@ export default function SeccionAcompanantes({
                         actualizarAcompanante(idx, 'tipoDoc', e.target.value)
                         actualizarAcompanante(idx, 'dni', '')
                       }}
-                      className="w-1/3 border-2 border-gray-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                      className="w-1/3 border border-gray-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
                     >
                       <option value="dni">DNI</option>
                       <option value="pasaporte">Pasap</option>
@@ -57,7 +57,7 @@ export default function SeccionAcompanantes({
                       }}
                       onBlur={() => buscarAcompanante(idx)}
                       placeholder={ac.tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-                      className="flex-1 border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                       maxLength={ac.tipoDoc === 'dni' ? 8 : 20}
                     />
                   </div>
@@ -69,7 +69,7 @@ export default function SeccionAcompanantes({
                     value={ac.nombres}
                     onChange={e => actualizarAcompanante(idx, 'nombres', e.target.value)}
                     placeholder="Nombre del acompañante"
-                    className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                   />
                 </div>
               </div>

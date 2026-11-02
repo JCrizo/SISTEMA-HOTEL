@@ -138,14 +138,14 @@ function Productos() {
           <button
             key={cat.id}
             onClick={() => setFiltroCategoria(cat.id)}
-            className={`chip ${filtroCategoria === cat.id ? '!bg-blue-600 !text-white !border-blue-600' : ''}`}
+            className={`chip ${filtroCategoria === cat.id ? '!bg-gray-900 !text-white !border-gray-900' : ''}`}
           >
             {cat.nombre} ({totalPorCategoria(cat.id)})
           </button>
         ))}
         <button
           onClick={() => setFiltroCategoria('sin_categoria')}
-          className={`chip ${filtroCategoria === 'sin_categoria' ? '!bg-amber-500 !text-white !border-amber-500' : ''}`}
+          className={`chip ${filtroCategoria === 'sin_categoria' ? '!bg-gray-900 !text-white !border-gray-900' : ''}`}
         >
           Sin categoría ({totalSinCategoria})
         </button>

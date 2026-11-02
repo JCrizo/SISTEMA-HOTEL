@@ -58,7 +58,7 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 h-full flex flex-col">
+    <div className="card p-4 md:p-6 h-full flex flex-col">
       <div className="mb-4 flex-shrink-0">
         <h3 className="text-lg font-bold text-gray-800 mb-3">Catálogo</h3>
         
@@ -68,7 +68,7 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
             placeholder="Buscar producto..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full border-2 border-gray-100 rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+            className="input"
           />
           
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -78,7 +78,7 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
                 onClick={() => setCategoriaActiva(cat)}
                 className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
                   categoriaActiva === cat
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -98,11 +98,11 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
                 key={prod.id}
                 onClick={() => handleSeleccionar(prod)}
                 className={`relative flex flex-col text-left border rounded-2xl p-3 md:p-4 transition-all cursor-pointer select-none
-                  ${isSel ? 'border-blue-500 ring-2 ring-blue-100 bg-blue-50/50' : 'border-gray-100 hover:border-blue-300 hover:bg-blue-50'}
+                  ${isSel ? 'border-blue-500 ring-2 ring-blue-100 bg-white' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'}
                   ${prod.stock <= 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}
                 `}
               >
-                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mb-2 flex-shrink-0">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm mb-2 flex-shrink-0">
                   {prod.nombre.charAt(0).toUpperCase()}
                 </div>
                 <div className="text-xs md:text-sm font-bold text-gray-800 mb-1 leading-tight line-clamp-2 flex-1">
@@ -111,7 +111,7 @@ export default function CatalogoProductos({ productos, agregarConsumo, guardando
                 
                 {!isSel ? (
                   <>
-                    <div className="text-base md:text-lg font-black text-blue-700 mt-auto">
+                    <div className="text-base md:text-lg font-black text-gray-800 mt-auto">
                       S/{parseFloat(prod.precio).toFixed(2)}
                     </div>
                     <div className={`text-[10px] md:text-xs mt-1 font-semibold ${prod.stock <= 0 ? 'text-rose-500 font-bold' : 'text-gray-400'}`}>

@@ -30,7 +30,7 @@ export default function SeccionPago({
             )}
           </div>
 
-          <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
+          <div className="flex bg-white rounded-xl border border-gray-100 p-1">
             {[
               { value: 'al_salir', label: 'Al Salir' },
               { value: 'adelanto', label: 'Adelanto' },
@@ -59,7 +59,7 @@ export default function SeccionPago({
                 <select
                   value={metodoPago}
                   onChange={e => setMetodoPago(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
                 >
                   <option value="efectivo">Efectivo</option>
                   <option value="yape">Yape / Plin</option>
@@ -70,7 +70,7 @@ export default function SeccionPago({
                   <input
                     type="text" value={nroTicket} onChange={e => setNroTicket(e.target.value)}
                     placeholder="Nro de ticket (opcional)"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
                   />
                 )}
               </div>
@@ -84,7 +84,7 @@ export default function SeccionPago({
                 <input
                   type="number" value={adelanto} onChange={e => setAdelanto(e.target.value)}
                   placeholder="0.00"
-                  className="w-full border-2 border-blue-200 rounded-xl px-4 py-2.5 text-lg font-bold text-blue-900 outline-none focus:border-blue-500 bg-blue-50 transition-colors"
+                  className="w-full border border-blue-200 rounded-xl px-4 py-2.5 text-lg font-bold text-blue-900 outline-none focus:border-blue-500 bg-blue-50 transition-colors"
                 />
               </div>
             )}
@@ -93,14 +93,14 @@ export default function SeccionPago({
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Comprobante a emitir</label>
-              <div className="flex bg-white rounded-xl border-2 border-gray-100 p-1">
+              <div className="flex bg-white rounded-xl border border-gray-100 p-1">
                 {['ninguno', 'boleta', 'factura'].map(op => (
                   <button
                     key={op}
                     onClick={() => setComprobante(op)}
                     className={`flex-1 px-2 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
                       comprobante === op
-                        ? 'bg-gray-800 text-white shadow-md'
+                        ? 'bg-gray-800 text-white shadow-sm'
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
@@ -112,7 +112,7 @@ export default function SeccionPago({
                 <input
                   type="text" value={ruc} onChange={e => setRuc(e.target.value)}
                   placeholder="Ingrese RUC (11 dígitos)"
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors mt-2"
                 />
               )}
             </div>
@@ -122,7 +122,7 @@ export default function SeccionPago({
               <textarea
                 value={observaciones} onChange={e => setObservaciones(e.target.value)}
                 placeholder="Algún requerimiento especial..."
-                className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors h-12 resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors h-12 resize-none"
               />
             </div>
           </div>

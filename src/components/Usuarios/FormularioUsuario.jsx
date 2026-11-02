@@ -113,7 +113,7 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
         </div>
 
         {!editando && (
-          <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5">
             <Icono name="key" className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
             <p>
               <strong>Activación de cuenta:</strong> Al registrar a este usuario, el personal podrá acceder a la pantalla de Inicio de Sesión y pulsar en <strong>"¿Soy nuevo empleado? Crear contraseña"</strong> para definir su clave de acceso.
@@ -137,7 +137,7 @@ export default function FormularioUsuario({ editando, onGuardar, onCancelar }) {
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 flex-1 py-2.5 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
           >
             {guardando ? 'Guardando...' : editando ? 'Guardar Cambios' : 'Crear Usuario'}
           </button>

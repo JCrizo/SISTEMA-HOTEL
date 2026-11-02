@@ -94,7 +94,7 @@ export default function CerrarTurno({ cerrarTurno }) {
       <button
         onClick={handleCerrar}
         disabled={guardando || !cajaPrincipalFinal}
-        className="w-full py-3.5 bg-gradient-to-r from-rose-600 to-rose-600 hover:from-rose-700 hover:to-rose-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+        className="bg-rose-600 hover:bg-rose-700 w-full py-3.5 text-white rounded-xl text-sm font-bold shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
       >
         {guardando ? 'Cerrando turno y sesión...' : 'Entregar Turno y Cerrar Sesión'}
       </button>

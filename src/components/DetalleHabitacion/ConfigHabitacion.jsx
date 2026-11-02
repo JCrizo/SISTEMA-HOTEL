@@ -54,7 +54,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
               <select
                 value={nuevoTipo}
                 onChange={e => setNuevoTipo(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 transition-colors bg-white"
+                className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="">Mantener actual: {hab.tipo_actual}</option>
                 <option value="Matrimonial">Matrimonial</option>
@@ -72,7 +72,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                 onChange={e => setNuevoPrecio(e.target.value)}
                 onWheel={e => e.target.blur()}
                 placeholder={`Actual: S/${hab.precio_actual}`}
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 transition-colors bg-white"
+                className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-blue-500 transition-colors bg-white"
               />
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                       value={motivoMant}
                       onChange={e => setMotivoMant(e.target.value)}
                       placeholder="Ej: Fuga de agua, pintura, reparación A/C..."
-                      className="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-gray-500 transition-colors bg-white"
+                      className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-gray-500 transition-colors bg-white"
                       autoFocus
                       onKeyDown={e => e.key === 'Enter' && handleMantenimiento()}
                     />
@@ -104,7 +104,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                   <div className="flex gap-2">
                     <button
                       onClick={() => { setMostrarMotivoMant(false); setMotivoMant('') }}
-                      className="flex-1 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 text-sm font-bold hover:bg-gray-50 transition-colors"
+                      className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 text-sm font-bold hover:bg-gray-50 transition-colors"
                     >
                       Cancelar
                     </button>
@@ -136,7 +136,7 @@ export default function ConfigHabitacion({ hab, actualizarHabitacion, cambiarEst
                 )}
                 <button
                   onClick={() => cambiarEstadoHab('disponible')}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                  className="btn btn-success w-full"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   Habilitar Habitación (Disponible)

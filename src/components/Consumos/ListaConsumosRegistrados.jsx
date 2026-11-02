@@ -3,14 +3,14 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
 
   if (consumos.length === 0) {
     return (
-      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-8 text-center h-full flex flex-col justify-center">
-        <p className="text-amber-600 font-medium">No se han registrado consumos en esta habitación aún.</p>
+      <div className="card p-8 text-center h-full flex flex-col justify-center">
+        <p className="text-gray-400 font-medium text-sm">No se han registrado consumos en esta habitación aún.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full">
+    <div className="card flex flex-col h-full">
       <div className="p-4 md:p-6 border-b border-gray-100">
         <h3 className="text-lg font-bold text-gray-800">Cuenta de la Habitación</h3>
         <p className="text-sm text-gray-500">Consumos cargados a la cuenta</p>
@@ -40,7 +40,7 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
               </span>
               <button
                 onClick={() => eliminarConsumo(c)}
-                className="w-9 h-9 flex items-center justify-center text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-full transition-colors active:scale-95"
+                className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors active:scale-95"
                 title="Eliminar consumo"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +55,7 @@ export default function ListaConsumosRegistrados({ consumos, eliminarConsumo }) 
       <div className="p-4 md:p-6 bg-gray-50 rounded-b-2xl border-t border-gray-100">
         <div className="flex justify-between items-center">
           <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Total Consumos</span>
-          <span className="text-2xl md:text-3xl font-black text-blue-900">S/{totalConsumos.toFixed(2)}</span>
+          <span className="text-2xl md:text-3xl font-black text-gray-900">S/{totalConsumos.toFixed(2)}</span>
         </div>
       </div>
     </div>

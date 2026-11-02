@@ -81,12 +81,12 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
 
   const obtenerColorBarra = (ocupacion) => {
     if (ocupacion.tipo === 'hospedaje') {
-      return 'bg-gradient-to-r from-emerald-500 to-teal-600 border-emerald-600 text-white shadow-2xs'
+      return 'bg-emerald-50 border-emerald-200 text-emerald-800'
     }
     if (ocupacion.estado === 'confirmada') {
-      return 'bg-gradient-to-r from-blue-600 to-blue-700 border-blue-700 text-white shadow-2xs'
+      return 'bg-blue-50 border-blue-200 text-blue-800'
     }
-    return 'bg-gradient-to-r from-amber-400 to-amber-500 border-amber-600 text-white shadow-2xs' // pendiente
+    return 'bg-amber-50 border-amber-200 text-amber-800' // pendiente
   }
 
   return (
@@ -281,7 +281,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
       {/* MODAL DE DETALLES RÁPIDOS AL CLICKEAR UNA RESERVA/HOSPEDAJE EN EL CALENDARIO */}
       {reservaSeleccionada && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-100 animate-scale-up">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-sm border border-gray-100 animate-scale-up">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
               <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
                 reservaSeleccionada.tipo === 'hospedaje'
@@ -335,7 +335,7 @@ export default function CalendarioReservas({ habitaciones, ocupaciones, cargando
                     setReservaSeleccionada(null)
                     navigate(`/checkin/${habId}?reserva=${resId}`)
                   }}
-                  className="flex-[2] py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all active:scale-95"
+                  className="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all active:scale-95"
                 >
                   Hacer Check-In
                 </button>

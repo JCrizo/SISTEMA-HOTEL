@@ -355,7 +355,7 @@ function ReportesAdmin() {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 border border-gray-100 shadow-xl rounded-2xl z-50">
+        <div className="bg-white p-4 border border-gray-100 shadow-sm rounded-2xl z-50">
           <p className="font-bold text-gray-800 mb-2">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm font-semibold flex justify-between gap-4">
@@ -578,7 +578,7 @@ function ReportesAdmin() {
             {/* FILA 5: Insights y Fidelidad */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl border border-blue-500 shadow-lg p-8 text-white relative overflow-hidden">
+              <div className="bg-blue-600  rounded-2xl border border-blue-500 shadow-sm p-8 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10">
                   <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
                 </div>
@@ -639,7 +639,7 @@ function ReportesAdmin() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {turnosFiltrados.map(t => (
                   <div key={t.id} onClick={() => cargarHospedajesTurno(t)}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all">
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 cursor-pointer hover:shadow-sm hover:-translate-y-1 transition-all">
                     <div className="flex justify-between items-center mb-3">
                       <p className="font-black text-gray-800 capitalize text-lg">{t.tipo}</p>
                       <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg ${
@@ -721,15 +721,15 @@ function ReportesAdmin() {
 
                   {turnoSeleccionado.cierre && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                      <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                      <div className="bg-gray-50 rounded-xl p-3 text-center">
                         <p className="text-[10px] font-bold text-emerald-600 uppercase">Efectivo</p>
                         <p className="text-sm font-black text-emerald-700">S/{parseFloat(turnoSeleccionado.desglose_efectivo || 0).toFixed(2)}</p>
                       </div>
-                      <div className="bg-purple-50 rounded-xl p-3 text-center">
+                      <div className="bg-gray-50 rounded-xl p-3 text-center">
                         <p className="text-[10px] font-bold text-purple-600 uppercase">Yape</p>
                         <p className="text-sm font-black text-purple-700">S/{parseFloat(turnoSeleccionado.desglose_yape || 0).toFixed(2)}</p>
                       </div>
-                      <div className="bg-blue-50 rounded-xl p-3 text-center">
+                      <div className="bg-gray-50 rounded-xl p-3 text-center">
                         <p className="text-[10px] font-bold text-blue-600 uppercase">Tarjeta</p>
                         <p className="text-sm font-black text-blue-700">S/{parseFloat(turnoSeleccionado.desglose_tarjeta || 0).toFixed(2)}</p>
                       </div>
@@ -881,14 +881,14 @@ function ReportesAdmin() {
         {vista === 'fichas' && (
           <div >
             <div className="flex gap-2 mb-3">
-              <input type="text" value={filtroFichas} onChange={e => setFiltroFichas(e.target.value)} placeholder="Buscar por ficha, nombre o DNI" className="flex-1 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold bg-white outline-none focus:border-blue-500" />
+              <input type="text" value={filtroFichas} onChange={e => setFiltroFichas(e.target.value)} placeholder="Buscar por ficha, nombre o DNI" className="flex-1 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold bg-white outline-none focus:border-blue-500" />
             </div>
-            <input type="date" value={fechaFiltroFichas} onChange={e => setFechaFiltroFichas(e.target.value)} className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold bg-white outline-none focus:border-blue-500 mb-6" />
+            <input type="date" value={fechaFiltroFichas} onChange={e => setFechaFiltroFichas(e.target.value)} className="w-full border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold bg-white outline-none focus:border-blue-500 mb-6" />
 
             {fichasFiltradas.length === 0 ? <p className="text-gray-400 text-sm text-center py-4">Sin resultados</p> : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fichasFiltradas.map(h => (
-                  <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)} className="bg-white rounded-2xl border border-gray-100 p-6 cursor-pointer shadow-sm hover:shadow-md transition-all">
+                  <div key={h.id} onClick={() => navigate(`/ficha/${h.id}`)} className="bg-white rounded-2xl border border-gray-100 p-6 cursor-pointer shadow-sm hover:shadow-sm transition-all">
                     <div className="flex justify-between items-start mb-1">
                       <div>
                         <p className="font-black text-gray-800">{h.huesped_hospedaje?.[0]?.clientes?.nombres || 'Sin nombre'}</p>
@@ -955,7 +955,7 @@ function ReportesAdmin() {
              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-4">
                <h3 className="font-black text-gray-800">Buscar por Nro de Ficha</h3>
                <div className="flex gap-2">
-                 <input type="number" value={busquedaFicha} onChange={e=>setBusquedaFicha(e.target.value)} placeholder="Ej. 004561" className="flex-1 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500" />
+                 <input type="number" value={busquedaFicha} onChange={e=>setBusquedaFicha(e.target.value)} placeholder="Ej. 004561" className="flex-1 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500" />
                  <button onClick={buscarFicha} className="bg-blue-600 text-white font-black px-6 py-3 rounded-xl hover:bg-blue-700">Buscar</button>
                </div>
                {resultadosFicha.map(h => (

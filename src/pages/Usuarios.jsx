@@ -141,7 +141,7 @@ function Usuarios() {
       {/* Modal de confirmación para eliminar usuario */}
       {usuarioAEliminar && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-6 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 mx-auto">
               <Icono name="trash" className="w-6 h-6" />
             </div>

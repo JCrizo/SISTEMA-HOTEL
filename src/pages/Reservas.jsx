@@ -105,7 +105,7 @@ export default function Reservas() {
 
       <main>
         {!cargandoTurno && !turnoActivo && (
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
             <span className="text-2xl"><Icono name="lock" className="w-6 h-6 inline-block shrink-0" /></span>
             <p className="text-sm font-bold text-amber-800">
               No hay un turno activo. Inicia turno para poder crear nuevas reservas.
@@ -114,7 +114,7 @@ export default function Reservas() {
         )}
 
         {errorRes && (
-          <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
             <span className="text-2xl"><Icono name="alert" className="w-6 h-6 inline-block shrink-0" /></span>
             <p className="text-sm font-bold text-rose-800">{errorRes}</p>
           </div>
@@ -149,7 +149,7 @@ export default function Reservas() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {reservas.map(r => (
-              <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-100 transition-all overflow-hidden flex flex-col">
+              <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-sm hover:border-blue-100 transition-all overflow-hidden flex flex-col">
                 <div className="p-6 flex-1">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -225,7 +225,7 @@ export default function Reservas() {
                   <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex flex-wrap gap-3">
                   <button
                     onClick={() => convertirAHospedaje(r)}
-                    className="flex-[2] py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
+                    className="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
                   >
                     Hacer Check-in
                   </button>

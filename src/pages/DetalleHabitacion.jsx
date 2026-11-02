@@ -12,14 +12,15 @@ import BloqueoTurnoAjeno from '../components/Compartido/BloqueoTurnoAjeno'
 import EncabezadoPagina from '../components/Compartido/EncabezadoPagina'
 import Icono from '../components/Compartido/Icono'
 
-const colores = {
-  disponible:         'from-emerald-500 to-emerald-600 shadow-emerald-200 text-white',
-  ocupada:            'from-rose-500 to-rose-600 shadow-rose-200 text-white',
-  pendiente_limpieza: 'from-amber-400 to-amber-500 shadow-amber-200 text-white',
-  en_limpieza:        'from-amber-400 to-amber-500 shadow-amber-200 text-white',
-  limpieza_simple:    'from-amber-400 to-amber-500 shadow-amber-200 text-white',
-  habilitada:         'from-emerald-500 to-emerald-600 shadow-emerald-200 text-white',
-  mantenimiento:      'from-gray-500 to-slate-600 shadow-gray-200 text-white',
+// Color solo como acento: un punto y un badge pequeño. Las superficies son neutras.
+const estiloEstado = {
+  disponible:         { badge: 'badge-ok',     punto: 'bg-emerald-500' },
+  ocupada:            { badge: 'badge-info',   punto: 'bg-blue-500' },
+  pendiente_limpieza: { badge: 'badge-warn',   punto: 'bg-amber-500' },
+  en_limpieza:        { badge: 'badge-warn',   punto: 'bg-amber-500' },
+  limpieza_simple:    { badge: 'badge-warn',   punto: 'bg-amber-500' },
+  habilitada:         { badge: 'badge-ok',     punto: 'bg-emerald-500' },
+  mantenimiento:      { badge: 'badge-muted',  punto: 'bg-gray-400' },
 }
 
 const etiquetas = {
@@ -67,8 +68,9 @@ function DetalleHabitacion() {
   }
 
   if (cargando) return (
-    <div className="flex justify-center items-center h-screen bg-gray-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div className="flex flex-col justify-center items-center h-80 gap-3">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      <span className="text-sm text-gray-400 font-semibold">Cargando habitación...</span>
     </div>
   )
   
@@ -78,7 +80,7 @@ function DetalleHabitacion() {
 
   if (!hab) return (
     <div className="flex items-center justify-center p-4 py-16">
-      <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border-2 border-rose-200 text-center max-w-md">
+      <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border border-rose-200 text-center max-w-md">
         <span className="text-4xl mb-2 block"><Icono name="ban" className="w-10 h-10 inline-block shrink-0" /></span>
         <h2 className="text-lg font-black mb-1">Habitación no encontrada</h2>
         <button onClick={() => navigate('/')} className="btn btn-danger mt-4">Volver al inicio</button>
@@ -97,38 +99,35 @@ function DetalleHabitacion() {
       <main>
         
         {/* CABECERA DE HABITACIÓN */}
-        <div className={`bg-gradient-to-r ${colores[hab.estado]} rounded-2xl p-8 mb-8 shadow-lg relative overflow-hidden`}>
-          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-            <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 2h8v8h-8V5zm-6 0h4v14H5V5zm6 14v-4h8v4h-8z"/></svg>
+        <div className="card p-4 sm:p-6 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl bg-gray-100 border border-gray-200 text-gray-900 flex items-center justify-center text-3xl sm:text-4xl font-black tracking-tight">
+              {hab.numero}
+            </div>
+            <div className="min-w-0">
+              <p className="label !mb-0.5">Habitación</p>
+              <p className="text-lg font-black text-gray-800 truncate">{hab.tipo_actual}</p>
+              <span className={`badge mt-1 ${(estiloEstado[hab.estado] || estiloEstado.mantenimiento).badge}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${(estiloEstado[hab.estado] || estiloEstado.mantenimiento).punto}`}></span>
+                {etiquetas[hab.estado]}
+              </span>
+            </div>
           </div>
-          
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div>
-              <p className="text-white/80 font-bold uppercase tracking-widest text-xs mb-1">Habitación Número</p>
-              <div className="text-6xl font-black tracking-tighter leading-none mb-2">{hab.numero}</div>
-              <div className="inline-block bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-bold">
-                {hab.tipo_actual}
-              </div>
-            </div>
-            
-            <div className="text-left md:text-right">
-              <p className="text-white/80 font-bold uppercase tracking-widest text-xs mb-1">Estado Actual</p>
-              <div className="text-2xl font-black mb-1">{etiquetas[hab.estado]}</div>
-              <div className="text-lg font-bold bg-black/20 inline-block px-3 py-1 rounded-lg">
-                Tarifa: S/{hab.precio_actual}
-              </div>
-            </div>
+
+          <div className="sm:text-right border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0">
+            <p className="label !mb-0.5">Tarifa</p>
+            <p className="text-2xl font-black text-gray-800">S/ {hab.precio_actual}</p>
           </div>
         </div>
 
         {/* DISPONIBLE */}
         {hab.estado === 'disponible' && (
-          <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center mb-8">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><Icono name="sparkles" className="w-8 h-8 inline-block shrink-0" /></div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Habitación Lista</h3>
+          <div className="card p-6 sm:p-8 text-center mb-5">
+            <div className="w-14 h-14 bg-gray-100 text-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><Icono name="sparkles" className="w-7 h-7" /></div>
+            <h3 className="text-xl font-black text-gray-800 mb-1">Habitación lista</h3>
             <p className="text-gray-500 mb-6">Esta habitación está limpia y lista para recibir nuevos huéspedes.</p>
             {reservaPendiente && (
-              <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-xl text-sm font-bold animate-pulse flex items-center gap-2 justify-center">
+              <div className="mb-6 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-semibold flex items-center gap-2 justify-center">
                 <span><Icono name="alert" className="w-4 h-4 inline-block shrink-0" /></span> Hay una reserva pendiente programada para hoy.
               </div>
             )}
@@ -155,9 +154,9 @@ function DetalleHabitacion() {
                 }
                 navigate(`/checkin/${hab.id}`)
               }}
-              className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-200 transition-transform active:scale-95 flex items-center justify-center gap-2 mx-auto"
+              className="btn btn-success w-full sm:w-auto !min-h-[52px] !px-8 !text-base mx-auto"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+              <Icono name="logout" className="w-5 h-5 rotate-180" />
               {reservaPendiente ? 'Check-In de Reserva' : 'Iniciar Check-In Directo'}
             </button>
           </div>
@@ -165,7 +164,7 @@ function DetalleHabitacion() {
 
         {/* OCUPADA con hospedaje */}
         {hab.estado === 'ocupada' && hospedaje && (
-          <div className="mb-8">
+          <div className="mb-5">
             <PanelHuespedActivo 
               hab={hab}
               hospedaje={hospedaje}
@@ -188,15 +187,15 @@ function DetalleHabitacion() {
 
         {/* OCUPADA sin hospedaje = inconsistencia */}
         {hab.estado === 'ocupada' && !cargando && !hospedaje && (
-          <div className="bg-rose-50 text-rose-700 rounded-2xl p-8 border-2 border-rose-200 shadow-sm text-center mb-8">
-            <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"><Icono name="alert" className="w-8 h-8 inline-block shrink-0" /></div>
+          <div className="bg-rose-50 text-rose-700 rounded-2xl p-6 sm:p-8 border border-rose-200 text-center mb-5">
+            <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><Icono name="alert" className="w-7 h-7" /></div>
             <h3 className="text-xl font-bold mb-2">Inconsistencia Detectada</h3>
             <p className="text-rose-600/80 mb-6 max-w-md mx-auto">
               La habitación figura como ocupada en el sistema, pero no se encontró el registro del check-in (probablemente fue eliminado manualmente).
             </p>
             <button 
               onClick={() => cambiarEstadoHab('disponible')}
-              className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-md transition-colors"
+              className="btn btn-danger"
             >
               Forzar Cambio a Disponible
             </button>
@@ -205,7 +204,7 @@ function DetalleHabitacion() {
 
         {/* LIMPIEZA */}
         {['pendiente_limpieza', 'en_limpieza', 'limpieza_simple'].includes(hab.estado) && (
-          <div className="mb-8">
+          <div className="mb-5">
             <PanelLimpieza 
               hab={hab}
               hospedajeFinalizado={hospedajeFinalizado}
@@ -222,10 +221,10 @@ function DetalleHabitacion() {
 
         {/* MANTENIMIENTO */}
         {hab.estado === 'mantenimiento' && (
-          <div className="bg-gray-800 text-white rounded-2xl p-8 shadow-lg text-center mb-8">
-            <div className="text-4xl mb-4"><Icono name="cog" className="w-10 h-10 inline-block shrink-0" /></div>
-            <h3 className="text-xl font-bold mb-2">En Mantenimiento</h3>
-            <p className="text-gray-400">La habitación está bloqueada por mantenimiento o reparaciones.</p>
+          <div className="card p-6 sm:p-8 text-center mb-5">
+            <div className="w-14 h-14 bg-gray-100 text-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><Icono name="cog" className="w-7 h-7" /></div>
+            <h3 className="text-xl font-black text-gray-800 mb-1">En mantenimiento</h3>
+            <p className="text-gray-500">La habitación está bloqueada por mantenimiento o reparaciones.</p>
           </div>
         )}
 

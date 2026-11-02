@@ -31,7 +31,7 @@ function FichaHospedaje() {
   
   if (!hospedaje) return (
     <div className="flex items-center justify-center p-4 py-16">
-      <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border-2 border-rose-200 text-center max-w-md shadow-sm">
+      <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border border-rose-200 text-center max-w-md shadow-sm">
         <span className="text-4xl mb-2 block"><Icono name="ban" className="w-10 h-10 inline-block shrink-0" /></span>
         <h2 className="text-xl font-black mb-1">Ficha no encontrada</h2>
         <p className="text-sm font-medium mb-4">No se pudo cargar la información de este hospedaje.</p>
@@ -64,7 +64,7 @@ function FichaHospedaje() {
         <div className="md:col-span-2 space-y-6">
           
           {/* Tarjeta Principal Ficha */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+          <div className="bg-blue-600  rounded-2xl p-8 text-white shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10">
               <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             </div>
@@ -117,7 +117,7 @@ function FichaHospedaje() {
                 <p className="text-sm font-bold text-blue-700">{new Date(hospedaje.salida_estimada).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
               </div>
               {hospedaje.salida_real && (
-                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200">
                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Salida Real</p>
                   <p className="text-sm font-bold text-emerald-800">{new Date(hospedaje.salida_real).toLocaleString('es-PE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</p>
                 </div>
@@ -132,7 +132,7 @@ function FichaHospedaje() {
             )}
             
             {hospedaje.comprobante && hospedaje.comprobante !== 'ninguno' && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-3">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
@@ -246,12 +246,12 @@ function FichaHospedaje() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center text-sm text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+              <div className="flex justify-between items-center text-sm text-emerald-600 bg-gray-50 p-3 rounded-xl border border-gray-200">
                 <span className="font-bold">Total Abonado</span>
                 <span className="font-black">− S/{totalPagado.toFixed(2)}</span>
               </div>
 
-              <div className={`mt-4 rounded-2xl p-5 border-2 flex flex-col items-center justify-center text-center ${
+              <div className={`mt-4 rounded-2xl p-5 border flex flex-col items-center justify-center text-center ${
                 (totalGeneral - totalPagado) > 0 ? 'bg-rose-50 border-rose-200' : 'bg-gray-50 border-gray-200'
               }`}>
                 <span className={`font-bold uppercase tracking-widest text-xs mb-1 ${
@@ -302,7 +302,7 @@ function FichaHospedaje() {
               </h3>
               <div className="space-y-3">
                 {pagos.filter(p => p.concepto === 'penalidad').map(p => (
-                  <div key={p.id} className="p-3 bg-purple-50 rounded-xl border border-purple-100 flex flex-col gap-2">
+                  <div key={p.id} className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex flex-col gap-2">
                     <div className="flex justify-between items-start">
                       <p className="text-sm font-bold text-purple-900">{p.observaciones || 'Sin descripción'}</p>
                       <span className="text-sm font-black text-purple-700">S/{parseFloat(p.monto).toFixed(2)}</span>

@@ -41,7 +41,7 @@ export default function AbrirTurno({ abrirTurno }) {
             {['mañana', 'tarde', 'noche'].map(t => (
               <label 
                 key={t} 
-                className={`cursor-pointer rounded-xl border-2 p-2.5 text-center transition-all flex flex-col items-center justify-center ${
+                className={`cursor-pointer rounded-xl border p-2.5 text-center transition-all flex flex-col items-center justify-center ${
                   tipoTurno === t 
                     ? 'border-blue-600 bg-blue-50/70 text-blue-700 font-bold shadow-2xs' 
                     : 'border-gray-100 bg-gray-50/60 text-gray-500 hover:border-gray-200'
@@ -97,7 +97,7 @@ export default function AbrirTurno({ abrirTurno }) {
         <button
           onClick={handleAbrir}
           disabled={guardando || !cajaPrincipalInicial}
-          className="w-full py-3.5 mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-sm shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
+          className="bg-blue-600 hover:bg-blue-700 w-full py-3.5 mt-2 text-white rounded-xl font-bold text-sm shadow-xs transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {guardando ? 'Aperturando turno...' : 'Aperturar Turno de Caja'}
         </button>

@@ -45,7 +45,7 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
   return (
     <div className="card border-blue-100 p-4 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center shrink-0">
           <Icono name={editando ? 'pencil' : 'plus'} className="w-5 h-5" />
         </div>
         <div className="min-w-0">
@@ -90,7 +90,7 @@ export default function FormularioProducto({ editando, categorias, onGuardar, on
             onFocus={e => e.target.select()}
             onWheel={e => e.target.blur()}
             placeholder="0.00"
-            className="input font-bold text-blue-700"
+            className="input font-bold"
           />
         </div>
         <div className="lg:col-span-1">

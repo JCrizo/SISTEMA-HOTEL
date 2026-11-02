@@ -39,7 +39,7 @@ export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-sm overflow-hidden animate-fadeIn">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h3 className="font-black text-gray-800 text-lg">Cambiar Habitación</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 rounded-full p-2 transition-colors">
@@ -48,7 +48,7 @@ export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
         </div>
 
         <div className="p-6">
-          <div className="mb-6 bg-blue-50 p-4 rounded-2xl border border-blue-100">
+          <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-200">
             <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Reserva de</p>
             <p className="text-base font-black text-blue-900">{reserva.clientes?.nombres}</p>
             <p className="text-xs font-bold text-blue-600 mt-2">Habitación actual: {reserva.habitaciones?.numero}</p>
@@ -62,7 +62,7 @@ export default function CambiarHabitacionReservaModal({ reserva, onClose }) {
               <select
                 value={nuevaHabitacionId}
                 onChange={e => setNuevaHabitacionId(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 bg-gray-50 transition-colors"
+                className="w-full border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 bg-gray-50 transition-colors"
               >
                 <option value="">Selecciona una habitación</option>
                 {habitacionesDisponibles.map(h => (

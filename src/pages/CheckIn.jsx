@@ -49,7 +49,7 @@ export default function CheckIn() {
   if (!hab) {
     return (
       <div className="flex items-center justify-center p-4 py-16">
-        <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border-2 border-rose-200 text-center max-w-md">
+        <div className="bg-rose-50 text-rose-600 p-6 rounded-2xl border border-rose-200 text-center max-w-md">
           <Icono name="alert" className="w-10 h-10 mx-auto mb-2" />
           <h2 className="text-lg font-black mb-1">Habitación no encontrada</h2>
           <p className="text-sm font-medium mb-4">No se pudo cargar la información.</p>

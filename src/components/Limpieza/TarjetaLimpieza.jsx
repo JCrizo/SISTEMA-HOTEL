@@ -109,7 +109,7 @@ export default function TarjetaLimpieza({ hab, tiposLimpieza, onIniciarLimpieza,
 
       {/* Feedback tras iniciar limpieza (antes de que onSuccess recargue) */}
       {limpiezaIniciada && hab.estado !== 'en_limpieza' && (
-        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
           <p className="text-sm text-blue-800 font-bold flex items-center justify-center gap-2">
             <Icono name="clock" className="w-4 h-4 animate-pulse" /> Limpieza registrada. Recargando...
           </p>
@@ -180,7 +180,7 @@ function FormularioLimpieza({
           <div className="flex gap-2">
             <button
               onClick={() => setTipoSeleccionado('total')}
-              className={`btn flex-1 border-2 ${
+              className={`btn flex-1 border ${
                 tipoSeleccionado === 'total'
                   ? 'bg-amber-50 text-amber-700 border-amber-500'
                   : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
@@ -190,7 +190,7 @@ function FormularioLimpieza({
             </button>
             <button
               onClick={() => setTipoSeleccionado('simple')}
-              className={`btn flex-1 border-2 ${
+              className={`btn flex-1 border ${
                 tipoSeleccionado === 'simple'
                   ? 'bg-blue-50 text-blue-700 border-blue-500'
                   : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
@@ -233,7 +233,7 @@ function FormularioLimpieza({
       <button
         onClick={onIniciar}
         disabled={guardando}
-        className="btn w-full bg-amber-500 text-white hover:bg-amber-600 shadow-xs"
+        className="btn btn-primary w-full"
       >
         {guardando ? 'Guardando...' : 'Iniciar limpieza'}
       </button>
@@ -244,7 +244,7 @@ function FormularioLimpieza({
 function PanelFinalizar({ horaFin, setHoraFin, guardando, onHabilitar, mantenimiento }) {
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
         <p className="text-sm text-blue-800 flex items-center gap-2 font-medium">
           <Icono name="clock" className="w-4 h-4 animate-pulse" /> Limpieza en progreso...
         </p>

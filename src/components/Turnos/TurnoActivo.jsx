@@ -84,7 +84,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
           </div>
 
           {/* Total Acumulado */}
-          <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100/70 shadow-2xs">
+          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200/70 shadow-2xs">
             <span className="text-[10px] font-black text-blue-700 uppercase tracking-wider block mb-1" title="Incluye efectivo inicial + pagos efectivo + digitales">
               Total Recaudado
             </span>
@@ -95,7 +95,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
           </div>
 
           {/* Efectivo en Caja (Real en mano) */}
-          <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-200 shadow-2xs">
+          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 shadow-2xs">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">
                 Efectivo en Caja
@@ -136,7 +136,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
               <span className="font-black text-gray-800 text-base">S/ {efectivo.toFixed(2)}</span>
             </div>
 
-            <div className={`p-3 rounded-xl border flex flex-col justify-between ${yape > 0 ? 'bg-purple-50/50 border-purple-100' : 'bg-gray-50/60 border-gray-100'}`}>
+            <div className={`p-3 rounded-xl border flex flex-col justify-between ${yape > 0 ? 'bg-gray-50 border-gray-200' : 'bg-gray-50/60 border-gray-100'}`}>
               <div className="flex items-center justify-between text-xs text-purple-700 font-semibold mb-1">
                 <span>Yape / Plin</span>
                 <span className="text-[11px]"><Icono name="phone" className="w-4 h-4 inline-block shrink-0" /></span>
@@ -144,7 +144,7 @@ export default function TurnoActivo({ turno, pagosTurno, movimientos, registrarM
               <span className="font-black text-purple-900 text-base">S/ {yape.toFixed(2)}</span>
             </div>
 
-            <div className={`p-3 rounded-xl border flex flex-col justify-between ${tarjeta > 0 ? 'bg-blue-50/50 border-blue-100' : 'bg-gray-50/60 border-gray-100'}`}>
+            <div className={`p-3 rounded-xl border flex flex-col justify-between ${tarjeta > 0 ? 'bg-gray-50 border-gray-200' : 'bg-gray-50/60 border-gray-100'}`}>
               <div className="flex items-center justify-between text-xs text-blue-700 font-semibold mb-1">
                 <span>Tarjeta (POS)</span>
                 <span className="text-[11px]"><Icono name="cash" className="w-4 h-4 inline-block shrink-0" /></span>

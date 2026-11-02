@@ -237,9 +237,9 @@ export default function FormularioCheckIn({
 
   // --- RENDERING ...
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* ... header ... */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white flex justify-between items-center">
+      <div className="bg-blue-600  px-8 py-6 text-white flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
@@ -257,7 +257,7 @@ export default function FormularioCheckIn({
 
         {/* BANNER: Check-in viene de una reserva */}
         {datosIniciales?.reserva && (
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl px-6 py-4 flex items-center gap-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 flex items-center gap-3">
             <span className="text-2xl"><Icono name="receipt" className="w-6 h-6 inline-block shrink-0" /></span>
             <div>
               <p className="text-sm font-black text-blue-900">Datos cargados desde Reserva N° {String(datosIniciales.reserva.nro_ficha || '').padStart(6, '0')}</p>
@@ -267,7 +267,7 @@ export default function FormularioCheckIn({
         )}
 
         {/* N° DE FICHA MANUAL */}
-        <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="bg-blue-50 border border-blue-300 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
             <label className="text-xs font-black text-blue-800 uppercase tracking-widest block mb-1.5">
               <Icono name="receipt" className="w-4 h-4 inline-block shrink-0" /> Número de Ficha <span className="text-rose-500">*</span>
@@ -280,7 +280,7 @@ export default function FormularioCheckIn({
               onFocus={e => e.target.select()}
               onWheel={e => e.target.blur()}
               placeholder="Ej: 4425"
-              className="w-full border-2 border-blue-200 rounded-xl px-4 py-3 text-2xl font-black text-blue-900 outline-none focus:border-blue-500 bg-white transition-colors tracking-widest"
+              className="w-full border border-blue-200 rounded-xl px-4 py-3 text-2xl font-black text-blue-900 outline-none focus:border-blue-500 bg-white transition-colors tracking-widest"
             />
             <p className="text-xs text-blue-600 font-medium mt-1.5">Ingresa el número de la ficha física para sincronizar con el registro manual.</p>
           </div>
@@ -301,7 +301,7 @@ export default function FormularioCheckIn({
                   <select
                     value={tipoDoc}
                     onChange={e => { setTipoDoc(e.target.value); setDni('') }}
-                    className="w-24 sm:w-1/3 shrink-0 border-2 border-gray-200 rounded-xl px-2 sm:px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
+                    className="w-24 sm:w-1/3 shrink-0 border border-gray-200 rounded-xl px-2 sm:px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors font-medium"
                   >
                     <option value="dni">DNI</option>
                     <option value="pasaporte">Pasaporte</option>
@@ -318,7 +318,7 @@ export default function FormularioCheckIn({
                     }}
                     onBlur={handleBuscarCliente}
                     placeholder={tipoDoc === 'dni' ? '8 dígitos' : 'Número'}
-                    className="flex-1 min-w-0 border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                    className="flex-1 min-w-0 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                     maxLength={tipoDoc === 'dni' ? 8 : 20}
                   />
                 </div>
@@ -334,7 +334,7 @@ export default function FormularioCheckIn({
               )}
 
               {cliente && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
+                <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
                   <p className="text-xs font-bold text-blue-800 flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                     Cliente frecuente
@@ -398,7 +398,7 @@ export default function FormularioCheckIn({
                   value={nombres}
                   onChange={e => setNombres(e.target.value)}
                   placeholder="Ej: Juan Pérez"
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -409,7 +409,7 @@ export default function FormularioCheckIn({
                     value={telefono}
                     onChange={e => setTelefono(e.target.value)}
                     placeholder="Opcional"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                   />
                 </div>
                 <div>
@@ -419,7 +419,7 @@ export default function FormularioCheckIn({
                     value={nacionalidad}
                     onChange={e => setNacionalidad(e.target.value)}
                     placeholder="Ej: Peruana"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
                   />
                 </div>
               </div>
@@ -458,7 +458,7 @@ export default function FormularioCheckIn({
         />
 
         {error && (
-          <div className="bg-rose-50 border-2 border-rose-200 rounded-xl p-4 text-center">
+          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-center">
             <p className="text-sm font-bold text-rose-600 flex justify-center items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               {error}
@@ -469,14 +469,14 @@ export default function FormularioCheckIn({
         <div className="pt-4 border-t border-gray-100 flex gap-4">
           <button
             onClick={() => navigate('/')}
-            className="px-8 py-4 border-2 border-gray-200 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+            className="px-8 py-4 border border-gray-200 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={confirmar}
             disabled={cargando}
-            className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black text-lg shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 flex-1 py-4 text-white rounded-2xl font-black text-base shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2"
           >
             {cargando ? (
               <span className="flex items-center gap-2">

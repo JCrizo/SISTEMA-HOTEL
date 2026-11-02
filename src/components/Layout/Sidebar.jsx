@@ -119,7 +119,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
       {/* Brand Header */}
       <div className="p-5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-700 text-white flex items-center justify-center font-black text-xl shadow-sm">
+          <div className="bg-blue-600 w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-xl shadow-sm">
             O
           </div>
           <div>

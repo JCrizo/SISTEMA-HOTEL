@@ -151,7 +151,7 @@ export default function Habitaciones() {
     <div className="pb-12 space-y-6">
       {/* Alerta de Turno Ajeno si existe */}
       {turnoAjeno && (
-        <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse">
           <div className="flex items-center gap-3">
             <span className="text-3xl"><Icono name="alert" className="w-8 h-8 inline-block shrink-0" /></span>
             <div>
@@ -161,7 +161,7 @@ export default function Habitaciones() {
           </div>
           <button 
             onClick={() => navigate('/turnos')}
-            className="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-md hover:bg-rose-700 transition-colors whitespace-nowrap"
+            className="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-sm hover:bg-rose-700 transition-colors whitespace-nowrap"
           >
             Ir a Caja a Cerrar
           </button>
@@ -424,7 +424,7 @@ export default function Habitaciones() {
                 let estadoTexto = 'Disponible'
 
                 if (hab.estado === 'ocupada') {
-                  cardBorders = 'border-blue-200/90 hover:border-blue-400 bg-gradient-to-b from-blue-50/25 to-white'
+                  cardBorders = 'border-blue-200 hover:border-blue-400 bg-white'
                   badgeColor = 'bg-blue-50 text-blue-700 border border-blue-100'
                   dotColor = 'bg-blue-600'
                   estadoTexto = 'Ocupada'
@@ -461,7 +461,7 @@ export default function Habitaciones() {
                   <div
                     key={hab.id}
                     onClick={() => navigate(`/habitacion/${hab.id}`)}
-                    className={`group relative rounded-2xl border-2 p-3 sm:p-4 cursor-pointer shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md active:scale-[0.98] flex flex-col justify-between min-h-[145px] sm:min-h-[160px] ${cardBorders}`}
+                    className={`group relative rounded-2xl border-2 p-3 sm:p-4 cursor-pointer shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:shadow-sm active:scale-[0.98] flex flex-col justify-between min-h-[145px] sm:min-h-[160px] ${cardBorders}`}
                   >
                     {/* Floating Badges */}
                     {hab.checkoutVencido && (
