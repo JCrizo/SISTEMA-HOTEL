@@ -1,3 +1,5 @@
+import CamposNombre from '../Compartido/CamposNombre'
+
 export default function SeccionAcompanantes({
   acompanantes, agregarAcompanante, eliminarAcompanante,
   actualizarAcompanante, buscarAcompanante
@@ -62,16 +64,12 @@ export default function SeccionAcompanantes({
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Nombre Completo</label>
-                  <input
-                    type="text"
-                    value={ac.nombres}
-                    onChange={e => actualizarAcompanante(idx, 'nombres', e.target.value)}
-                    placeholder="Nombre del acompañante"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
-                  />
-                </div>
+                <CamposNombre
+                  compacto
+                  apellidos={ac.apellidos || ''}
+                  nombres={ac.nombres || ''}
+                  onChange={(campo, valor) => actualizarAcompanante(idx, campo, valor)}
+                />
               </div>
             </div>
           ))}

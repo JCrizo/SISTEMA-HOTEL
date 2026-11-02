@@ -52,7 +52,12 @@ export default async function handler(req, res) {
     }
     const d = json.data || {}
     // Solo devolvemos lo necesario (no la dirección ni la fecha de nacimiento).
-    return res.status(200).json({ dni: d.number || dni, nombres: d.full_name || '' })
+    return res.status(200).json({
+      dni: d.number || dni,
+      apellidos: d.surname || '',
+      nombres: d.name || '',
+      completo: d.full_name || '',
+    })
   } catch {
     return res.status(502).json({ error: 'No se pudo contactar al proveedor' })
   }

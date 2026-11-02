@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import Icono from '../Compartido/Icono'
+import CamposNombre from '../Compartido/CamposNombre'
+import { unirNombre, separarNombre } from '../../utils/nombres'
 
 export default function EditarHuespedModal({
   huesped,
@@ -22,7 +24,8 @@ export default function EditarHuespedModal({
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
-  const [nombres, setNombres] = useState(huesped?.nombres || '')
+  const [apellidos, setApellidos] = useState(() => separarNombre(huesped?.nombres).apellidos)
+  const [nombres, setNombres] = useState(() => separarNombre(huesped?.nombres).nombres)
   const [dni, setDni] = useState(huesped?.dni_pasaporte || '')
   const [telefono, setTelefono] = useState(huesped?.telefono || '')
   const [tarifaPorNoche, setTarifaPorNoche] = useState(tarifaPorNocheActual)
@@ -37,16 +40,17 @@ export default function EditarHuespedModal({
 
   async function handleGuardar() {
     setError('')
-    if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
+    if (!unirNombre(apellidos, nombres)) { setError('Los apellidos y nombres son obligatorios'); return }
     if (!tarifaPorNoche || parseFloat(tarifaPorNoche) <= 0) { setError('La tarifa por noche debe ser mayor a 0'); return }
     if (comprobante === 'factura' && (!ruc || ruc.trim().length < 8)) { setError('El RUC es obligatorio para factura (mínimo 8 dígitos)'); return }
 
     setGuardando(true)
 
-    const datosCambiaron = nombres !== huesped?.nombres || dni !== huesped?.dni_pasaporte || telefono !== (huesped?.telefono || '')
+    const nombreCompleto = unirNombre(apellidos, nombres)
+    const datosCambiaron = nombreCompleto !== unirNombre(huesped?.nombres || '') || dni !== huesped?.dni_pasaporte || telefono !== (huesped?.telefono || '')
     if (datosCambiaron) {
       const exito = await actualizarDatosHuesped({
-        nombres: nombres.trim(),
+        nombres: nombreCompleto,
         dni_pasaporte: dni.trim(),
         telefono: telefono.trim() || null
       })
@@ -107,15 +111,11 @@ export default function EditarHuespedModal({
         )}
 
         <div className="space-y-3">
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nombre completo</label>
-            <input
-              type="text"
-              value={nombres}
-              onChange={e => setNombres(e.target.value)}
-              className="w-full border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium outline-none focus:border-blue-400"
-            />
-          </div>
+          <CamposNombre
+            apellidos={apellidos}
+            nombres={nombres}
+            onChange={(campo, valor) => (campo === 'apellidos' ? setApellidos(valor) : setNombres(valor))}
+          />
 
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">DNI / Pasaporte</label>

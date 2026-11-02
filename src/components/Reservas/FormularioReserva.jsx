@@ -5,6 +5,9 @@ import { clientesService } from '../../services/clientesService'
 import { useAuth } from '../../context/AuthContext'
 import { consultaDocumentoService } from '../../services/consultaDocumentoService'
 import Icono from '../Compartido/Icono'
+import CamposNombre from '../Compartido/CamposNombre'
+import SeccionAcompanantes from '../CheckIn/SeccionAcompanantes'
+import { unirNombre, separarNombre } from '../../utils/nombres'
 
 export default function FormularioReserva({ onCancel, turnoActivo }) {
   const { crearReserva, error: errorReserva } = useReservas()
@@ -14,7 +17,9 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
   const [cliente, setCliente] = useState(null)
-  const [nombres, setNombres] = useState('')
+  const [apellidos, setApellidos] = useState('')
+  const [nombres, setNombres] = useState('')  // solo nombres de pila; se guardan unidos a los apellidos
+  const [acompanantes, setAcompanantes] = useState([])
   const [telefono, setTelefono] = useState('')
   const [habitacionId, setHabitacionId] = useState('')
   const [tarifaPactada, setTarifaPactada] = useState('')
@@ -46,18 +51,40 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
       const data = await clientesService.buscarPorDniPasaporte(dni.trim())
       if (data) {
         setCliente(data)
-        setNombres(data.nombres)
+        const p = separarNombre(data.nombres)
+        setApellidos(p.apellidos)
+        setNombres(p.nombres)
         setTelefono(data.telefono || '')
       } else {
         setCliente(null)
+        setApellidos('')
         setNombres('')
         setTelefono('')
         // Cliente nuevo con DNI: intenta autocompletar el nombre (editable)
         if (tipoDoc === 'dni' && /^\d{8}$/.test(dni.trim())) {
           const res = await consultaDocumentoService.consultarDni(dni.trim())
-          if (res?.nombres) setNombres(res.nombres)
+          if (res) { setApellidos(res.apellidos); setNombres(res.nombres) }
         }
       }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async function buscarAcompanante(index) {
+    const ac = acompanantes[index]
+    if (!ac?.dni.trim()) return
+    try {
+      const data = await clientesService.buscarPorDniPasaporte(ac.dni.trim())
+      let nuevo = { ...ac }
+      if (data) {
+        const p = separarNombre(data.nombres)
+        nuevo = { ...ac, apellidos: p.apellidos, nombres: p.nombres }
+      } else if (ac.tipoDoc === 'dni' && /^\d{8}$/.test(ac.dni.trim())) {
+        const res = await consultaDocumentoService.consultarDni(ac.dni.trim())
+        if (res) nuevo = { ...ac, apellidos: res.apellidos, nombres: res.nombres }
+      }
+      setAcompanantes(prev => prev.map((x, k) => (k === index ? nuevo : x)))
     } catch (err) {
       console.error(err)
     }
@@ -68,7 +95,7 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
     if (!turnoActivo) { setErrorValidacion('Debes iniciar turno antes de crear una reserva.'); return }
     if (!nroFicha.trim()) { setErrorValidacion('El número de ficha es obligatorio'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setErrorValidacion('El DNI debe tener 8 dígitos'); return }
-    if (!nombres.trim()) { setErrorValidacion('El nombre es obligatorio'); return }
+    if (!unirNombre(apellidos, nombres)) { setErrorValidacion('Los apellidos y nombres son obligatorios'); return }
     if (!habitacionId) { setErrorValidacion('Selecciona una habitación'); return }
     if (!fechaLlegada) { setErrorValidacion('La fecha de llegada es obligatoria'); return }
     
@@ -84,12 +111,18 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
         adelanto: parseFloat(adelanto || 0),
         monto_early: parseFloat(montoEarly || 0),
         estado: 'confirmada',
-        observaciones
+        observaciones,
+        // Solo se envía si hay acompañantes (requiere la columna reservas.acompanantes; ver docs/sql-acompanantes-reservas.sql)
+        ...(acompanantes.length > 0 && {
+          acompanantes: acompanantes
+            .map(ac => ({ tipoDoc: ac.tipoDoc, dni: ac.dni.trim(), nombres: unirNombre(ac.apellidos, ac.nombres) }))
+            .filter(ac => ac.nombres)
+        })
       },
       {
         clienteId: cliente ? cliente.id : null,
         dni_pasaporte: dni.trim(),
-        nombres,
+        nombres: unirNombre(apellidos, nombres),
         telefono
       },
       usuario
@@ -223,16 +256,11 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
             )}
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nombre Completo</label>
-            <input
-              type="text"
-              value={nombres}
-              onChange={e => setNombres(e.target.value)}
-              placeholder="Ej: María Gonzales"
-              className="input "
-            />
-          </div>
+          <CamposNombre
+            apellidos={apellidos}
+            nombres={nombres}
+            onChange={(campo, valor) => (campo === 'apellidos' ? setApellidos(valor) : setNombres(valor))}
+          />
 
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Teléfono de Contacto</label>
@@ -244,6 +272,14 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
               className="input "
             />
           </div>
+
+          <SeccionAcompanantes
+            acompanantes={acompanantes}
+            agregarAcompanante={() => setAcompanantes([...acompanantes, { dni: '', tipoDoc: 'dni', apellidos: '', nombres: '' }])}
+            eliminarAcompanante={(i) => setAcompanantes(acompanantes.filter((_, k) => k !== i))}
+            actualizarAcompanante={(i, campo, valor) => setAcompanantes(acompanantes.map((ac, k) => (k === i ? { ...ac, [campo]: valor } : ac)))}
+            buscarAcompanante={buscarAcompanante}
+          />
         </div>
 
         <div className="space-y-5">

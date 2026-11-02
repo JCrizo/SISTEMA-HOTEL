@@ -1,7 +1,8 @@
 import { supabase } from '../lib/supabase'
+import { separarNombre } from '../utils/nombres'
 
 export const consultaDocumentoService = {
-  // Devuelve { dni, nombres } o null si no hay datos / el servicio no está disponible.
+  // Devuelve { dni, apellidos, nombres } o null si no hay datos / el servicio no está disponible.
   async consultarDni(dni) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -18,7 +19,10 @@ export const consultaDocumentoService = {
         console.warn('Consulta de DNI no disponible:', r.status, cuerpo?.error || '(sin detalle)')
         return null
       }
-      return await r.json()
+      const d = await r.json()
+      let { apellidos = '', nombres = '' } = d
+      if (!apellidos && !nombres && d.completo) ({ apellidos, nombres } = separarNombre(d.completo))
+      return { dni: d.dni, apellidos, nombres }
     } catch {
       return null
     }

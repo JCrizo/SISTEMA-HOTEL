@@ -6,6 +6,8 @@ import SeccionEstadia from './SeccionEstadia'
 import SeccionPago from './SeccionPago'
 import { consultaDocumentoService } from '../../services/consultaDocumentoService'
 import Icono from '../Compartido/Icono'
+import CamposNombre from '../Compartido/CamposNombre'
+import { unirNombre, separarNombre } from '../../utils/nombres'
 
 export default function FormularioCheckIn({
   hab,
@@ -22,7 +24,9 @@ export default function FormularioCheckIn({
   const [dni, setDni] = useState('')
   const [tipoDoc, setTipoDoc] = useState('dni')
   const [cliente, setCliente] = useState(null)
-  const [nombres, setNombres] = useState('')
+  const [apellidos, setApellidos] = useState('')
+  const [nombres, setNombres] = useState('')  // solo nombres de pila; se guardan unidos a los apellidos
+  const cargarNombre = (completo) => { const p = separarNombre(completo); setApellidos(p.apellidos); setNombres(p.nombres) }
   const [telefono, setTelefono] = useState('')
   const [nacionalidad, setNacionalidad] = useState('')
 
@@ -67,11 +71,26 @@ export default function FormularioCheckIn({
       
       if (cli) {
         setDni(cli.dni_pasaporte || '')
-        setNombres(cli.nombres || '')
+        cargarNombre(cli.nombres || '')
         setTelefono(cli.telefono || '')
         setNacionalidad(cli.nacionalidad || '')
         setCliente(cli)
         if (cli.tarifa_habitual) setTarifaPorNoche(cli.tarifa_habitual)
+      }
+
+      // Acompañantes registrados en la reserva (si la columna existe y hay datos).
+      // Se resuelve su clienteId si ya existen en el directorio, para no duplicarlos.
+      if (Array.isArray(res.acompanantes) && res.acompanantes.length > 0) {
+        const base = res.acompanantes.map(ac => {
+          const p = separarNombre(ac.nombres)
+          return { dni: ac.dni || '', tipoDoc: ac.tipoDoc || 'dni', apellidos: p.apellidos, nombres: p.nombres,
+            telefono: '', nacionalidad: '', clienteId: null }
+        })
+        setAcompanantes(base)
+        Promise.all(base.map(async ac => {
+          const existente = ac.dni ? await buscarCliente(ac.dni) : null
+          return existente ? { ...ac, clienteId: existente.id, telefono: existente.telefono || '', nacionalidad: existente.nacionalidad || '' } : ac
+        })).then(setAcompanantes).catch(() => {})
       }
 
       // La tarifa acordada al momento de reservar tiene prioridad: fue negociada
@@ -137,18 +156,19 @@ export default function FormularioCheckIn({
     const data = await buscarCliente(dni.trim())
     if (data) {
       setCliente(data)
-      setNombres(data.nombres)
+      cargarNombre(data.nombres)
       setTelefono(data.telefono || '')
       setNacionalidad(data.nacionalidad || '')
       if (data.tarifa_habitual) setTarifaPorNoche(data.tarifa_habitual)
     } else {
       setCliente(null)
+      setApellidos('')
       setNombres('')
       setTelefono('')
       // Cliente nuevo con DNI: intenta autocompletar el nombre (el recepcionista puede corregirlo)
       if (tipoDoc === 'dni' && /^\d{8}$/.test(dni.trim())) {
         const res = await consultaDocumentoService.consultarDni(dni.trim())
-        if (res?.nombres) setNombres(res.nombres)
+        if (res) { setApellidos(res.apellidos); setNombres(res.nombres) }
       }
     }
   }
@@ -157,7 +177,7 @@ export default function FormularioCheckIn({
     setError(null)
     if (!turnoActivo) { setError('Debes iniciar turno antes de continuar.'); return }
     if (!nroFicha.trim()) { setError('El número de ficha es obligatorio'); return }
-    if (!nombres.trim()) { setError('El nombre es obligatorio'); return }
+    if (!unirNombre(apellidos, nombres)) { setError('Los apellidos y nombres son obligatorios'); return }
     if (tipoDoc === 'dni' && dni.length !== 8) { setError('El DNI debe tener 8 dígitos'); return }
     if (!fechaIngreso) { setError('La fecha y hora de ingreso es obligatoria'); return }
     if (!tarifaPorNoche) { setError('La tarifa por noche es obligatoria'); return }
@@ -195,11 +215,11 @@ export default function FormularioCheckIn({
       {
         id: cliente?.id || null,
         dni_pasaporte: dni.trim(),
-        nombres,
+        nombres: unirNombre(apellidos, nombres),
         telefono,
         nacionalidad
       },
-      acompanantes
+      acompanantes.map(ac => ({ ...ac, nombres: unirNombre(ac.apellidos, ac.nombres) }))
     )
 
     if (exito) {
@@ -210,7 +230,7 @@ export default function FormularioCheckIn({
   const [acompanantes, setAcompanantes] = useState([])
   
   function agregarAcompanante() {
-    setAcompanantes([...acompanantes, { dni: '', tipoDoc: 'dni', nombres: '', telefono: '', nacionalidad: '', clienteId: null }])
+    setAcompanantes([...acompanantes, { dni: '', tipoDoc: 'dni', apellidos: '', nombres: '', telefono: '', nacionalidad: '', clienteId: null }])
   }
 
   function eliminarAcompanante(index) {
@@ -229,16 +249,20 @@ export default function FormularioCheckIn({
     const ac = acompanantes[index]
     if (!ac.dni.trim()) return
     const data = await buscarCliente(ac.dni.trim())
+    const nuevos = [...acompanantes]
     if (data) {
-      actualizarAcompanante(index, 'nombres', data.nombres)
-      actualizarAcompanante(index, 'telefono', data.telefono || '')
-      actualizarAcompanante(index, 'nacionalidad', data.nacionalidad || '')
-      actualizarAcompanante(index, 'clienteId', data.id)
+      const p = separarNombre(data.nombres)
+      nuevos[index] = { ...ac, apellidos: p.apellidos, nombres: p.nombres,
+        telefono: data.telefono || '', nacionalidad: data.nacionalidad || '', clienteId: data.id }
     } else {
-      actualizarAcompanante(index, 'nombres', '')
-      actualizarAcompanante(index, 'telefono', '')
-      actualizarAcompanante(index, 'clienteId', null)
+      nuevos[index] = { ...ac, apellidos: '', nombres: '', telefono: '', clienteId: null }
+      // Persona nueva con DNI: autocompleta desde el servicio de consulta (editable)
+      if (ac.tipoDoc === 'dni' && /^\d{8}$/.test(ac.dni.trim())) {
+        const res = await consultaDocumentoService.consultarDni(ac.dni.trim())
+        if (res) { nuevos[index].apellidos = res.apellidos; nuevos[index].nombres = res.nombres }
+      }
     }
+    setAcompanantes(nuevos)
   }
 
   // --- RENDERING ...
@@ -397,16 +421,11 @@ export default function FormularioCheckIn({
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nombre Completo</label>
-                <input
-                  type="text"
-                  value={nombres}
-                  onChange={e => setNombres(e.target.value)}
-                  placeholder="Ej: Juan Pérez"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 bg-white transition-colors"
-                />
-              </div>
+              <CamposNombre
+                apellidos={apellidos}
+                nombres={nombres}
+                onChange={(campo, valor) => (campo === 'apellidos' ? setApellidos(valor) : setNombres(valor))}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Teléfono</label>

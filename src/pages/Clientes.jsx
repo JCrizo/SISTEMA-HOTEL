@@ -3,6 +3,9 @@ import { clientesService } from '../services/clientesService';
 import Icono from '../components/Compartido/Icono'
 import { useAuth } from '../context/AuthContext'
 import HistorialHuesped from '../components/Clientes/HistorialHuesped'
+import CamposNombre from '../components/Compartido/CamposNombre'
+import { unirNombre, separarNombre } from '../utils/nombres'
+import { consultaDocumentoService } from '../services/consultaDocumentoService'
 
 export default function Clientes() {
   const { usuario } = useAuth()
@@ -26,6 +29,7 @@ export default function Clientes() {
   const initialFormState = {
     tipo_documento: 'DNI',
     dni_pasaporte: '',
+    apellidos: '',
     nombres: '',
     telefono: '',
     nacionalidad: '',
@@ -91,6 +95,14 @@ export default function Clientes() {
     XLSX.writeFile(libro, `huespedes-${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
+  // Al salir del campo documento: si es un DNI nuevo (8 dígitos) y los nombres están vacíos, autocompleta.
+  const consultarDniFormulario = async () => {
+    const dni = formData.dni_pasaporte.trim()
+    if (editandoCliente || !/^\d{8}$/.test(dni) || formData.apellidos || formData.nombres) return
+    const res = await consultaDocumentoService.consultarDni(dni)
+    if (res) setFormData(prev => (prev.apellidos || prev.nombres ? prev : { ...prev, apellidos: res.apellidos, nombres: res.nombres }))
+  }
+
   const abrirModalNuevo = () => {
     setEditandoCliente(null);
     setFormData(initialFormState);
@@ -103,7 +115,7 @@ export default function Clientes() {
     setFormData({
       tipo_documento: 'DNI',
       dni_pasaporte: cliente.dni_pasaporte || '',
-      nombres: cliente.nombres || '',
+      ...separarNombre(cliente.nombres),
       telefono: cliente.telefono || '',
       nacionalidad: cliente.nacionalidad || '',
       tarifa_habitual: cliente.tarifa_habitual != null ? String(cliente.tarifa_habitual) : ''
@@ -123,17 +135,17 @@ export default function Clientes() {
     e.preventDefault();
     setErrorForm('');
 
-    if (!formData.nombres.trim() || !formData.dni_pasaporte.trim()) {
-      setErrorForm('El nombre y el DNI/Pasaporte son obligatorios');
+    if (!unirNombre(formData.apellidos, formData.nombres) || !formData.dni_pasaporte.trim()) {
+      setErrorForm('Los apellidos/nombres y el DNI/Pasaporte son obligatorios');
       return;
     }
     
     setGuardando(true);
     try {
-      const { tipo_documento, ...datosParaGuardar } = formData;
+      const { tipo_documento, apellidos, ...datosParaGuardar } = formData;
       const payload = {
         ...datosParaGuardar,
-        nombres: datosParaGuardar.nombres.trim(),
+        nombres: unirNombre(apellidos, datosParaGuardar.nombres),
         dni_pasaporte: datosParaGuardar.dni_pasaporte.trim(),
         telefono: datosParaGuardar.telefono.trim() || null,
         nacionalidad: datosParaGuardar.nacionalidad.trim() || null,
@@ -538,23 +550,17 @@ export default function Clientes() {
                     required
                     value={formData.dni_pasaporte}
                     onChange={handleInputChange}
+                    onBlur={consultarDniFormulario}
                     placeholder="Número de documento..."
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
-                    Nombres y Apellidos *
-                  </label>
-                  <input
-                    type="text"
-                    name="nombres"
-                    required
-                    value={formData.nombres}
-                    onChange={handleInputChange}
-                    placeholder="Nombre completo..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white"
+                <div className="sm:col-span-2">
+                  <CamposNombre
+                    apellidos={formData.apellidos}
+                    nombres={formData.nombres}
+                    onChange={(campo, valor) => setFormData(prev => ({ ...prev, [campo]: valor }))}
                   />
                 </div>
 
