@@ -3,6 +3,7 @@ import { useReservas } from '../../hooks/useReservas'
 import { useHabitaciones } from '../../hooks/useHabitaciones'
 import { clientesService } from '../../services/clientesService'
 import { useAuth } from '../../context/AuthContext'
+import { consultaDocumentoService } from '../../services/consultaDocumentoService'
 import Icono from '../Compartido/Icono'
 
 export default function FormularioReserva({ onCancel, turnoActivo }) {
@@ -51,6 +52,11 @@ export default function FormularioReserva({ onCancel, turnoActivo }) {
         setCliente(null)
         setNombres('')
         setTelefono('')
+        // Cliente nuevo con DNI: intenta autocompletar el nombre (editable)
+        if (tipoDoc === 'dni' && /^\d{8}$/.test(dni.trim())) {
+          const res = await consultaDocumentoService.consultarDni(dni.trim())
+          if (res?.nombres) setNombres(res.nombres)
+        }
       }
     } catch (err) {
       console.error(err)

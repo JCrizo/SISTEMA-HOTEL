@@ -7,6 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: { navigateFallbackDenylist: [/^\/api\//] },
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Sistema Hotel',

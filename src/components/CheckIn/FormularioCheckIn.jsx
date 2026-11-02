@@ -4,6 +4,7 @@ import SeccionHuespedTitular from './SeccionHuespedTitular'
 import SeccionAcompanantes from './SeccionAcompanantes'
 import SeccionEstadia from './SeccionEstadia'
 import SeccionPago from './SeccionPago'
+import { consultaDocumentoService } from '../../services/consultaDocumentoService'
 import Icono from '../Compartido/Icono'
 
 export default function FormularioCheckIn({
@@ -144,6 +145,11 @@ export default function FormularioCheckIn({
       setCliente(null)
       setNombres('')
       setTelefono('')
+      // Cliente nuevo con DNI: intenta autocompletar el nombre (el recepcionista puede corregirlo)
+      if (tipoDoc === 'dni' && /^\d{8}$/.test(dni.trim())) {
+        const res = await consultaDocumentoService.consultarDni(dni.trim())
+        if (res?.nombres) setNombres(res.nombres)
+      }
     }
   }
 
