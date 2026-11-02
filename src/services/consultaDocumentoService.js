@@ -13,7 +13,11 @@ export const consultaDocumentoService = {
         },
         body: JSON.stringify({ dni }),
       })
-      if (!r.ok) return null
+      if (!r.ok) {
+        const cuerpo = await r.json().catch(() => null)
+        console.warn('Consulta de DNI no disponible:', r.status, cuerpo?.error || '(sin detalle)')
+        return null
+      }
       return await r.json()
     } catch {
       return null

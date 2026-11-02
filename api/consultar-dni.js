@@ -2,10 +2,16 @@
 // de entorno CONSULTASPERU_TOKEN; el navegador nunca lo ve.
 const URL_PROVEEDOR = 'https://api.consultasperu.com/api/v1/query'
 
+function configSupabase() {
+  return {
+    url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+    anon: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
+  }
+}
+
 async function sesionValida(authHeader) {
-  const url = process.env.VITE_SUPABASE_URL
-  const anon = process.env.VITE_SUPABASE_ANON_KEY
-  if (!url || !anon || !authHeader?.startsWith('Bearer ')) return false
+  const { url, anon } = configSupabase()
+  if (!authHeader?.startsWith('Bearer ')) return false
   const r = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: anon, Authorization: authHeader },
   })
@@ -14,6 +20,11 @@ async function sesionValida(authHeader) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' })
+
+  const cfg = configSupabase()
+  if (!cfg.url || !cfg.anon) {
+    return res.status(500).json({ error: 'Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY en este entorno de Vercel' })
+  }
 
   // Solo usuarios con sesión iniciada en el sistema pueden gastar la cuota del proveedor.
   if (!(await sesionValida(req.headers.authorization))) {
